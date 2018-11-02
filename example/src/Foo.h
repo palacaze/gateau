@@ -9,4 +9,3 @@ public:
 };
 
 } // namespace Example
-

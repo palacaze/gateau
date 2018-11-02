@@ -17,10 +17,14 @@ if (NOT DEFINED CMAKE_BUILD_TYPE)
 endif()
 
 # Satic or Shared libraries
-# if the library type is not provided, we create static libraries in release mode
+# If the library type is not provided, we create static libraries in release mode
 # and dynamic libraries otherwise (linking is slow in debug, so we minimize it).
 if (NOT DEFINED BUILD_SHARED_LIBS)
-    set(BUILD_SHARED_LIBS $<CONFIG:Release>)
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(BUILD_SHARED_LIBS OFF)
+    else()
+        set(BUILD_SHARED_LIBS ON)
+    endif()
 endif()
 
 # Misc make options
@@ -44,7 +48,9 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     set(SOCUTE_COMPILER_GCC ON)
 endif()
 
-set(SOCUTE_COMPILER_CLANG_OR_GCC ${SOCUTE_COMPILER_CLANG} OR ${SOCUTE_COMPILER_GCC})
+if (SOCUTE_COMPILER_CLANG OR SOCUTE_COMPILER_GCC)
+    set(SOCUTE_COMPILER_CLANG_OR_GCC ON)
+endif()
 
 # 32 or 64 bits
 if (CMAKE_CXX_SIZEOF_DATA_PTR EQUAL 8)
@@ -57,4 +63,3 @@ endif()
 
 include(SoCuteCompilerOptions)
 include(SoCuteHelperMacros)
-

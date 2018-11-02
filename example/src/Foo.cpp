@@ -7,4 +7,3 @@ double Foo::calc(double a, double b) {
 }
 
 } // namespace Example
-

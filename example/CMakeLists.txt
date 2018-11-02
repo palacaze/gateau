@@ -12,4 +12,3 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/..)
 include(SoCute)
 
 add_subdirectory(src)
-

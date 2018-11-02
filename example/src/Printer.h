@@ -1,5 +1,4 @@
 #pragma once
-
 #include "CMakeExampleLib_export.h"
 #include <string>
 #include <sstream>
@@ -7,9 +6,9 @@
 
 namespace Example {
 
-void CMAKEEXAMPLE_LIB_EXPORT printer(const std::string &str);
+CMAKEEXAMPLE_LIB_EXPORT void printer(const std::string &str);
 
-void CMAKEEXAMPLE_LIB_EXPORT printInfo();
+CMAKEEXAMPLE_LIB_EXPORT void printInfo();
 
 template <typename... T>
 void print(const T & ...v) {

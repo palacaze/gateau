@@ -66,7 +66,7 @@ target_link_libraries(SoCute_UndefinedSanitizer INTERFACE
 )
 
 # Use the best linker available
-if (UNIX AND (SOCUTE_COMPILER_GCC OR SOCUTE_COMPILER_CLANG))
+if (UNIX AND SOCUTE_COMPILER_CLANG_OR_GCC)
     foreach (_ld lld;gold)
         execute_process(COMMAND ${CMAKE_CXX_COMPILER} -fuse-ld=${_ld} -Wl,--version
             ERROR_QUIET OUTPUT_VARIABLE ld_version)
@@ -80,8 +80,9 @@ if (UNIX AND (SOCUTE_COMPILER_GCC OR SOCUTE_COMPILER_CLANG))
     add_library(Socute::Linker ALIAS SoCute_Linker)
 
     if (used_ld)
-        set_target_properties(SoCute_ThreadSanitizer PROPERTIES
-            INTERFACE_LINK_LIBRARIES "-fuse-ld=${used_ld}")
+        set_target_properties(SoCute_Linker PROPERTIES
+            INTERFACE_LINK_LIBRARIES "-fuse-ld=${used_ld}"
+        )
     endif()
 endif()
 
@@ -89,9 +90,11 @@ endif()
 add_library(SoCute_Libcxx INTERFACE)
 add_library(Socute::Libcxx ALIAS SoCute_Libcxx)
 target_compile_options(SoCute_Libcxx INTERFACE
-    $<$<BOOL:${SOCUTE_COMPILER_CLANG}>:-stdlib=libc++>)
+    $<$<BOOL:${SOCUTE_COMPILER_CLANG}>:-stdlib=libc++>
+)
 target_link_libraries(SoCute_Libcxx INTERFACE
-    $<$<BOOL:${SOCUTE_COMPILER_CLANG}>:-stdlib=libc++;-rtlib=compiler-rt>)
+    $<$<BOOL:${SOCUTE_COMPILER_CLANG}>:-stdlib=libc++;-rtlib=compiler-rt>
+)
 
 # Use CCACHE
 option(SOCUTE_USE_CCACHE "Use Ccache to speed-up compilation" OFF)

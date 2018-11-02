@@ -23,7 +23,6 @@ find_package(Git)
 macro(socute_generate_metadata target target_id)
     target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-    # informations sur le nom de l'exécutable, sa version
     set(SOCUTE_BASE_NAME ${target_id})
     set(SOCUTE_TARGET_NAME ${target})
     set(SOCUTE_PROJECT_REVISION unknown)
@@ -46,7 +45,7 @@ function(socute_set_properties target target_id)
     target_compile_definitions(${target} PRIVATE $<$<CONFIG:Release>:NDEBUG>)
     set_target_properties(${target} PROPERTIES CXX_EXTENSIONS NO)
     target_compile_features(${target} PRIVATE cxx_std_14)
-    target_link_libraries(${target} PRIVATE SoCute_CommonWarnings)
+    target_link_libraries(${target} PRIVATE SoCute_CommonWarnings SoCute_Linker)
 
     # account for options
     target_link_libraries(${target} PRIVATE $<$<BOOL:${SOCUTE_ENABLE_LIBCXX}>:SoCute_Libcxx>)
@@ -55,11 +54,12 @@ function(socute_set_properties target target_id)
     target_link_libraries(${target} PRIVATE $<$<BOOL:${SOCUTE_SANITIZE_ADDRESS}>:SoCute_AddressSanitizer>)
     target_link_libraries(${target} PRIVATE $<$<BOOL:${SOCUTE_SANITIZE_THREADS}>:SoCute_ThreadSanitizer>)
     target_link_libraries(${target} PRIVATE $<$<BOOL:${SOCUTE_SANITIZE_UNDEFINED}>:SoCute_UndefinedSanitizer>)
-    set_target_properties(${target} PROPERTIES INTERPROCEDURAL_OPTIMIZATION $<$<BOOL:SOCUTE_ENABLE_LTO>>)
+    if (SOCUTE_ENABLE_LTO)
+        set_target_properties(${target} PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON)
+    endif()
 
     socute_generate_metadata(${target} ${target_id})
 endfunction()
-
 
 # Function that creates a new library, the first argument must be the target alias,
 # i.e. something of the form "Namespace::LibName", which we will parse to extract
@@ -78,7 +78,10 @@ function(socute_add_library target_alias)
     add_library(${target_alias} ALIAS ${target})
 
     # export header
-    generate_export_header(${target} BASE_NAME ${target_base_id} EXPORT_FILE_NAME ${target}_export.h)
+    generate_export_header(${target}
+        BASE_NAME ${target_base_id}
+        EXPORT_FILE_NAME ${target}_export.h
+    )
     if (NOT BUILD_SHARED_LIBS)
         target_compile_definitions(${target} PRIVATE ${target_base_id}_STATIC_DEFINE)
     endif()
@@ -100,4 +103,3 @@ function(socute_add_executable target)
     # common properties
     socute_set_properties(${target} ${target_base_id})
 endfunction()
-
