@@ -1,10 +1,11 @@
+#include <QCoreApplication>
+#include <QTimer>
 #include "Foo.h"
 #include "Printer.h"
 #include "CMakeExampleApp_version.h"
 
-int main(int /*argc*/, char ** /*argv*/) {
+int main(int argc, char **argv) {
     Example::printInfo();
-
     Example::print("App Name: ", CMAKEEXAMPLEAPP_NAME);
 
     Example::Foo foo;
@@ -12,5 +13,7 @@ int main(int /*argc*/, char ** /*argv*/) {
 
     Example::print("calc(", a, ", ", b, ") = ", foo.calc(a, b));
 
-    return 0;
+    QCoreApplication app(argc, argv);
+    QTimer::singleShot(1000, [&]() { app.exit(); });
+    return app.exec();
 }

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <rapidjson/rapidjson.h>
 #include "Printer.h"
 #include "CMakeExampleLib_version.h"
 
@@ -9,7 +10,8 @@ void printInfo() {
         "CMakeExampleLib Info:\n",
         "\tName: ", CMAKEEXAMPLE_LIB_NAME, "\n",
         "\tVersion: ", CMAKEEXAMPLE_LIB_VERSION, "\n",
-        "\tRevision: ", CMAKEEXAMPLE_LIB_REVISION
+        "\tRevision: ", CMAKEEXAMPLE_LIB_REVISION, "\n",
+        "\tRapidJson: ", RAPIDJSON_VERSION_STRING
     );
 
     // volontary leak

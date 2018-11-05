@@ -9,7 +9,7 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 endif()
 
 # Set a variable with the path of the present module
-set(SOCUTE_CMAKE_MODULES_DIR ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "")
+set(SOCUTE_CMAKE_MODULES_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "")
 
 # Default build type
 if (NOT DEFINED CMAKE_BUILD_TYPE)
@@ -41,25 +41,7 @@ endif()
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
 
-# Compiler type
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(SOCUTE_COMPILER_CLANG ON)
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set(SOCUTE_COMPILER_GCC ON)
-endif()
-
-if (SOCUTE_COMPILER_CLANG OR SOCUTE_COMPILER_GCC)
-    set(SOCUTE_COMPILER_CLANG_OR_GCC ON)
-endif()
-
-# 32 or 64 bits
-if (CMAKE_CXX_SIZEOF_DATA_PTR EQUAL 8)
-    set(SOCUTE_X64 ON)
-    set(SOCUTE_X32 OFF)
-else()
-    set(SOCUTE_X64 OFF)
-    set(SOCUTE_X32 ON)
-endif()
-
+include(SoCuteSystemVars)
 include(SoCuteCompilerOptions)
 include(SoCuteHelperMacros)
+include(SocuteFindPackage)
