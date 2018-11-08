@@ -1,9 +1,9 @@
 #pragma once
-#include <CMakeExampleLib_export.h>
+#include "LibExport.h"
 
 namespace Example {
 
-class CMAKEEXAMPLE_LIB_EXPORT Foo {
+class SOCUTEEXAMPLE_LIB_EXPORT Foo {
 public:
     double calc(double a, double b);
 };

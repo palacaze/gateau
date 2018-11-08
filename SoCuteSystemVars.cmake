@@ -31,6 +31,7 @@ if (SOCUTE_SYSTEM_NAME MATCHES "linux")
             OUTPUT_VARIABLE SOCUTE_SYSTEM_FLAVOUR
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
+        string(TOLOWER "${SOCUTE_SYSTEM_FLAVOUR}" SOCUTE_SYSTEM_FLAVOUR)
         set(SOCUTE_SYSTEM_FLAVOUR ${SOCUTE_SYSTEM_FLAVOUR} CACHE INTERNAL "")
 
         execute_process(COMMAND ${LSB_RELEASE_EXEC} -rs
@@ -54,3 +55,41 @@ else()
     set(SOCUTE_X32 ON)
     set(SOCUTE_ARCH 32)
 endif()
+
+# Search for the root directory which will be used to install stuff for this
+# particular compiler/system/config triplet.
+# This path is composed of a SOCUTE_EXTERNAL_ROOT followed by the SYSTEM name/version,
+# the compiler name-version and the config.
+# SOCUTE_EXTERNAL_ROOT may be supplied to cmake at configure time, otherwise the
+# environment variable of the same name will be picked. At last the fallback will
+# be ${SOCUTE_BINARY_DIR}/external.
+function(socute_find_rootdir dir)
+    # Find the root directory
+    if (NOT DEFINED "${SOCUTE_EXTERNAL_ROOT}")
+        set(SOCUTE_EXTERNAL_ROOT "$ENV{SOCUTE_EXTERNAL_ROOT}")
+        if (NOT "${SOCUTE_EXTERNAL_ROOT}")
+            set(SOCUTE_EXTERNAL_ROOT "${CMAKE_BINARY_DIR}/external")
+        endif()
+    endif()
+
+    # Compose full path
+    set(sys "${SOCUTE_SYSTEM_FLAVOUR}-${SOCUTE_SYSTEM_VERSION}")
+    set(comp "${SOCUTE_COMPILER_NAME}-${SOCUTE_COMPILER_VERSION}")
+    set(datadir "${SOCUTE_EXTERNAL_ROOT}/${sys}/${comp}/${CMAKE_BUILD_TYPE}")
+
+    # Ensure we can actually use this directory
+    file(MAKE_DIRECTORY "${datadir}")
+    if (NOT IS_DIRECTORY "${datadir}")
+        message(FATAL_ERROR "Could not create directory ${datadir}")
+    endif()
+
+    set(${dir} "${datadir}" PARENT_SCOPE)
+endfunction()
+
+# A function that appends text to a CACHE variable
+function(socute_append_cached var str)
+    list(APPEND ${var} ${str})
+    list(REMOVE_DUPLICATES ${var})
+    set(${var} ${${var}} CACHE STRINGS "" FORCE)
+    mark_as_advanced(${var})
+endfunction()

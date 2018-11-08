@@ -2,8 +2,6 @@ set(RapidJSON_version "1.1.0")
 set(RapidJSON_url "https://github.com/Tencent/rapidjson/archive/v${RapidJSON_version}.tar.gz")
 set(RapidJSON_md5 "badd12c511e081fec6c89c43a7027bce")
 
-include(SoCuteExternalPackage)
-
 # RapidJSON cmake find module does not export targets in correctly, so we do
 # this ourselves
 macro(pkg_find)
@@ -18,6 +16,8 @@ macro(pkg_find)
 endmacro()
 
 macro(pkg_install)
+    include(SoCuteExternalPackage)
+
     socute_external_package(RapidJSON
         CMAKE_ARGS "-DRAPIDJSON_BUILD_DOC=OFF"
                    "-DRAPIDJSON_BUILD_EXAMPLES=OFF"

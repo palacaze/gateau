@@ -43,5 +43,6 @@ endif()
 
 include(SoCuteSystemVars)
 include(SoCuteCompilerOptions)
-include(SoCuteHelperMacros)
+include(SoCuteAddTarget)
 include(SocuteFindPackage)
+include(SoCuteInstallProject)

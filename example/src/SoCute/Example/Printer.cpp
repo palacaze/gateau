@@ -1,16 +1,16 @@
 #include <iostream>
 #include <rapidjson/rapidjson.h>
 #include "Printer.h"
-#include "CMakeExampleLib_version.h"
+#include "LibVersion.h"
 
 namespace Example {
 
 void printInfo() {
     print(
         "CMakeExampleLib Info:\n",
-        "\tName: ", CMAKEEXAMPLE_LIB_NAME, "\n",
-        "\tVersion: ", CMAKEEXAMPLE_LIB_VERSION, "\n",
-        "\tRevision: ", CMAKEEXAMPLE_LIB_REVISION, "\n",
+        "\tName: ", SOCUTEEXAMPLE_LIB_NAME, "\n",
+        "\tVersion: ", SOCUTEEXAMPLE_LIB_VERSION, "\n",
+        "\tRevision: ", SOCUTEEXAMPLE_LIB_REVISION, "\n",
         "\tRapidJson: ", RAPIDJSON_VERSION_STRING
     );
 

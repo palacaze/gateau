@@ -2,36 +2,6 @@
 
 include(SoCuteSystemVars)
 
-# Search for the root directory which will be used to install stuff for this
-# particular compiler/system/config triplet.
-# This path is composed of a SOCUTE_EXTERNAL_ROOT followed by the SYSTEM name/version,
-# the compiler name-version and the config.
-# SOCUTE_EXTERNAL_ROOT may be supplied to cmake at configure time, otherwise the
-# environment variable of the same name will be picked. At last the fallback will
-# be ${SOCUTE_BINARY_DIR}/external.
-function(socute_find_data_dir dir)
-    # Find the root directory
-    if (NOT DEFINED "${SOCUTE_EXTERNAL_ROOT}")
-        set(SOCUTE_EXTERNAL_ROOT "$ENV{SOCUTE_EXTERNAL_ROOT}")
-        if (NOT "${SOCUTE_EXTERNAL_ROOT}")
-            set(SOCUTE_EXTERNAL_ROOT "${CMAKE_BINARY_DIR}/external")
-        endif()
-    endif()
-
-    # Compose full path
-    set(sys "${SOCUTE_SYSTEM_FLAVOUR}-${SOCUTE_SYSTEM_VERSION}")
-    set(comp "${SOCUTE_COMPILER_NAME}-${SOCUTE_COMPILER_VERSION}")
-    set(datadir "${SOCUTE_EXTERNAL_ROOT}/${sys}/${comp}/${CMAKE_BUILD_TYPE}")
-
-    # Ensure we can actually use this directory
-    file(MAKE_DIRECTORY "${datadir}")
-    if (NOT IS_DIRECTORY "${datadir}")
-        message(FATAL_ERROR "Could not create directory ${datadir}")
-    endif()
-
-    set(${dir} "${datadir}" PARENT_SCOPE)
-endfunction()
-
 # List directories in ${dir} and them the CMAKE_PREFIX_PATH
 # Theses directories contain external packages installed in their own prefix dir.
 function(socute_append_prefix dir)
@@ -55,6 +25,28 @@ function(socute_append_prefix dir)
     endif()
 endfunction()
 
+# Declare a dependency known by socute cmake modules (in the packages dir)
+# This will be used later on to simplify installation and export of the package
+function(socute_declare_known_dependency name)
+    # record the package name for later in a cache variable
+    socute_append_cached(SOCUTE_PACKAGE_KNOWN_DEP ${name})
+
+    # record the command that was called to look for the package
+    # put a ||| separator in the command because the cache file can't handle newlines
+    list(JOIN ARGN " " args)
+    string(CONFIGURE "include(@name@)|||pkg_find(@args@)" cmd @ONLY)
+    socute_append_cached(SOCUTE_PACKAGE_KNOWN_DEP_CMD ${cmd})
+endfunction()
+
+# Declare a dependency unknown by socute cmake modules (in the packages dir)
+# This will be used later on to simplify installation and export of the package
+function(socute_declare_unknown_dependency)
+    # record the command that was called to look for the package
+    list(JOIN ARGN " " args)
+    string(CONFIGURE "find_package(@args@)" cmd @ONLY)
+    socute_append_cached(SOCUTE_PACKAGE_UNKNOWN_DEP_CMD ${cmd})
+endfunction()
+
 # Function that handles looking for packages and installing them in the right
 # place if missing. It uses specially crafted modules (in the packages directory)
 # containing directives that specify how to find and install said packages.
@@ -64,8 +56,8 @@ function(socute_find_package name)
     # It won't be installed if not found.
     cmake_parse_arguments(SFP "OPTIONAL" "" "" ${ARGN})
 
-    # prepare pathes
-    socute_find_data_dir(SOCUTE_EXTERNAL_DATA_DIR)
+    # Prepare pathes
+    socute_find_rootdir(SOCUTE_EXTERNAL_DATA_DIR)
     socute_append_prefix("${SOCUTE_EXTERNAL_DATA_DIR}")
     set(SOCUTE_EXTERNAL_DATA_DIR "${SOCUTE_EXTERNAL_DATA_DIR}" CACHE INTERNAL "")
 
@@ -82,12 +74,26 @@ function(socute_find_package name)
                 message(FATAL_ERROR "Installation of package '${name}' failed.")
             endif()
         endif()
+
+        # Register this package as a required dependency for software that will
+        # use our project
+        if (${${name}_FOUND})
+            socute_declare_known_dependency(${name} ${SFP_UNPARSED_ARGUMENTS})
+        endif()
     else()
-        # fallback to standard behaviour, this is not recommended
+        # Fallback to standard behaviour, this is not recommended
         message(WARNING "Unknown package '${name}'. Please consider adding a module for it.")
         if (NOT SFP_OPTIONAL)
             list(APPEND SPF_UNPARSED_ARGUMENTS "REQUIRED")
         endif()
+
+        # Look for this package as we naturally would
         find_package(${name} ${SFP_UNPARSED_ARGUMENTS})
+
+        # Register this package as a required dependency for software that will
+        # use our project
+        if (${${name}_FOUND})
+            socute_declare_unknown_dependency(${name} ${SFP_UNPARSED_ARGUMENTS})
+        endif()
     endif()
 endfunction()
