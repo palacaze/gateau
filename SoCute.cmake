@@ -41,6 +41,7 @@ endif()
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
 
+include(SoCuteHelpers)
 include(SoCuteSystemVars)
 include(SoCuteCompilerOptions)
 include(SoCuteAddTarget)

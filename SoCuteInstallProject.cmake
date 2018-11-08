@@ -1,5 +1,6 @@
 # This module declares function that considerably simplify project installation
 
+include(SoCuteHelpers)
 include(SoCuteSystemVars)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -83,11 +84,8 @@ function(socute_install_project)
     )
 
     # copy the modules we used to find dependencies, they will be reused
-    foreach(mod ${SOCUTE_PACKAGE_KNOWN_DEP})
-        install(
-            FILES "${SOCUTE_CMAKE_MODULES_DIR}/packages/${mod}.cmake"
-            DESTINATION ${cmake_dir}
-        )
+    foreach(mod ${SOCUTE_PACKAGE_KNOWN_DEP_MODULE})
+        install(FILES "${mod}" DESTINATION ${cmake_dir})
     endforeach()
 
     # Create the Config file

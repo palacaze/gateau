@@ -1,0 +1,20 @@
+# A function that appends text to a CACHE variable
+function(socute_append_cached var str)
+    list(APPEND ${var} ${str})
+    list(REMOVE_DUPLICATES ${var})
+    set(${var} ${${var}} CACHE STRINGS "" FORCE)
+    mark_as_advanced(${var})
+endfunction()
+
+function(socute_to_snakecase var out)
+    string(REGEX REPLACE "([A-Z])" "_\\1" txt "${var}")
+    string(TOLOWER "${txt}" txt)
+    string(SUBSTRING "${txt}" 1 -1 txt)
+    set(${out} "${txt}" PARENT_SCOPE)
+endfunction()
+
+function(socute_to_identifier var out)
+    socute_to_snakecase(${var} txt)
+    string(TOUPPER "${txt}" txt)
+    set(${out} "${txt}" PARENT_SCOPE)
+endfunction()

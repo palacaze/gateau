@@ -85,11 +85,3 @@ function(socute_find_rootdir dir)
 
     set(${dir} "${datadir}" PARENT_SCOPE)
 endfunction()
-
-# A function that appends text to a CACHE variable
-function(socute_append_cached var str)
-    list(APPEND ${var} ${str})
-    list(REMOVE_DUPLICATES ${var})
-    set(${var} ${${var}} CACHE STRINGS "" FORCE)
-    mark_as_advanced(${var})
-endfunction()

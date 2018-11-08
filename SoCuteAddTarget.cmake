@@ -17,6 +17,7 @@ option(SOCUTE_SANITIZE_UNDEFINED "Compile with undefined sanitizer support" OFF)
 
 include(CMakeParseArguments)
 include(GenerateExportHeader)
+include(SoCuteHelpers)
 
 # for vcs information
 find_package(Git)
@@ -73,6 +74,19 @@ function(socute_set_properties alias target target_id)
     socute_generate_metadata(${alias} ${target} ${target_id})
 endfunction()
 
+# create the prefix string that will be used to namespace C macros in generated headers
+function(socute_target_id_prefix alias out)
+    # Big hack, the SoCute namespace used to prefix our projects contains a
+    # mid-word capital letter, but SO_CUTE_PROJECT_LIB would be very ugly compared
+    # to SOCUTE_PROJECT_LIB, so we actually special case for this.
+    set(namespace ${PROJECT_NAME})
+    string(REPLACE "SoCute" "Socute" namespace ${namespace})
+    set(id "${namespace}${alias}")
+
+    socute_to_identifier(${id} id)
+    set(${out} ${id} PARENT_SCOPE)
+endfunction()
+
 # Function that creates a new library, the first argument must be the target alias,
 # i.e. something of the form "Namespace::LibName", which we will parse to extract
 # the Namespace and LibName components, proceed to create a NamespaceLibName library
@@ -81,8 +95,7 @@ function(socute_add_library lib)
     set(namespace ${PROJECT_NAME})
     set(target ${namespace}${lib})
     set(target_alias ${namespace}::${lib})
-    set(target_base_id "${namespace}_${lib}")
-    string(TOUPPER ${target_base_id} target_base_id)
+    socute_target_id_prefix(${lib} target_base_id)
 
     # create the library
     add_library(${target} ${ARGN})
@@ -115,8 +128,7 @@ function(socute_add_executable exe)
     set(namespace ${PROJECT_NAME})
     set(target ${namespace}${exe})
     set(target_alias ${namespace}::${exe})
-    set(target_base_id "${namespace}_${exe}")
-    string(TOUPPER ${target_base_id} target_base_id)
+    socute_target_id_prefix(${exe} target_base_id)
 
     # create the executable
     add_executable(${target} ${ARGN})
