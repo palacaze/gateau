@@ -50,6 +50,12 @@ function(socute_set_properties alias target target_id)
     set_target_properties(${target} PROPERTIES CXX_EXTENSIONS NO)
     target_compile_features(${target} PRIVATE cxx_std_14)
 
+    # add the src dir to the include directories
+    target_include_directories(${target} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+    )
+
     # account for options
     target_link_libraries(${target} PRIVATE
         $<$<BOOL:${SOCUTE_ENABLE_COMMON_WARNINGS}>:SoCute_CommonWarnings>
