@@ -18,7 +18,7 @@ function(socute_install_target alias)
     endif()
 
     # rpath
-    socute_append_cached(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+    socute_append_cached(CMAKE_INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
     message(STATUS "Setting install RPath to ${CMAKE_INSTALL_RPATH}")
 
     set(namespace ${PROJECT_NAME})
