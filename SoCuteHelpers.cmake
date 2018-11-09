@@ -58,7 +58,9 @@ function(socute_target_id_prefix mod out)
     # because it may be very ugly otherwise (wink at SoCute and its mid-word capital C).
     set(namespace ${SOCUTE_ORGANIZATION})
     string(TOLOWER "${namespace}" namespace)
-    set(id "${namespace}${SOCUTE_PACKAGE}${mod}")
+
+    socute_target_short_name(${mod} short)
+    set(id "${namespace}${short}")
 
     socute_to_identifier(${id} id)
     set(${out} ${id} PARENT_SCOPE)
