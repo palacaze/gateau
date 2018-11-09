@@ -57,7 +57,7 @@ function(socute_find_package name)
     set(SOCUTE_EXTERNAL_DATA_DIR "${SOCUTE_EXTERNAL_DATA_DIR}" CACHE INTERNAL "")
 
     # Look for the appropriate package module in the "packages" directory
-    # If no module is present but the package is obviously part of the SoCute
+    # If no package module is present but a package is obviously part of the SoCute
     # software collection, we generate a new module for it.
     set(module_path "${SOCUTE_CMAKE_MODULES_DIR}/packages/${name}.cmake")
     if (NOT EXISTS "${module_path}" AND ${name} MATCHES "^SoCute")
@@ -79,7 +79,7 @@ function(socute_find_package name)
 
         # not found, we will try to install it and search again
         if (NOT ${name}_FOUND AND NOT SFP_OPTIONAL)
-            # install missing dependency and update pathes
+            # install missing dependency and update pathes
             pkg_install()
             socute_update_prefix_path("${SOCUTE_EXTERNAL_DATA_DIR}")
 

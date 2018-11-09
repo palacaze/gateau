@@ -74,27 +74,14 @@ function(socute_set_properties alias target target_id)
     socute_generate_metadata(${alias} ${target} ${target_id})
 endfunction()
 
-# create the prefix string that will be used to namespace C macros in generated headers
-function(socute_target_id_prefix alias out)
-    # Big hack, the SoCute namespace used to prefix our projects contains a
-    # mid-word capital letter, but SO_CUTE_PROJECT_LIB would be very ugly compared
-    # to SOCUTE_PROJECT_LIB, so we actually special case for this.
-    set(namespace ${PROJECT_NAME})
-    string(REPLACE "SoCute" "Socute" namespace ${namespace})
-    set(id "${namespace}${alias}")
-
-    socute_to_identifier(${id} id)
-    set(${out} ${id} PARENT_SCOPE)
-endfunction()
-
-# Function that creates a new library, the first argument must be the target alias,
-# i.e. something of the form "Namespace::LibName", which we will parse to extract
-# the Namespace and LibName components, proceed to create a NamespaceLibName library
-# and a Namespace::LibName alias. the Namespace will also be use for export/install.
+# Function that creates a new library, the first argument must be either an module
+# name for multi libraries projects, or exactly the package name if there is only
+# one library to be built. That way for multi libraries, the library will be
+# called OrgaPackageMod and aliased to Orga::PackageMod, and for single library
+# projects it will be called OrgaPackage and aliasd to Orga::Package
 function(socute_add_library lib)
-    set(namespace ${PROJECT_NAME})
-    set(target ${namespace}${lib})
-    set(target_alias ${namespace}::${lib})
+    socute_target_full_name(${lib} target)
+    socute_target_alias_name(${lib} target_alias)
     socute_target_id_prefix(${lib} target_base_id)
 
     # create the library
@@ -120,21 +107,18 @@ function(socute_add_library lib)
     socute_set_properties(${lib} ${target} ${target_base_id})
 endfunction()
 
-# Function that creates a new library, the first argument must be the target alias,
-# i.e. something of the form "Namespace::LibName", which we will parse to extract
-# the Namespace and LibName components, proceed to create a NamespaceLibName library
-# and a Namespace::LibName alias. the Namespace will also be use for export/install.
+# Function that creates a new library, the first argument must the name short
+# executalbe name, which will be appended to the package name to form the full
+# target name.
 function(socute_add_executable exe)
-    set(namespace ${PROJECT_NAME})
-    set(target ${namespace}${exe})
-    set(target_alias ${namespace}::${exe})
+    socute_target_full_name(${exe} target)
+    socute_target_alias_name(${exe} target_alias)
     socute_target_id_prefix(${exe} target_base_id)
 
     # create the executable
     add_executable(${target} ${ARGN})
 
     set_target_properties(${target} PROPERTIES
-        VERSION ${PROJECT_VERSION}
         EXPORT_NAME ${exe}
     )
 

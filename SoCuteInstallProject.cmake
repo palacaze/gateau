@@ -19,10 +19,8 @@ function(socute_install_target alias)
 
     # rpath
     socute_append_cached(CMAKE_INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
-    message(STATUS "Setting install RPath to ${CMAKE_INSTALL_RPATH}")
 
-    set(namespace ${PROJECT_NAME})
-    set(target ${namespace}${alias})
+    socute_target_full_name(${alias} target)
     set(targets_name "${PROJECT_NAME}Targets")
 
     # for libraries, we must install headers and declare a component
@@ -70,7 +68,7 @@ endfunction()
 # install things
 function(socute_install_project)
     set(targets ${SOCUTE_PACKAGE_KNOWN_TARGETS})
-    set(namespace ${PROJECT_NAME})
+    set(namespace ${SOCUTE_ORGANIZATION})
     set(targets_name "${PROJECT_NAME}Targets")
     set(targets_file "${targets_name}.cmake")
     set(config_file  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake")
@@ -81,7 +79,7 @@ function(socute_install_project)
     install(
         EXPORT ${targets_name}
         FILE ${targets_file}
-        NAMESPACE ${PROJECT_NAME}::
+        NAMESPACE ${namespace}::
         DESTINATION ${cmake_dir}
         COMPONENT ${PROJECT_NAME}Export
     )
@@ -121,7 +119,7 @@ function(socute_install_project)
     # create the export-set file for our targets
     export(
         TARGETS ${full_targets}
-        NAMESPACE ${PROJECT_NAME}::
+        NAMESPACE ${namespace}::
         FILE ${targets_file}
     )
 
