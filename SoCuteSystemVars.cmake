@@ -67,7 +67,7 @@ function(socute_find_rootdir dir)
     # Find the root directory
     if (NOT DEFINED "${SOCUTE_EXTERNAL_ROOT}")
         set(SOCUTE_EXTERNAL_ROOT "$ENV{SOCUTE_EXTERNAL_ROOT}")
-        if (NOT "${SOCUTE_EXTERNAL_ROOT}")
+        if ("${SOCUTE_EXTERNAL_ROOT}" STREQUAL "")
             set(SOCUTE_EXTERNAL_ROOT "${CMAKE_BINARY_DIR}/external")
         endif()
     endif()
