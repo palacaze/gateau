@@ -9,6 +9,18 @@ include(CMakePackageConfigHelpers)
 # It basically declares the target as installable and also installed headers
 # for library targets
 function(socute_install_target alias)
+    # Set default install location if not already set
+    if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        # Find out where to install stuff
+        socute_find_rootdir(rootdir)
+        set(CMAKE_INSTALL_PREFIX "${rootdir}/${PROJECT_NAME}/prefix" CACHE PATH
+            "Install path prefix, prepended onto install directories." FORCE)
+    endif()
+
+    # rpath
+    socute_append_cached(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+    message(STATUS "Setting install RPath to ${CMAKE_INSTALL_RPATH}")
+
     set(namespace ${PROJECT_NAME})
     set(target ${namespace}${alias})
     set(targets_name "${PROJECT_NAME}Targets")
@@ -59,15 +71,6 @@ endfunction()
 function(socute_install_project)
     set(targets ${SOCUTE_PACKAGE_KNOWN_TARGETS})
     set(namespace ${PROJECT_NAME})
-
-    # Set default install location if not already set
-    if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        # Find out where to install stuff
-        socute_find_rootdir(rootdir)
-        set(CMAKE_INSTALL_PREFIX "${rootdir}/${PROJECT_NAME}/prefix" CACHE PATH
-            "Install path prefix, prepended onto install directories." FORCE)
-    endif()
-
     set(targets_name "${PROJECT_NAME}Targets")
     set(targets_file "${targets_name}.cmake")
     set(config_file  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake")
