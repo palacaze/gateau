@@ -1,7 +1,9 @@
 # A function that appends text to a CACHE variable
 function(socute_append_cached var str)
     list(APPEND ${var} ${str})
-    list(REMOVE_DUPLICATES ${var})
+    if (${var})
+        list(REMOVE_DUPLICATES ${var})
+    endif()
     set(${var} ${${var}} CACHE STRINGS "" FORCE)
     mark_as_advanced(${var})
 endfunction()

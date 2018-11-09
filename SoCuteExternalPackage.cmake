@@ -37,8 +37,12 @@ function(socute_external_package dep)
     set(options IN_SOURCE NO_EXTRACT NO_CONFIGURE NO_BUILD NO_INSTALL)
     cmake_parse_arguments(SEP "${options}" "" "" ${ARGN})
 
-    # we need to import the module to get the appropriate variables
+    # we need to import the module to get the appropriate variablese 2 places are possible
     set(module_path "${SOCUTE_CMAKE_MODULES_DIR}/packages/${dep}.cmake")
+    if (NOT EXISTS "${module_path}")
+        set(module_path "${CMAKE_BINARY_DIR}/gen-modules/${dep}.cmake")
+    endif()
+
     if (EXISTS "${module_path}")
         include("${module_path}")
     else()

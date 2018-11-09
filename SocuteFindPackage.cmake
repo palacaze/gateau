@@ -5,25 +5,19 @@ include(SoCuteSystemVars)
 
 # List directories in ${dir} and them the CMAKE_PREFIX_PATH
 # Theses directories contain external packages installed in their own prefix dir.
-function(socute_append_prefix dir)
+function(socute_update_prefix_path dir)
     # Find packages directories
-    file(GLOB package_prefixes LIST_DIRECTORIES true *)
+    file(GLOB package_prefixes LIST_DIRECTORIES true "${dir}*")
+
     foreach(prefix ${package_prefixes})
         if (IS_DIRECTORY "${prefix}")
-            list(APPEND CMAKE_PREFIX_PATH "${prefix}/prefix")
+            socute_append_cached(CMAKE_PREFIX_PATH "${prefix}/prefix")
 
             # Search paths are restricted in the toolchain files in cross-compile mode,
             # however our prefix directories are safe to use so we allow to use it from find_*
-            list(APPEND CMAKE_FIND_ROOT_PATH "${prefix}/prefix")
+            socute_append_cached(APPEND CMAKE_FIND_ROOT_PATH "${prefix}/prefix")
         endif()
     endforeach()
-
-    if (CMAKE_PREFIX_PATH)
-        list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
-    endif()
-    if (CMAKE_FIND_ROOT_PATH)
-        list(REMOVE_DUPLICATES CMAKE_FIND_ROOT_PATH)
-    endif()
 endfunction()
 
 # Declare a dependency known by socute cmake modules (in the packages dir)
@@ -59,7 +53,7 @@ function(socute_find_package name)
 
     # Prepare pathes
     socute_find_rootdir(SOCUTE_EXTERNAL_DATA_DIR)
-    socute_append_prefix("${SOCUTE_EXTERNAL_DATA_DIR}")
+    socute_update_prefix_path("${SOCUTE_EXTERNAL_DATA_DIR}")
     set(SOCUTE_EXTERNAL_DATA_DIR "${SOCUTE_EXTERNAL_DATA_DIR}" CACHE INTERNAL "")
 
     # Look for the appropriate package module in the "packages" directory
@@ -71,10 +65,9 @@ function(socute_find_package name)
         string(REPLACE "SoCute" "" SOCUTE_PACKAGE_REPO_NAME "${name}")
         socute_to_snakecase(${SOCUTE_PACKAGE_REPO_NAME} SOCUTE_PACKAGE_REPO_NAME)
         string(REPLACE "_" "-" SOCUTE_PACKAGE_REPO_NAME "${SOCUTE_PACKAGE_REPO_NAME}")
-        message("VAR: ${SOCUTE_PACKAGE_REPO_NAME}")
 
         # generate module
-        set(module_path "${CMAKE_BINARY_DIR_DIR}/modules/${name}.cmake")
+        set(module_path "${CMAKE_BINARY_DIR}/gen-modules/${name}.cmake")
         set(SOCUTE_PACKAGE_MODULE_NAME ${name})
         configure_file("${SOCUTE_CMAKE_MODULES_DIR}/templates/SoCutePackage.cmake.in"
                        "${module_path}" @ONLY)
@@ -84,8 +77,13 @@ function(socute_find_package name)
         include("${module_path}")
         pkg_find(${SFP_UNPARSED_ARGUMENTS})
 
+        # not found, we will try to install it and search again
         if (NOT ${name}_FOUND AND NOT SFP_OPTIONAL)
+            # install missing dependency and update pathes
             pkg_install()
+            socute_update_prefix_path("${SOCUTE_EXTERNAL_DATA_DIR}")
+
+            # search again
             pkg_find(${SFP_UNPARSED_ARGUMENTS})
             if (NOT ${${name}_FOUND})
                 message(FATAL_ERROR "Installation of package '${name}' failed.")
