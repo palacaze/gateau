@@ -5,16 +5,16 @@ include(ExternalProject)
 # Create the tree of directories needed to install a package
 # - prefix      // where stuff will be installed
 # - work        // work dir
-#   - download  // archive download
 #   - build     // build dir
-#   - src       // source dir
 #   - ext/build // dir where we execute a cmake file with ExternalProject_Add
+# ../../../download  // archive download, shared
+# ../../../src       // source dir, shared
 function(socute_prepare_prefix root_dir)
     set (_dirs
         "prefix"
-        "work/download"
+        "../../../download"
+        "../../../src"
         "work/build"
-        "work/src"
         "work/stamp"
         "work/tmp"
         "work/ext/build")
