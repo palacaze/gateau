@@ -85,3 +85,8 @@ function(socute_find_rootdir dir)
 
     set(${dir} "${datadir}" PARENT_SCOPE)
 endfunction()
+
+# where we put generated files
+function(socute_generated_dir out)
+    set(${out} "${CMAKE_BINARY_DIR}/src/${SOCUTE_ORGANIZATION}/${SOCUTE_PACKAGE}}" PARENT_SCOPE)
+endfunction()

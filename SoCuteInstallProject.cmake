@@ -51,7 +51,7 @@ function(socute_install_target alias)
         # Get the list of headers of the target, those will be installed
         install(
             DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
-            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}${headers_relpath}"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${headers_relpath}"
             COMPONENT ${alias}
             FILES_MATCHING REGEX ".+\\.h?(h|pp)$"
         )

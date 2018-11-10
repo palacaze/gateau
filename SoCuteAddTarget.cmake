@@ -24,8 +24,6 @@ find_package(Git)
 
 # Macro that creates a header with metadata information
 macro(socute_generate_metadata alias target target_id)
-    target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
     set(SOCUTE_BASE_NAME ${target_id})
     set(SOCUTE_TARGET_NAME ${target})
     set(SOCUTE_PROJECT_REVISION unknown)
@@ -39,8 +37,9 @@ macro(socute_generate_metadata alias target target_id)
         )
     endif()
 
+    socute_generated_dir(gendir)
     configure_file("${SOCUTE_CMAKE_MODULES_DIR}/templates/version.h.in"
-                   "${alias}Version.h" @ONLY)
+                   "${gendir}/${alias}Version.h" @ONLY)
 endmacro()
 
 # Function that sets common properties to lib or exec targets
@@ -53,7 +52,7 @@ function(socute_set_properties alias target target_id)
     # add the src dir to the include directories
     target_include_directories(${target} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
     )
 
     # account for options
@@ -101,9 +100,10 @@ function(socute_add_library lib)
     )
 
     # export header
+    socute_generated_dir(gendir)
     generate_export_header(${target}
         BASE_NAME ${target_base_id}
-        EXPORT_FILE_NAME ${lib}Export.h
+        EXPORT_FILE_NAME ${gendir}/${lib}Export.h
     )
     if (NOT BUILD_SHARED_LIBS)
         target_compile_definitions(${target} PRIVATE ${target_base_id}_STATIC_DEFINE)
