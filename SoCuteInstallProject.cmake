@@ -46,16 +46,21 @@ function(socute_install_target alias)
 
         # Headers will be installed relative to the "src" directory, we calculate
         # the relative path name to append to the install prefix.
-        file(RELATIVE_PATH headers_relpath "${CMAKE_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}" )
+        file(RELATIVE_PATH headers_relpath "${CMAKE_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/")
 
         # Get the list of headers of the target, those will be installed
-        get_target_property(headers ${target} SOURCES)
-        list(FILTER headers INCLUDE REGEX ".+\\.h?(h|pp)$")
+        install(
+            DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}${headers_relpath}"
+            COMPONENT ${alias}
+            FILES_MATCHING REGEX ".+\\.h?(h|pp)$"
+        )
+
         install(
             FILES ${headers}
                   "${CMAKE_CURRENT_BINARY_DIR}/${alias}Export.h"
                   "${CMAKE_CURRENT_BINARY_DIR}/${alias}Version.h"
-            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${headers_relpath}"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${SOCUTE_ORGANIZATION}/${SOCUTE_PACKAGE}"
             COMPONENT ${alias}
         )
     endif()
