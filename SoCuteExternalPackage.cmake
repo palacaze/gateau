@@ -37,6 +37,14 @@ function(socute_external_package dep)
     set(options IN_SOURCE NO_EXTRACT NO_CONFIGURE NO_BUILD NO_INSTALL)
     cmake_parse_arguments(SEP "${options}" "" "" ${ARGN})
 
+    # TODO: make it generic
+    # big hack for SoCute packages
+    if (${name} MATCHES "^SoCute")
+        set(install_prefix "${SOCUTE_EXTERNAL_DATA_DIR}/SoCute")
+    else()
+        set(install_prefix "${SOCUTE_EXTERNAL_DATA_DIR}/${dep}")
+    endif()
+
     # we need to import the module to get the appropriate variablese 2 places are possible
     set(module_path "${SOCUTE_CMAKE_MODULES_DIR}/packages/${dep}.cmake")
     if (NOT EXISTS "${module_path}")
@@ -59,9 +67,9 @@ function(socute_external_package dep)
     # required. The safe bet is to reinstall it from scratch. For git archives,
     # the provided git tag will be used and the install will be reissued no matter
     # what (the prefix content will be deleted beforehand.
-    set(work_dir "${SOCUTE_EXTERNAL_DATA_DIR}/${dep}/work")
-    set(prefix_dir "${SOCUTE_EXTERNAL_DATA_DIR}/${dep}/prefix")
-    set(version_file "${SOCUTE_EXTERNAL_DATA_DIR}/${dep}/.version")
+    set(work_dir "${install_prefix}/work")
+    set(prefix_dir "${install_prefix}/prefix")
+    set(version_file "${install_prefix}/.version")
 
     # Get current version number, if it exists
     if (EXISTS "${version_file}")
@@ -79,7 +87,7 @@ function(socute_external_package dep)
     message(STATUS "Dependency ${dep} will be built in ${prefix_dir}")
 
     # ensure the needed working directories exist
-    socute_prepare_prefix("${SOCUTE_EXTERNAL_DATA_DIR}/${dep}")
+    socute_prepare_prefix(${install_prefix})
 
     # some cmake "cached" arguments that we wish to pass to ExternalProject_Add
     set(cache_args
