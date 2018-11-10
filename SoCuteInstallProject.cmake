@@ -13,7 +13,7 @@ function(socute_install_target alias)
     if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         # Find out where to install stuff
         socute_find_rootdir(rootdir)
-        set(CMAKE_INSTALL_PREFIX "${rootdir}/${SOCUTE_ORGANIZATION}/prefix" CACHE PATH
+        set(CMAKE_INSTALL_PREFIX "${rootdir}/${PROJECT_NAME}/prefix" CACHE PATH
             "Install path prefix, prepended onto install directories." FORCE)
     endif()
 
