@@ -109,8 +109,8 @@ function(socute_external_package dep)
         PREFIX "${work_dir}"
         STAMP_DIR "${work_dir}/stamp"
         TMP_DIR "${work_dir}/tmp"
-        DOWNLOAD_DIR "${work_dir}/download"
-        SOURCE_DIR "${work_dir}/src"
+        DOWNLOAD_DIR "${install_prefix}/../../../download"
+        SOURCE_DIR "${install_prefix}/../../../src"
         INSTALL_DIR "${prefix_dir}"
         CMAKE_CACHE_ARGS ${cache_args}
     )
