@@ -118,6 +118,7 @@ function(socute_external_package dep)
     # Archive package
     if (DEFINED ${dep}_url)
         list(APPEND project_vars URL ${${dep}_url})
+         message(STATUS "${dep} will download file ${${dep}_url}")
     endif()
 
     if (DEFINED ${dep}_md5)
@@ -129,6 +130,8 @@ function(socute_external_package dep)
         list(APPEND project_vars GIT_REPOSITORY ${${dep}_git})
         list(APPEND project_vars GIT_SHALLOW 1)
         list(APPEND project_vars GIT_TAG ${${dep}_version})
+
+        message(STATUS "${dep} will clone repo ${${dep}_git}")
     endif()
 
     if (SEP_IN_SOURCE)
