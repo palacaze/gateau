@@ -56,10 +56,11 @@ function(socute_install_target alias)
             FILES_MATCHING REGEX ".+\\.h?(h|pp)$"
         )
 
+        socute_generated_dir(gendir)
         install(
             FILES ${headers}
-                  "${CMAKE_CURRENT_BINARY_DIR}/${alias}Export.h"
-                  "${CMAKE_CURRENT_BINARY_DIR}/${alias}Version.h"
+                  "${gendir}/${alias}Export.h"
+                  "${gendir}/${alias}Version.h"
             DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${SOCUTE_ORGANIZATION}/${SOCUTE_PACKAGE}"
             COMPONENT ${alias}
         )
