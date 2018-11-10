@@ -109,8 +109,8 @@ function(socute_external_package dep)
         PREFIX "${work_dir}"
         STAMP_DIR "${work_dir}/stamp"
         TMP_DIR "${work_dir}/tmp"
-        DOWNLOAD_DIR "${install_prefix}/../../../download"
-        SOURCE_DIR "${install_prefix}/../../../src"
+        DOWNLOAD_DIR "${install_prefix}/../../../download/${dep}"
+        SOURCE_DIR "${install_prefix}/../../../src/${dep}"
         INSTALL_DIR "${prefix_dir}"
         CMAKE_CACHE_ARGS ${cache_args}
     )
@@ -134,7 +134,7 @@ function(socute_external_package dep)
     if (SEP_IN_SOURCE)
         list(APPEND project_vars BUILD_IN_SOURCE 1)
     else()
-        list(APPEND project_vars BINARY_DIR "${work_dir}/build")
+        list(APPEND project_vars BINARY_DIR "${work_dir}/build/${dep}")
     endif()
 
     if (SEP_NO_EXTRACT)
