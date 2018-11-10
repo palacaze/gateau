@@ -1,10 +1,11 @@
-# A wrapper over project() that declares the current project with two additional
-# mandatory properties ORGANIZATION and PACKAGE, which populate the two cache
-# variables SOCUTE_ORGANIZATION and SOCUTE_PACKAGE which allow more finegrained
-# target name handling.
+# A wrapper over project() that declares the current project with the additional
+# mandatory property ORGANIZATION, which populates the cache variable
+# SOCUTE_ORGANIZATION. The name passed as first argument will be assigned to the
+# SOCUTE_PACKAGE variable, and the full project name is the concatenation of
+# the twe. This allows more finegrained target name handling.
 # We also enforce filling every piece of information
 macro(socute_project name)
-    set(opts VERSION DESCRIPTION HOMEPAGE_URL ORGANIZATION PACKAGE)
+    set(opts VERSION DESCRIPTION HOMEPAGE_URL ORGANIZATION)
     cmake_parse_arguments(SP "" "${opts}" "" ${ARGN})
 
     foreach(arg ${opts})
@@ -14,9 +15,9 @@ macro(socute_project name)
     endforeach()
 
     set(SOCUTE_ORGANIZATION "${SP_ORGANIZATION}" CACHE INTERNAL "")
-    set(SOCUTE_PACKAGE "${SP_PACKAGE}" CACHE INTERNAL "")
+    set(SOCUTE_PACKAGE "${name}" CACHE INTERNAL "")
 
-    project(${name}
+    project(${SOCUTE_ORGANIZATION}${SOCUTE_PACKAGE}
             VERSION ${SP_VERSION}
             DESCRIPTION "${SP_DESCRIPTION}"
             HOMEPAGE_URL "${SP_HOMEPAGE_URL}"
