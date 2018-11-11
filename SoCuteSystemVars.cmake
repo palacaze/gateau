@@ -72,10 +72,16 @@ function(socute_find_rootdir dir)
         endif()
     endif()
 
+    # default build type folder name
+    set(build_type_folder ${CMAKE_BUILD_TYPE})
+    if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+        set(build_type_folder Defaut)
+    endif()
+
     # Compose full path
     set(sys "${SOCUTE_SYSTEM_FLAVOUR}-${SOCUTE_SYSTEM_VERSION}")
     set(comp "${SOCUTE_COMPILER_NAME}-${SOCUTE_COMPILER_VERSION}")
-    set(datadir "${SOCUTE_EXTERNAL_ROOT}/${sys}/${comp}/${CMAKE_BUILD_TYPE}")
+    set(datadir "${SOCUTE_EXTERNAL_ROOT}/${sys}/${comp}/${build_type_folder}")
 
     # Ensure we can actually use this directory
     file(MAKE_DIRECTORY "${datadir}")
