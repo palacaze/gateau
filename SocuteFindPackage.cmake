@@ -3,11 +3,11 @@
 include(SoCuteHelpers)
 include(SoCuteSystemVars)
 
-# List directories in ${dir} and them the CMAKE_PREFIX_PATH
+# List directories in ${dir} and append them into CMAKE_PREFIX_PATH
 # Theses directories contain external packages installed in their own prefix dir.
 function(socute_update_prefix_path dir)
     # Find packages directories
-    file(GLOB package_prefixes LIST_DIRECTORIES true "${dir}*")
+    file(GLOB package_prefixes LIST_DIRECTORIES true "${dir}/*")
 
     foreach(prefix ${package_prefixes})
         if (IS_DIRECTORY "${prefix}")
