@@ -95,6 +95,8 @@ function(socute_external_package dep)
         "-DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}"
         "-DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}"
         "-DCMAKE_INSTALL_PREFIX:PATH=${prefix_dir}"
+        "-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY=ON"
+        "-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY=ON"
     )
 
     # pass compiler or toolchain file

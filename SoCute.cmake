@@ -49,6 +49,11 @@ if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
 endif()
 
+# disable the package registry, which could mislead cmake into looking for packages
+# in unexpected derectories
+set(CMAKE_EXPORT_NO_PACKAGE_REGISTRY ON)
+set(CMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY ON)
+
 include(SoCuteHelpers)
 include(SoCuteSystemVars)
 include(SoCuteCompilerOptions)
