@@ -12,8 +12,8 @@ endif()
 set(SOCUTE_CMAKE_MODULES_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "")
 
 # Default build type
-if (NOT DEFINED CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
 endif()
 
 # Satic or Shared libraries
