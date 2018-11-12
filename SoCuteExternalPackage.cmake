@@ -7,13 +7,13 @@ include(ExternalProject)
 # - work        // work dir
 #   - build     // build dir
 #   - ext/build // dir where we execute a cmake file with ExternalProject_Add
-# ../../../../download  // archive download, shared
-# ../../../../src       // source dir, shared
+# ${SOCUTE_EXTERNAL_ROOT}/download  // archive download, shared
+# "{SOCUTE_EXTERNAL_ROOT}/src       // source dir, shared
 function(socute_prepare_prefix root_dir)
     set (_dirs
         "prefix"
-        "../../../../download"
-        "../../../../src"
+        "${SOCUTE_EXTERNAL_ROOT}/download"
+        "${SOCUTE_EXTERNAL_ROOT}/src"
         "work/build"
         "work/stamp"
         "work/tmp"
@@ -109,8 +109,8 @@ function(socute_external_package dep)
         PREFIX "${work_dir}"
         STAMP_DIR "${work_dir}/stamp"
         TMP_DIR "${work_dir}/tmp"
-        DOWNLOAD_DIR "${install_prefix}/../../../../download/${dep}"
-        SOURCE_DIR "${install_prefix}/../../../../src/${dep}"
+        DOWNLOAD_DIR "${SOCUTE_EXTERNAL_ROOT}/download/${dep}"
+        SOURCE_DIR "${SOCUTE_EXTERNAL_ROOT}/src/${dep}"
         INSTALL_DIR "${prefix_dir}"
         CMAKE_CACHE_ARGS ${cache_args}
     )
