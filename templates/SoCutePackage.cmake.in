@@ -15,7 +15,7 @@ macro(pkg_install)
     socute_external_package(@SOCUTE_PACKAGE_MODULE_NAME@
         CMAKE_ARGS
             "-DBUILD_TESTS=OFF"
-            "-DBUILD_EXEMPLES=OFF"
+            "-DBUILD_EXAMPLES=OFF"
             "-DBUILD_DOC=OFF"
     )
 endmacro()
