@@ -9,21 +9,20 @@ include(ExternalProject)
 #   - ext/build // dir where we execute a cmake file with ExternalProject_Add
 # ${SOCUTE_EXTERNAL_ROOT}/download  // archive download, shared
 # "{SOCUTE_EXTERNAL_ROOT}/src       // source dir, shared
-function(socute_prepare_prefix root_dir)
+function(socute_prepare_prefix ext_root root_dir)
     set (_dirs
-        "prefix"
-        "${SOCUTE_EXTERNAL_ROOT}/download"
-        "${SOCUTE_EXTERNAL_ROOT}/src"
-        "work/build"
-        "work/stamp"
-        "work/tmp"
-        "work/ext/build")
+        "${root_dir}/prefix"
+        "${external_root}/download"
+        "${external_root}/src"
+        "${root_dir}/work/build"
+        "${root_dir}/work/stamp"
+        "${root_dir}/work/tmp"
+        "${root_dir}/work/ext/build")
 
     foreach(dir ${_dirs})
-        set(p "${root_dir}/${dir}")
-        file(MAKE_DIRECTORY "${p}")
-        if (NOT EXISTS "${p}")
-            message(FATAL_ERROR "could not find or make directory ${p}")
+        file(MAKE_DIRECTORY "${dir}")
+        if (NOT EXISTS "${dir}")
+            message(FATAL_ERROR "could not find or make directory ${dir}")
         endif()
     endforeach()
 endfunction()
@@ -37,13 +36,11 @@ function(socute_external_package dep)
     set(options IN_SOURCE NO_EXTRACT NO_CONFIGURE NO_BUILD NO_INSTALL)
     cmake_parse_arguments(SEP "${options}" "" "" ${ARGN})
 
-#    # TODO: make it generic
-#    # big hack for SoCute packages
-#    if (${name} MATCHES "^SoCute")
-#        set(install_prefix "${SOCUTE_EXTERNAL_DATA_DIR}/SoCute")
-#    else()
-        set(install_prefix "${SOCUTE_EXTERNAL_DATA_DIR}/${dep}")
-#    endif()
+    socute_get_external_root(external_root)
+    socute_get_install_root(install_root)
+
+    # where stuff will really be installed: per package dir
+    set(install_prefix "${install_root}/${dep}")
 
     # we need to import the module to get the appropriate variablese 2 places are possible
     set(module_path "${SOCUTE_CMAKE_MODULES_DIR}/packages/${dep}.cmake")
@@ -87,7 +84,7 @@ function(socute_external_package dep)
     message(STATUS "Dependency ${dep} will be built in ${prefix_dir}")
 
     # ensure the needed working directories exist
-    socute_prepare_prefix(${install_prefix})
+    socute_prepare_prefix("${external_root}" "${install_prefix}")
 
     # some cmake "cached" arguments that we wish to pass to ExternalProject_Add
     set(cache_args
@@ -95,8 +92,8 @@ function(socute_external_package dep)
         "-DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}"
         "-DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}"
         "-DCMAKE_INSTALL_PREFIX:PATH=${prefix_dir}"
-        "-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY=ON"
-        "-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY=ON"
+        "-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY:BOOL=ON"
+        "-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY:BOOL=ON"
     )
 
     # pass compiler or toolchain file
@@ -111,8 +108,8 @@ function(socute_external_package dep)
         PREFIX "${work_dir}"
         STAMP_DIR "${work_dir}/stamp"
         TMP_DIR "${work_dir}/tmp"
-        DOWNLOAD_DIR "${SOCUTE_EXTERNAL_ROOT}/download/${dep}"
-        SOURCE_DIR "${SOCUTE_EXTERNAL_ROOT}/src/${dep}"
+        DOWNLOAD_DIR "${external_root}/download/${dep}"
+        SOURCE_DIR "${external_root}/src/${dep}"
         INSTALL_DIR "${prefix_dir}"
         CMAKE_CACHE_ARGS ${cache_args}
     )

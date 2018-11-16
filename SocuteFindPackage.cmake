@@ -52,9 +52,8 @@ function(socute_find_package name)
     cmake_parse_arguments(SFP "OPTIONAL" "" "" ${ARGN})
 
     # Prepare pathes
-    socute_find_rootdir(SOCUTE_EXTERNAL_DATA_DIR)
-    socute_update_prefix_path("${SOCUTE_EXTERNAL_DATA_DIR}")
-    set(SOCUTE_EXTERNAL_DATA_DIR "${SOCUTE_EXTERNAL_DATA_DIR}" CACHE INTERNAL "")
+    socute_get_install_root(install_root)
+    socute_update_prefix_path("${install_root}")
 
     # Look for the appropriate package module in the "packages" directory
     # If no package module is present but a package is obviously part of the SoCute
@@ -81,7 +80,7 @@ function(socute_find_package name)
         if (NOT ${name}_FOUND AND NOT SFP_OPTIONAL)
             # install missing dependency and update pathes
             pkg_install()
-            socute_update_prefix_path("${SOCUTE_EXTERNAL_DATA_DIR}")
+            socute_update_prefix_path("${install_root}")
 
             # search again
             pkg_find(${SFP_UNPARSED_ARGUMENTS})

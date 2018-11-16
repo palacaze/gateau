@@ -56,21 +56,28 @@ else()
     set(SOCUTE_ARCH 32)
 endif()
 
-# Search for the root directory which will be used to install stuff for this
-# particular compiler/system/config triplet.
-# This path is composed of a SOCUTE_EXTERNAL_ROOT followed by the SYSTEM name/version,
-# the compiler name-version and the config.
+# Get the root directory where all external packages will be installed
 # SOCUTE_EXTERNAL_ROOT may be supplied to cmake at configure time, otherwise the
 # environment variable of the same name will be picked. At last the fallback will
 # be ${SOCUTE_BINARY_DIR}/external.
-function(socute_find_rootdir dir)
-    # Find the root directory
-    if (NOT DEFINED "${SOCUTE_EXTERNAL_ROOT}")
+function(socute_get_external_root dir)
+    if (NOT DEFINED SOCUTE_EXTERNAL_ROOT)
         set(SOCUTE_EXTERNAL_ROOT "$ENV{SOCUTE_EXTERNAL_ROOT}")
-        if ("${SOCUTE_EXTERNAL_ROOT}" STREQUAL "")
+        if (NOT SOCUTE_EXTERNAL_ROOT)
             set(SOCUTE_EXTERNAL_ROOT "${CMAKE_BINARY_DIR}/external")
         endif()
     endif()
+
+    set(${dir} "${SOCUTE_EXTERNAL_ROOT}" PARENT_SCOPE)
+endfunction()
+
+# Get the root directory which will be used to install stuff for this
+# particular compiler/system/config triplet.
+# This path is composed of socute_external_root followed by the SYSTEM name/version,
+# the compiler name-version and the config.
+function(socute_get_install_root dir)
+    # Find the root directory
+    socute_get_external_root(external_root)
 
     # default build type folder name
     set(build_type_folder ${CMAKE_BUILD_TYPE})
@@ -81,7 +88,7 @@ function(socute_find_rootdir dir)
     # Compose full path
     set(sys "${SOCUTE_SYSTEM_FLAVOUR}-${SOCUTE_SYSTEM_VERSION}")
     set(comp "${SOCUTE_COMPILER_NAME}-${SOCUTE_COMPILER_VERSION}")
-    set(datadir "${SOCUTE_EXTERNAL_ROOT}/${sys}/${comp}/${build_type_folder}")
+    set(datadir "${external_root}/${sys}/${comp}/${build_type_folder}")
 
     # Ensure we can actually use this directory
     file(MAKE_DIRECTORY "${datadir}")
