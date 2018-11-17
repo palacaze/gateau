@@ -57,6 +57,11 @@ set(CMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY ON)
 # Option to work offline
 option(SOCUTE_OFFLINE "Don't go online to fetch dependency updates unless necessary" OFF)
 
+# Options to build optional stuff
+option(SOCUTE_BUILD_EXAMPLES "Build optional examples" ON)
+option(SOCUTE_BUILD_TESTS "Build tests" ON)
+option(SOCUTE_BUILD_DOC "Build documentation" OFF)
+
 include(SoCuteHelpers)
 include(SoCuteSystemVars)
 include(SoCuteCompilerOptions)
