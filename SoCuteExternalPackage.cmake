@@ -114,6 +114,9 @@ function(socute_external_package dep)
         CMAKE_CACHE_ARGS ${cache_args}
     )
 
+    # Work offline ?
+    list(APPEND project_vars UPDATE_DISCONNECTED ${SOCUTE_OFFLINE})
+
     # Archive package
     if (DEFINED ${dep}_url)
         list(APPEND project_vars URL ${${dep}_url})
