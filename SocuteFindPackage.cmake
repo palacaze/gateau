@@ -74,7 +74,7 @@ function(socute_find_package name)
 
     if (EXISTS "${module_path}")
         include("${module_path}")
-        pkg_find(${SFP_UNPARSED_ARGUMENTS})
+        pkg_find(${SFP_UNPARSED_ARGUMENTS} QUIET)
 
         # not found, we will try to install it and search again
         if (NOT ${name}_FOUND AND NOT SFP_OPTIONAL)
@@ -96,7 +96,7 @@ function(socute_find_package name)
         endif()
     else()
         # Fallback to standard behaviour, this is not recommended
-        message(WARNING "Unknown package '${name}'. Please consider adding a module for it.")
+        message(STATUS "Unknown package '${name}'. Please consider adding a module for it.")
         if (NOT SFP_OPTIONAL)
             list(APPEND SPF_UNPARSED_ARGUMENTS "REQUIRED")
         endif()
