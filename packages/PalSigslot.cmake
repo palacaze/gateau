@@ -1,9 +1,8 @@
-set(PalSigslot_version "1.0.1")
-set(PalSigslot_url "https://github.com/palacaze/sigslot/archive/v${PalSigslot_version}.tar.gz")
-set(PalSigslot_md5 "558788dcec230e5a956d7ace24be2603")
+set(PalSigslot_version "master")
+set(PalSigslot_git "https://github.com/palacaze/sigslot.git")
 
 macro(pkg_find)
-    find_package(PalSigslot ${PalSigslot_version} ${ARGN})
+    find_package(PalSigslot ${ARGN})
 endmacro()
 
 macro(pkg_install)
