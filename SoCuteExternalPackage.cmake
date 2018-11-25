@@ -176,9 +176,14 @@ function(socute_external_package dep)
 
     file(WRITE "${ext_dir}/CMakeLists.txt" "${ext_cmake_content}")
 
+    # we must set a toochain file if the project needs one
+    if (CMAKE_TOOLCHAIN_FILE)
+        set(toolchain_cmd -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
+    endif()
+
     # execute installation process
     execute_process(
-        COMMAND ${CMAKE_COMMAND} ..
+        COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" ${toolchain_cmd} ..
         WORKING_DIRECTORY "${ext_dir}/build"
     )
     execute_process(
