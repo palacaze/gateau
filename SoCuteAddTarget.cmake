@@ -58,7 +58,6 @@ function(socute_set_properties alias target target_id)
     # account for options
     target_link_libraries(${target} PRIVATE
         $<$<BOOL:${SOCUTE_ENABLE_COMMON_WARNINGS}>:SoCute_CommonWarnings>
-        $<$<BOOL:${SOCUTE_ENABLE_AUTOSELECT_LINKER}>:SoCute_Linker>
         $<$<BOOL:${SOCUTE_ENABLE_LIBCXX}>:SoCute_Libcxx>
         $<$<BOOL:${SOCUTE_ENABLE_MANY_WARNINGS}>:SoCute_HighWarnings>
         $<$<BOOL:${SOCUTE_ENABLE_PROFILING}>:SoCute_Profiling>
@@ -66,6 +65,13 @@ function(socute_set_properties alias target target_id)
         $<$<BOOL:${SOCUTE_SANITIZE_THREADS}>:SoCute_ThreadSanitizer>
         $<$<BOOL:${SOCUTE_SANITIZE_UNDEFINED}>:SoCute_UndefinedSanitizer>
     )
+
+    if (UNIX AND SOCUTE_COMPILER_CLANG_OR_GCC)
+        target_link_libraries(${target} PRIVATE
+            $<$<BOOL:${SOCUTE_ENABLE_AUTOSELECT_LINKER}>:SoCute_Linker>
+        )
+    endif()
+
     if (SOCUTE_ENABLE_LTO)
         set_target_properties(${target} PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON)
     endif()
