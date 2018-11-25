@@ -99,6 +99,7 @@ function(socute_external_package dep)
     # pass compiler or toolchain file
     if (CMAKE_TOOLCHAIN_FILE)
         list(APPEND cache_args "-DCMAKE_TOOLCHAIN_FILE:FILEPATH=${CMAKE_TOOLCHAIN_FILE}")
+        list(APPEND cache_args "-DSOCUTE_TOOLCHAIN_COMPILER_VERSION:STRING=${SOCUTE_TOOLCHAIN_COMPILER_VERSION}")
     else()
         list(APPEND cache_args "-DCMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}")
         list(APPEND cache_args "-DCMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}")

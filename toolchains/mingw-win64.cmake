@@ -1,16 +1,16 @@
 # the name of the target operating system
 set(CMAKE_SYSTEM_NAME Windows)
 
-set(COMPILER_PREFIX x86_64-w64-mingw32)
-set(COMPILER_THREAD_IMPL posix)
+set(SOCUTE_COMPILER_PREFIX x86_64-w64-mingw32)
+set(SOCUTE_COMPILER_THREAD_IMPL posix)
 
 # which compilers to use for C and C++
-find_program(CMAKE_RC_COMPILER NAMES ${COMPILER_PREFIX}-windres)
-find_program(CMAKE_C_COMPILER NAMES ${COMPILER_PREFIX}-gcc-${COMPILER_THREAD_IMPL})
-find_program(CMAKE_CXX_COMPILER NAMES ${COMPILER_PREFIX}-g++-${COMPILER_THREAD_IMPL})
+find_program(CMAKE_RC_COMPILER NAMES ${SOCUTE_COMPILER_PREFIX}-windres)
+find_program(CMAKE_C_COMPILER NAMES ${SOCUTE_COMPILER_PREFIX}-gcc-${SOCUTE COMPILER_THREAD_IMPL})
+find_program(CMAKE_CXX_COMPILER NAMES ${SOCUTE_COMPILER_PREFIX}-g++-${SOCUTE_COMPILER_THREAD_IMPL})
 
 # here is the target environment located
-set(CMAKE_FIND_ROOT_PATH /usr/${COMPILER_PREFIX})
+set(CMAKE_FIND_ROOT_PATH /usr/${SOCUTE_COMPILER_PREFIX})
 
 # adjust the default behaviour of the FIND_XXX() commands:
 # search headers and libraries in the target environment, search 
@@ -34,4 +34,3 @@ string(FIND "${COMPILER_LIBRARIES}" "libraries: =" POS)
 string(SUBSTRING "${COMPILER_LIBRARIES}" ${POS} -1 COMPILER_LIBRARIES)
 string(REGEX REPLACE "libraries: =([^ ]*)" "\\1" COMPILER_LIBRARIES "${COMPILER_LIBRARIES}")
 string(REPLACE ":" "\;" CROSS_COMPILER_LIBRARIES "${COMPILER_LIBRARIES}")
-
