@@ -3,7 +3,7 @@
 
 set(@SOCUTE_PACKAGE_MODULE_NAME@_version "master")
 if (SOCUTE_CI_USER AND SOCUTE_CI_PASS)
-    set(@SOCUTE_PACKAGE_MODULE_NAME@_git "https://${SOCUTE_CI_USER}:$${SOCUTE_CI_PASS}@gitlab.pasnox.com:9443/so-cute/@SOCUTE_PACKAGE_REPO_NAME@.git")
+    set(@SOCUTE_PACKAGE_MODULE_NAME@_git "https://${SOCUTE_CI_USER}:${SOCUTE_CI_PASS}@gitlab.pasnox.com:9443/so-cute/@SOCUTE_PACKAGE_REPO_NAME@")
 else()
     set(@SOCUTE_PACKAGE_MODULE_NAME@_git "ssh://git@gitlab.pasnox.com:99/so-cute/@SOCUTE_PACKAGE_REPO_NAME@.git")
 endif()
@@ -21,6 +21,6 @@ macro(pkg_install)
             "-DSOCUTE_BUILD_EXAMPLES=OFF"
             "-DSOCUTE_BUILD_DOC=OFF"
             "-DSOCUTE_CI_USER=${SOCUTE_CI_USER}"
-            "-DSOCUTE_CI_PASS=${SOCUTE_CI_USER}"
+            "-DSOCUTE_CI_PASS=${SOCUTE_CI_PASS}"
     )
 endmacro()
