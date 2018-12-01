@@ -112,11 +112,9 @@ function(socute_external_package dep)
         DOWNLOAD_DIR "${external_root}/download/${dep}"
         SOURCE_DIR "${external_root}/src/${dep}"
         INSTALL_DIR "${prefix_dir}"
+        SOCUTE_EXTERNAL_ROOT "${external_root}"
         CMAKE_CACHE_ARGS ${cache_args}
     )
-
-    # external root to ensure consistent installation prefix accross recursvie calls
-    list(APPEND project_vars SOCUTE_EXTERNAL_ROOT ${external_root})
 
     # Work offline ?
     list(APPEND project_vars UPDATE_DISCONNECTED ${SOCUTE_OFFLINE})
