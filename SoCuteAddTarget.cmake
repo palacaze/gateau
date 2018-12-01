@@ -94,6 +94,7 @@ endfunction()
 # projects it will be called OrgaPackage and aliasd to Orga::Package
 function(socute_add_library lib)
     socute_target_full_name(${lib} target)
+    socute_target_short_name(${lib} export_name)
     socute_target_alias_name(${lib} target_alias)
     socute_target_id_prefix(${lib} target_base_id)
 
@@ -104,7 +105,7 @@ function(socute_add_library lib)
     # ensure a proper version and short name
     set_target_properties(${target} PROPERTIES
         VERSION ${PROJECT_VERSION}
-        EXPORT_NAME ${lib}
+        EXPORT_NAME ${export_name}
     )
 
     # export header
