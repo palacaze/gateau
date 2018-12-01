@@ -94,7 +94,7 @@ function(socute_external_package dep)
         "-DCMAKE_INSTALL_PREFIX:PATH=${prefix_dir}"
         "-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY:BOOL=ON"
         "-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY:BOOL=ON"
-        "-DSOCUTE_EXTERNAL_ROOT=${external_root}"
+        "-DSOCUTE_EXTERNAL_ROOT:PATH=${external_root}"
     )
 
     # pass compiler or toolchain file
