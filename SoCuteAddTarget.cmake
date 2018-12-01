@@ -14,6 +14,7 @@ option(SOCUTE_ENABLE_PROFILING "Add compile flags to help with profiling" OFF)
 option(SOCUTE_SANITIZE_ADDRESS "Compile with address sanitizer support" OFF)
 option(SOCUTE_SANITIZE_THREADS "Compile with thread sanitizer support" OFF)
 option(SOCUTE_SANITIZE_UNDEFINED "Compile with undefined sanitizer support" OFF)
+option(SOCUTE_KEEP_TEMPS "keep temporary compiler-generated files for debugging purpose" OFF)
 
 include(CMakeParseArguments)
 include(GenerateExportHeader)
@@ -58,6 +59,7 @@ function(socute_set_properties alias target target_id)
     # account for options
     target_link_libraries(${target} PRIVATE
         $<$<BOOL:${SOCUTE_ENABLE_COMMON_WARNINGS}>:SoCute_CommonWarnings>
+        $<$<BOOL:${SOCUTE_KEEP_TEMPS}>:SoCute_SaveTemps>
         $<$<BOOL:${SOCUTE_ENABLE_LIBCXX}>:SoCute_Libcxx>
         $<$<BOOL:${SOCUTE_ENABLE_MANY_WARNINGS}>:SoCute_HighWarnings>
         $<$<BOOL:${SOCUTE_ENABLE_PROFILING}>:SoCute_Profiling>

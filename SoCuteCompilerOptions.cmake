@@ -10,6 +10,12 @@ target_compile_options(SoCute_CommonWarnings INTERFACE
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
 
+add_library(SoCute_SaveTemps INTERFACE)
+add_library(Socute::SaveTemps ALIAS SoCute_SaveTemps)
+target_compile_options(SoCute_SaveTemps INTERFACE
+    $<$<BOOL:${SOCUTE_COMPILER_CLANG_OR_GCC}>:-save-temps>
+)
+
 # Ultra verbose warnings
 add_library(SoCute_HighWarnings INTERFACE)
 add_library(Socute::HighWarnings ALIAS SoCute_HighWarnings)
