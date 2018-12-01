@@ -115,6 +115,9 @@ function(socute_external_package dep)
         CMAKE_CACHE_ARGS ${cache_args}
     )
 
+    # external root to ensure consistent installation prefix accross recursvie calls
+    list(APPEND project_vars SOCUTE_EXTERNAL_ROOT ${external_root})
+
     # Work offline ?
     list(APPEND project_vars UPDATE_DISCONNECTED ${SOCUTE_OFFLINE})
 
