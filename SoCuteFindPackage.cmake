@@ -15,7 +15,7 @@ function(socute_update_prefix_path dir)
 
             # Search paths are restricted in the toolchain files in cross-compile mode,
             # however our prefix directories are safe to use so we allow to use it from find_*
-            socute_append_cached(APPEND CMAKE_FIND_ROOT_PATH "${prefix}/prefix")
+            socute_append_cached(CMAKE_FIND_ROOT_PATH "${prefix}/prefix")
         endif()
     endforeach()
 endfunction()
