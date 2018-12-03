@@ -45,7 +45,7 @@ endfunction()
 # Function that handles looking for packages and installing them in the right
 # place if missing. It uses specially crafted modules (in the packages directory)
 # containing directives that specify how to find and install said packages.
-function(socute_find_package name)
+macro(socute_find_package name)
     # We allow an OPTIONAL flag to mark a package as optional.
     # This means that the default behaviour is to require packages.
     # It won't be installed if not found.
@@ -70,6 +70,7 @@ function(socute_find_package name)
         set(SOCUTE_PACKAGE_MODULE_NAME ${name})
         configure_file("${SOCUTE_CMAKE_MODULES_DIR}/templates/SoCutePackage.cmake.in"
                        "${module_path}" @ONLY)
+        unset(SOCUTE_PACKAGE_MODULE_NAME)
     endif()
 
     if (EXISTS "${module_path}")
@@ -110,4 +111,6 @@ function(socute_find_package name)
             socute_declare_unknown_dependency(${name} ${SFP_UNPARSED_ARGUMENTS})
         endif()
     endif()
-endfunction()
+
+    unset(module_path)
+endmacro()
