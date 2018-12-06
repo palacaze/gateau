@@ -37,9 +37,10 @@ if (CMAKE_VERSION VERSION_LESS 3.8)
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
 
-# set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
-# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
+# Setup a discoverable output dir to simplify program execution
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # rpath handling
 set(CMAKE_SKIP_BUILD_RPATH OFF)
@@ -67,5 +68,6 @@ include(SoCuteSystemVars)
 include(SoCuteCompilerOptions)
 include(SoCuteProject)
 include(SoCuteAddTarget)
+include(SoCuteAddTest)
 include(SoCuteFindPackage)
 include(SoCuteInstallProject)
