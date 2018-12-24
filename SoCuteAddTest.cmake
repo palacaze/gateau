@@ -69,6 +69,10 @@ macro(socute_add_test target)
             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         )
     else()
-        add_test(${target} ${target})
+        add_test(
+            NAME ${target}
+            COMMAND ${target}
+            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        )
     endif()
 endmacro()
