@@ -140,3 +140,39 @@ function(socute_add_executable exe)
     # common properties
     socute_set_properties(${exe} ${target} ${target_base_id})
 endfunction()
+
+# Function that configure a doxyfile template abd add a docs target to buld
+# documentation.
+function(socute_add_documentation excludedSymbols predefinedMacros)
+    # Build Doxygen compatible value list
+    function(create_doxygen_list list_in string_out)
+        list(JOIN list_in " \\\n    " out)
+        set(${string_out} "\\\n    ${out}" PARENT_SCOPE)
+    endfunction()
+
+    set(PACKAGE_ORGANIZATION ${SOCUTE_ORGANIZATION})
+    string(TOLOWER ${PACKAGE_ORGANIZATION} PACKAGE_ORGANIZATION_LOWER)
+    set(PACKAGE_NAME ${SOCUTE_PACKAGE})
+    string(TOLOWER ${PACKAGE_NAME} PACKAGE_NAME_LOWER)
+    socute_target_alias_name(${SOCUTE_PACKAGE} PACKAGE_FULL_NAME)
+    set(PACKAGE_DESCRIPTION ${PROJECT_DESCRIPTION})
+    set(PACKAGE_VERSION ${PROJECT_VERSION})
+
+    set(DOXYGEN_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/doc)
+    set(DOXYGEN_INPUT src)
+    set(DOXYGEN_EXCLUDE src/3rdparty)
+    create_doxygen_list("${excludedSymbols}" DOXYGEN_EXCLUDE_SYMBOLS)
+    get_property(DOXYGEN_QHG_LOCATION TARGET Qt5::qhelpgenerator PROPERTY IMPORTED_LOCATION)
+    create_doxygen_list("${predefinedMacros}" DOXYGEN_PREDEFINED)
+
+    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile.in)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile)
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT})
+
+    add_custom_target(docs
+        COMMAND Doxygen::doxygen ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM
+    )
+endfunction()
