@@ -9,7 +9,10 @@ function(socute_generate_doxygen_file)
 
     # build lists of custom configuration entries
     list(APPEND GD_EXCLUDED_SYMBOLS Detail)
-    list(APPEND GD_PREDEFINED_MACROS DOXYGEN_IGNORE=1)
+    list(APPEND GD_PREDEFINED_MACROS
+        DOXYGEN_IGNORE=1
+        Q_NAMESPACE Q_DECLARE_LOGGING_CATEGORY Q_OBJECT Q_GADGET Q_BEGIN_NAMESPACE Q_END_NAMESPACE
+    )
     list(APPEND GD_INPUT_PATHS src README.md)
     list(APPEND GD_EXCLUDED_PATHS src/3rdparty)
 
