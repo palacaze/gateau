@@ -3,11 +3,27 @@
 # adds a "docs" target to the project that will build the documentation on demand.
 
 # Generate a Doxygen file for this package from a template and a few variables
-function(socute_generate_doxygen_file excluded_symbols predefined_macros input_paths excluded_paths)
+function(socute_generate_doxygen_file)
+    set(opts EXCLUDED_SYMBOLS PREDEFINED_MACROS INPUT_PATHS EXCLUDED_PATHS)
+    cmake_parse_arguments(GD "" "" "${opts}" ${ARGN})
+
+    # build lists of custom configuration entries
+    list(APPEND GD_EXCLUDED_SYMBOLS Detail)
+    list(APPEND GD_PREDEFINED_MACROS DOXYGEN_IGNORE=1)
+    list(APPEND GD_INPUT_PATHS src README.md)
+    list(APPEND GD_EXCLUDED_PATHS src/3rdparty)
+
+    # we automatically add EXPORT macros generated for every library
+    get_property(targets GLOBAL PROPERTY SOCUTE_LIBRARY_LIST)
+    foreach(lib ${targets})
+        socute_target_id_prefix(${lib} target_base_id)
+        list(APPEND GD_PREDEFINED_MACROS ${target_base_id}_EXPORT)
+    endforeach()
+
     # Build Doxygen compatible value list
     function(create_doxygen_list list_in string_out)
-        list(JOIN list_in " " out)
-        set(${string_out} "${out}" PARENT_SCOPE)
+        list(JOIN list_in "\" \"" out)
+        set(${string_out} "\"${out}\"" PARENT_SCOPE)
     endfunction()
 
     set(PACKAGE_ORGANIZATION ${SOCUTE_ORGANIZATION})
@@ -30,10 +46,10 @@ function(socute_generate_doxygen_file excluded_symbols predefined_macros input_p
         message(WARNING "qhelpgenerator not found, Qt compatible documentation won't be built")
     endif()
 
-    create_doxygen_list("${input_paths}" DOXYGEN_INPUT)
-    create_doxygen_list("${excluded_paths}" DOXYGEN_EXCLUDE)
-    create_doxygen_list("${excluded_symbols}" DOXYGEN_EXCLUDE_SYMBOLS)
-    create_doxygen_list("${predefined_macros}" DOXYGEN_PREDEFINED)
+    create_doxygen_list("${GD_INPUT_PATHS}" DOXYGEN_INPUT)
+    create_doxygen_list("${GD_EXCLUDED_PATHS}" DOXYGEN_EXCLUDE)
+    create_doxygen_list("${GD_EXCLUDED_SYMBOLS}" DOXYGEN_EXCLUDE_SYMBOLS)
+    create_doxygen_list("${GD_PREDEFINED_MACROS}" DOXYGEN_PREDEFINED)
 
     configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT})
 endfunction()
@@ -43,25 +59,15 @@ endfunction()
 # - EXCLUDED_SYMBOLS: list of symbols to exclude from the documentation, defaults to "Detail"
 # - PREDEFINED_MACROS: C macros to define, with an optional value, when parsing files
 # - INPUT_PATHS: input paths whose files should be parsed in addition to "src and README.md"
-# - EXCLUDED_PATHS: pathes that should be excluded from the parsing, defaults to src/3rdparty
+# - EXCLUDED_PATHS: paths that should be excluded from the parsing, defaults to src/3rdparty
 function(socute_build_documentation)
-    set(opts EXCLUDED_SYMBOLS PREDEFINED_MACROS INPUT_PATHS EXCLUDED_PATHS)
-    cmake_parse_arguments(GD "" "" "${opts}" ${ARGN})
-
-    list(APPEND GD_EXCLUDED_SYMBOLS Detail)
-    list(APPEND GD_PREDEFINED_MACROS DOXYGEN_IGNORE)
-    list(APPEND GD_INPUT_PATHS src README.md)
-    list(APPEND GD_EXCLUDED_PATHS src/3rdparty)
-
     find_package(Doxygen)
     if (NOT DOXYGEN_FOUND)
         message(WARNING "Doxygen not found, documentation won't be built")
         return()
     endif()
 
-    socute_generate_doxygen_file(
-        "${GD_EXCLUDED_SYMBOLS}" "${GD_PREDEFINED_MACROS}"
-        "${GD_INPUT_PATHS}" "${GD_EXCLUDED_PATHS}")
+    socute_generate_doxygen_file("${ARGN}")
 
     add_custom_target(docs
         COMMAND Doxygen::doxygen ${CMAKE_BINARY_DIR}/doc/Doxyfile

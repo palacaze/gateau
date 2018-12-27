@@ -102,6 +102,9 @@ function(socute_add_library lib)
     add_library(${target} ${ARGN})
     add_library(${target_alias} ALIAS ${target})
 
+    # record the list of libraries in a property
+    set_property(GLOBAL APPEND PROPERTY SOCUTE_LIBRARY_LIST ${lib})
+
     # ensure a proper version and short name
     set_target_properties(${target} PROPERTIES
         VERSION ${PROJECT_VERSION}
