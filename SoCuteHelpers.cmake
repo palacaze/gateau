@@ -26,11 +26,6 @@ function(socute_to_identifier var out)
     set(${out} "${txt}" PARENT_SCOPE)
 endfunction()
 
-# build the name of the package
-function(socute_target_full_name out)
-    set(${out} ${SOCUTE_ORGANIZATION}${SOCUTE_PACKAGE} PARENT_SCOPE)
-endfunction()
-
 # build the short name from the module name
 function(socute_target_short_name mod out)
     if (mod STREQUAL SOCUTE_PACKAGE)
