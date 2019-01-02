@@ -24,7 +24,7 @@ target_compile_options(SoCute_HighWarnings INTERFACE
     $<$<BOOL:${SOCUTE_COMPILER_GCC}>:
         -Wcast-qual;-Wconversion-null;-Wmissing-declarations;-Woverlength-strings;
         -Wpointer-arith;-Wunused-local-typedefs;-Wunused-result;-Wvarargs;-Wvla;
-        -Wwrite-strings;-Wconversion;-Wsign-conversion>
+        -Wwrite-strings;-Wconversion;-Wsign-conversion -Wodr>
     $<$<BOOL:${SOCUTE_COMPILER_CLANG}>:
         -Weverything;-Wno-c++98-compat;-Wno-c++98-compat-pedantic; -Wno-unused-macros;
         -Wno-newline-eof;-Wno-exit-time-destructors;-Wno-global-constructors;
