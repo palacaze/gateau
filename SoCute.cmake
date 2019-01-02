@@ -62,6 +62,7 @@ option(SOCUTE_OFFLINE "Don't go online to fetch dependency updates unless necess
 option(SOCUTE_BUILD_EXAMPLES "Build optional examples" ON)
 option(SOCUTE_BUILD_TESTS "Build tests" ON)
 option(SOCUTE_BUILD_DOC "Build documentation" ON)
+option(SOCUTE_BUILD_BENCHMARKS "Build benchmarks" ON)
 
 include(SoCuteHelpers)
 include(SoCuteSystemVars)

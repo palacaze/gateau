@@ -20,6 +20,7 @@ macro(pkg_install)
             "-DSOCUTE_BUILD_TESTS=OFF"
             "-DSOCUTE_BUILD_EXAMPLES=OFF"
             "-DSOCUTE_BUILD_DOC=OFF"
+            "-DSOCUTE_BUILD_BENCHMARKS=OFF"
             "-DSOCUTE_CI_USER=${SOCUTE_CI_USER}"
             "-DSOCUTE_CI_PASS=${SOCUTE_CI_PASS}"
     )
