@@ -2,6 +2,25 @@
 # It generates an appropriate Doxygen project file from a generic template and
 # adds a "docs" target to the project that will build the documentation on demand.
 
+# config option for documentation installation
+set(SOCUTE_DOCUMENTATION_ROOT "" CACHE PATH "Documentation installation root directory.")
+
+# Get the directory where all the documentation will be installed.
+# SOCUTE_DOCUMENATION_ROOT may be supplied to cmake at configure time, otherwise the
+# environment variable of the same name will be picked. At last the fallback will
+# be ${SOCUTE_BINARY_DIR}/doc.
+function(socute_get_documentation_dir dir)
+    if (NOT SOCUTE_DOCUMENTATION_ROOT)
+        set(SOCUTE_DOCUMENTATION_ROOT "$ENV{SOCUTE_DOCUMENTATION_ROOT}")
+        if (NOT SOCUTE_DOCUMENTATION_ROOT)
+            set(SOCUTE_DOCUMENTATION_ROOT "${CMAKE_BINARY_DIR}/doc")
+        endif()
+    endif()
+
+    string(APPEND SOCUTE_DOCUMENTATION_ROOT "/${SOCUTE_PACKAGE}")
+    set(${dir} "${SOCUTE_DOCUMENTATION_ROOT}" PARENT_SCOPE)
+endfunction()
+
 # Generate a Doxygen file for this package from a template and a few variables
 function(socute_generate_doxygen_file)
     set(opts EXCLUDED_SYMBOLS PREDEFINED_MACROS INPUT_PATHS EXCLUDED_PATHS)
@@ -37,7 +56,14 @@ function(socute_generate_doxygen_file)
     set(PACKAGE_DESCRIPTION ${PROJECT_DESCRIPTION})
     set(PACKAGE_VERSION ${PROJECT_VERSION})
 
-    set(DOXYGEN_OUTPUT ${CMAKE_BINARY_DIR}/doc)
+    socute_get_documentation_dir(DOXYGEN_OUTPUT)
+    file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT})
+    if (NOT IS_DIRECTORY ${DOXYGEN_OUTPUT})
+        message(ERROR "Could not create directory ${DOXYGEN_OUTPUT} for documentation installation.\n"
+            "Please modify SOCUTE_DOCUMENTATION_ROOT option or env var to a valid path.")
+        return()
+    endif()
+
     set(DOXYGEN_IN ${SOCUTE_CMAKE_MODULES_DIR}/templates/Doxyfile.in)
     set(DOXYGEN_OUT ${CMAKE_BINARY_DIR}/doc/Doxyfile)
 
