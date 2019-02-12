@@ -1,9 +1,7 @@
 ########## Globals ##########
 
-# Branch covered by CI
-.git-branch: &git-branch master
-
 variables:
+    GIT_BRANCH: master
     GIT_STRATEGY: fetch
     GIT_SUBMODULE_STRATEGY: recursive
     QT_HASH_SEED: 1
@@ -45,7 +43,10 @@ variables:
 .build: &build
     stage: build
     only:
-        - *git-branch
+        refs:
+            - branches
+        variables:
+            - $CI_COMMIT_REF_NAME == $GIT_BRANCH
     artifacts:
         name: "${CI_BUILD_NAME}_${CI_PIPELINE_ID}_${CI_BUILD_REF_NAME}"
         expire_in: "1 day"
@@ -79,7 +80,10 @@ variables:
 .test: &test
     stage: test
     only:
-        - *git-branch
+        refs:
+            - branches
+        variables:
+            - $CI_COMMIT_REF_NAME == $GIT_BRANCH
     script:
         - cd build
         - ${CMAKE} --build . --target tests
