@@ -7,6 +7,8 @@ variables:
     QT_HASH_SEED: 1
     QT_NO_CPU_FEATURE: sse4.2
     BUILD_TYPE: MinSizeRel
+    BUILD_TARGET: examples
+    TEST_TARGET: tests
 
 ########## Templates ##########
 
@@ -47,6 +49,9 @@ variables:
             - branches
         variables:
             - $CI_COMMIT_REF_NAME == $GIT_BRANCH
+    except:
+        variables:
+            - $BUILD_TARGET == ""
     artifacts:
         name: "${CI_BUILD_NAME}_${CI_PIPELINE_ID}_${CI_BUILD_REF_NAME}"
         expire_in: "1 day"
@@ -56,7 +61,7 @@ variables:
         - mkdir build && cd build
         - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.pasnox.com:9443/so-cute/cmake-modules.git
         - ${CMAKE} -GNinja -DSOCUTE_CI_USER=gitlab-ci-token -DSOCUTE_CI_PASS=${CI_JOB_TOKEN} -DCMAKE_TOOLCHAIN_FILE=cmake-modules/toolchains/${CMAKE_TOOLCHAIN}.cmake -DCMAKE_PREFIX_PATH=${QT_SDKS_PATH}/${QT_VERSION}/${TARGET_HOST} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DFETCHCONTENT_FULLY_DISCONNECTED=ON -DSOCUTE_OFFLINE=ON ..
-        - ${CMAKE} --build . --target examples
+        - ${CMAKE} --build . --target ${BUILD_TARGET}
 
 .build_unix: &build_unix
     <<: *build
@@ -84,9 +89,12 @@ variables:
             - branches
         variables:
             - $CI_COMMIT_REF_NAME == $GIT_BRANCH
+    except:
+        variables:
+            - $TEST_TARGET == ""
     script:
         - cd build
-        - ${CMAKE} --build . --target tests
+        - ${CMAKE} --build . --target ${TEST_TARGET}
 
 .test_unix: &test_unix
     <<: *test
