@@ -7,6 +7,7 @@ add_library(SoCute_CommonWarnings INTERFACE)
 add_library(Socute::CommonWarnings ALIAS SoCute_CommonWarnings)
 target_compile_options(SoCute_CommonWarnings INTERFACE
     $<$<BOOL:${SOCUTE_COMPILER_CLANG_OR_GCC}>:-Wall;-Wextra;-fdiagnostics-color=always;-pipe>
+    $<$<AND:$<BOOL:${SOCUTE_COMPILER_GCC}>,$<VERSION_GREATER_EQUAL:${CMAKE_CXX_COMPILER_VERSION},7.0.0>>:-Wno-noexcept-type>
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
 
