@@ -95,7 +95,7 @@ variables:
             - $TEST_TARGET == ""
     script:
         - cd build
-        - ${CMAKE} --build . --target ${TEST_TARGET} --v
+        - ${CMAKE} --build . --target ${TEST_TARGET} -- -v
 
 .test_unix: &test_unix
     <<: *test
