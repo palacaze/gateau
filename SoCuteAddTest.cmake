@@ -60,7 +60,7 @@ macro(socute_add_test target)
     )
 
     if ("Qt5::Gui" IN_LIST target_libraries)
-        set(target_switches "-platform minimal")
+        set(target_switches -platform minimal)
     endif()
 
     if (CMAKE_SYSTEM_NAME STREQUAL Windows)
