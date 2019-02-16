@@ -53,6 +53,16 @@ function(socute_win_library_paths out)
 endfunction()
 
 macro(socute_add_test target)
+    get_property(
+        target_libraries
+        TARGET ${target}
+        PROPERTY LINK_LIBRARIES
+    )
+
+    if ("Qt5::Gui" IN_LIST target_libraries)
+        set(target_switches "-platform minimal")
+    endif()
+
     if (CMAKE_SYSTEM_NAME STREQUAL Windows)
         socute_win_library_paths(lib_paths)
 
@@ -65,13 +75,13 @@ macro(socute_add_test target)
 
         add_test(
             NAME ${target}
-            COMMAND ${CROSSCOMPILING_EMULATOR} cmd /c "PATH=${win_paths};%PATH%" \\& ${target}${CMAKE_EXECUTABLE_SUFFIX}
+            COMMAND ${CROSSCOMPILING_EMULATOR} cmd /c "PATH=${win_paths};%PATH%" \\& ${target}${CMAKE_EXECUTABLE_SUFFIX} ${target_switches}
             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         )
     else()
         add_test(
             NAME ${target}
-            COMMAND ${target}
+            COMMAND ${target} ${target_switches}
             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         )
     endif()
