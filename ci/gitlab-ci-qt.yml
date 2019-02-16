@@ -4,7 +4,7 @@ variables:
     GIT_BRANCH: master
     GIT_STRATEGY: fetch
     GIT_SUBMODULE_STRATEGY: recursive
-    QT_HASH_SEED: 1
+    QT_HASH_SEED: 0
     QT_NO_CPU_FEATURE: sse4.2
     VERBOSE: 1
     BUILD_TYPE: MinSizeRel
