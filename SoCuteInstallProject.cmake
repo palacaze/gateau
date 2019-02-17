@@ -39,6 +39,7 @@ function(socute_install_target alias)
         install(
             TARGETS ${target}
             EXPORT ${targets_name}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${alias}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${alias}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${alias}
             INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
