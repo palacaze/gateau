@@ -60,7 +60,7 @@ variables:
             - build
     script:
         - mkdir build && cd build
-        - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.pasnox.com:9443/so-cute/cmake-modules.git
+        - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.pasnox.com:9443/so-cute/libs/cmake-modules.git
         - ${CMAKE} -GNinja -DSOCUTE_CI_USER=gitlab-ci-token -DSOCUTE_CI_PASS=${CI_JOB_TOKEN} -DCMAKE_TOOLCHAIN_FILE=cmake-modules/toolchains/${CMAKE_TOOLCHAIN}.cmake -DCMAKE_PREFIX_PATH=${QT_SDKS_PATH}/${QT_VERSION}/${TARGET_HOST} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DFETCHCONTENT_FULLY_DISCONNECTED=ON -DSOCUTE_OFFLINE=ON ..
         - ${CMAKE} --build . --target ${BUILD_TARGET} -- -v
 
