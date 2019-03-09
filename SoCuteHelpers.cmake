@@ -8,7 +8,7 @@ function(socute_append_cached var str)
     mark_as_advanced(${var})
 endfunction()
 
-# build the snakecase name for a string
+# Build the snakecase name for a string
 function(socute_to_snakecase var out)
     string(REPLACE " " "_" txt "${var}")
     string(REGEX REPLACE "([A-Z])" "_\\1" txt "${txt}")
@@ -19,44 +19,75 @@ function(socute_to_snakecase var out)
     set(${out} "${txt}" PARENT_SCOPE)
 endfunction()
 
-# build a C identifier out of variable
+# Build a C identifier out of variable
 function(socute_to_identifier var out)
     socute_to_snakecase(${var} txt)
     string(TOUPPER "${txt}" txt)
     set(${out} "${txt}" PARENT_SCOPE)
 endfunction()
 
-# build the short name from the module name
-function(socute_target_short_name mod out)
-    if (mod STREQUAL SOCUTE_PACKAGE)
-        set(${out} ${SOCUTE_PACKAGE} PARENT_SCOPE)
+# Build a cmake target out of variable
+function(socute_to_target var out)
+    string(REPLACE "::" "" txt "${var}")
+    set(${out} "${txt}" PARENT_SCOPE)
+endfunction()
+
+# Build a sub folder out of variable
+function(socute_to_subfolder var out)
+    string(REPLACE "::" "/" txt "${var}")
+    set(${out} "${txt}" PARENT_SCOPE)
+endfunction()
+
+# Build a domain name out of variable
+function(socute_to_domain var out)
+    string(REPLACE "::" "." txt "${var}")
+    string(TOLOWER "${txt}" txt)
+    set(${out} "${txt}" PARENT_SCOPE)
+endfunction()
+
+# Build the export name of a module name
+function(socute_target_export_name name out)
+    # It is not possible to give per target namespace when generating
+    # the XXXTargets.cmake file, let abuse the export name for that purpose then.
+    if ("${name}" STREQUAL "${SOCUTE_PACKAGE_EXPORT_NAME}")
+        set(${out} "${name}" PARENT_SCOPE)
     else()
-        set(${out} ${SOCUTE_PACKAGE}${mod} PARENT_SCOPE)
+        set(${out} "${SOCUTE_PACKAGE_EXPORT_NAME}::${name}" PARENT_SCOPE)
     endif()
 endfunction()
 
-# build the fullname of a short module name
-function(socute_target_full_name mod out)
-    socute_target_short_name(${mod} short)
-    set(${out} ${SOCUTE_ORGANIZATION}${short} PARENT_SCOPE)
+# Build the fullname of a short module name
+function(socute_target_full_name name out)
+    if ("${name}" STREQUAL "${SOCUTE_PACKAGE_EXPORT_NAME}")
+        set(txt "${SOCUTE_PACKAGE}")
+    else()
+        string(JOIN "::" txt "${SOCUTE_PACKAGE}" "${name}")
+    endif()
+
+    socute_to_target(${txt} txt)
+    set(${out} "${txt}" PARENT_SCOPE)
 endfunction()
 
-# build the aliasname of a short module name
-function(socute_target_alias_name mod out)
-    socute_target_short_name(${mod} short)
-    set(${out} ${SOCUTE_ORGANIZATION}::${short} PARENT_SCOPE)
+# Build the alias name of a short module name
+function(socute_target_alias_name name out)
+    if ("${name}" STREQUAL "${SOCUTE_PACKAGE_EXPORT_NAME}")
+        set(txt "${SOCUTE_PACKAGE}")
+    else()
+        string(JOIN "::" txt "${SOCUTE_PACKAGE}" "${name}")
+    endif()
+
+    set(${out} "${txt}" PARENT_SCOPE)
 endfunction()
 
-# create the prefix string that will be used to namespace C macros in generated headers
-function(socute_target_id_prefix mod out)
+# Build the prefix name that will be used to namespace C macros in generated headers
+function(socute_target_identifier_name name out)
     # The first word of the string should contain the full organization name,
     # because it may be very ugly otherwise (wink at SoCute and its mid-word capital C).
-    set(namespace ${SOCUTE_ORGANIZATION})
-    string(TOLOWER "${namespace}" namespace)
-
-    socute_target_short_name(${mod} short)
-    set(id "${namespace}${short}")
-
-    socute_to_identifier(${id} id)
-    set(${out} ${id} PARENT_SCOPE)
+    string(TOLOWER "${SOCUTE_ORGANIZATION}" lower_organization)
+    string(LENGTH "${lower_organization}" lower_organization_length)
+    socute_target_full_name("${name}" tfn)
+    string(SUBSTRING "${tfn}" ${lower_organization_length} -1 tfn)
+    string(JOIN "" txt "${lower_organization}" "${tfn}")
+    socute_to_identifier(${txt} txt)
+    set(${out} "${txt}" PARENT_SCOPE)
 endfunction()

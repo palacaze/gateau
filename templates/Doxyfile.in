@@ -32,7 +32,7 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = "${PACKAGE_FULL_NAME}"
+PROJECT_NAME           = "${PACKAGE_NAME}"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
@@ -1395,7 +1395,7 @@ GENERATE_QHP           = YES
 # the HTML output folder.
 # This tag requires that the tag GENERATE_QHP is set to YES.
 
-QCH_FILE               = "../../${PACKAGE_ORGANIZATION_LOWER}-${PACKAGE_NAME_LOWER}.qch"
+QCH_FILE               = "../../${PACKAGE_DOMAIN}.qch"
 
 # The QHP_NAMESPACE tag specifies the namespace to use when generating Qt Help
 # Project output. For more information please see Qt Help Project / Namespace
@@ -1403,7 +1403,7 @@ QCH_FILE               = "../../${PACKAGE_ORGANIZATION_LOWER}-${PACKAGE_NAME_LOW
 # The default value is: org.doxygen.Project.
 # This tag requires that the tag GENERATE_QHP is set to YES.
 
-QHP_NAMESPACE          = "com.${PACKAGE_ORGANIZATION_LOWER}.${PACKAGE_NAME_LOWER}"
+QHP_NAMESPACE          = "${PACKAGE_DOMAIN}"
 
 # The QHP_VIRTUAL_FOLDER tag specifies the namespace to use when generating Qt
 # Help Project output. For more information please see Qt Help Project / Virtual

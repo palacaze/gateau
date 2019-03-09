@@ -9,11 +9,13 @@ include(CMakePackageConfigHelpers)
 # It basically declares the target as installable and also installed headers
 # for library targets
 function(socute_install_target alias)
+    socute_to_target("${SOCUTE_PACKAGE}" projectname_target)
+
     # Set default install location if not already set
     if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         # Find out where to install stuff
         socute_get_install_root(install_root)
-        set(CMAKE_INSTALL_PREFIX "${install_root}/${PROJECT_NAME}/prefix" CACHE PATH
+        set(CMAKE_INSTALL_PREFIX "${install_root}/${projectname_target}/prefix" CACHE PATH
             "Install path prefix, prepended onto install directories." FORCE)
     endif()
 
@@ -21,7 +23,7 @@ function(socute_install_target alias)
     socute_append_cached(CMAKE_INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
 
     socute_target_full_name(${alias} target)
-    set(targets_name "${PROJECT_NAME}Targets")
+    set(targets_name "${projectname_target}Targets")
 
     # for libraries, we must install headers and declare a component
     get_target_property(target_type ${target} TYPE)
@@ -58,11 +60,12 @@ function(socute_install_target alias)
         )
 
         socute_generated_dir(gendir)
+        socute_to_subfolder("${SOCUTE_PACKAGE}" package_subfolder)
         install(
             FILES ${headers}
                   "${gendir}/${alias}Export.h"
                   "${gendir}/${alias}Version.h"
-            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${SOCUTE_ORGANIZATION}/${SOCUTE_PACKAGE}"
+            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${package_subfolder}"
             COMPONENT ${alias}
         )
     endif()
@@ -74,13 +77,15 @@ endfunction()
 # function to use once at the end of the main CMakeLists.txt to really
 # install things
 function(socute_install_project)
+    socute_to_target("${SOCUTE_PACKAGE}" projectname_target)
+
     set(targets ${SOCUTE_PACKAGE_KNOWN_TARGETS})
-    set(namespace ${SOCUTE_ORGANIZATION})
-    set(targets_name "${PROJECT_NAME}Targets")
+    set(namespace ${SOCUTE_PACKAGE_EXPORT_NAMESPACE})
+    set(targets_name "${projectname_target}Targets")
     set(targets_file "${targets_name}.cmake")
-    set(config_file  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake")
-    set(version_file "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake")
-    set(cmake_dir    "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+    set(config_file  "${CMAKE_CURRENT_BINARY_DIR}/${projectname_target}Config.cmake")
+    set(version_file "${CMAKE_CURRENT_BINARY_DIR}/${projectname_target}ConfigVersion.cmake")
+    set(cmake_dir    "${CMAKE_INSTALL_LIBDIR}/cmake/${projectname_target}")
 
     # Install the Targets file
     install(
@@ -88,7 +93,7 @@ function(socute_install_project)
         FILE ${targets_file}
         NAMESPACE ${namespace}::
         DESTINATION ${cmake_dir}
-        COMPONENT ${PROJECT_NAME}Export
+        COMPONENT ${projectname_target}Export
     )
 
     # copy the modules we used to find dependencies, they will be reused
@@ -120,7 +125,7 @@ function(socute_install_project)
         FILES ${version_file}
               ${config_file}
         DESTINATION ${cmake_dir}
-        COMPONENT ${PROJECT_NAME}Export
+        COMPONENT ${projectname_target}Export
     )
 
     # create the export-set file for our targets
@@ -129,5 +134,4 @@ function(socute_install_project)
         NAMESPACE ${namespace}::
         FILE ${targets_file}
     )
-
 endfunction()

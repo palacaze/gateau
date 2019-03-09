@@ -17,7 +17,8 @@ function(socute_get_documentation_dir dir)
         endif()
     endif()
 
-    string(APPEND SOCUTE_DOCUMENTATION_ROOT "/${SOCUTE_PACKAGE}")
+    socute_to_target("${SOCUTE_PACKAGE}" package_target)
+    string(APPEND SOCUTE_DOCUMENTATION_ROOT "/${package_target}")
     set(${dir} "${SOCUTE_DOCUMENTATION_ROOT}" PARENT_SCOPE)
 endfunction()
 
@@ -38,8 +39,8 @@ function(socute_generate_doxygen_file)
     # we automatically add EXPORT macros generated for every library
     get_property(targets GLOBAL PROPERTY SOCUTE_LIBRARY_LIST)
     foreach(lib ${targets})
-        socute_target_id_prefix(${lib} target_base_id)
-        list(APPEND GD_PREDEFINED_MACROS ${target_base_id}_EXPORT)
+        socute_target_identifier_name(${lib} target_identifier)
+        list(APPEND GD_PREDEFINED_MACROS ${target_identifier}_EXPORT)
     endforeach()
 
     # Build Doxygen compatible value list
@@ -48,13 +49,11 @@ function(socute_generate_doxygen_file)
         set(${string_out} "\"${out}\"" PARENT_SCOPE)
     endfunction()
 
-    set(PACKAGE_ORGANIZATION ${SOCUTE_ORGANIZATION})
-    string(TOLOWER ${PACKAGE_ORGANIZATION} PACKAGE_ORGANIZATION_LOWER)
     set(PACKAGE_NAME ${SOCUTE_PACKAGE})
-    string(TOLOWER ${PACKAGE_NAME} PACKAGE_NAME_LOWER)
-    socute_target_alias_name(${SOCUTE_PACKAGE} PACKAGE_FULL_NAME)
     set(PACKAGE_DESCRIPTION ${PROJECT_DESCRIPTION})
     set(PACKAGE_VERSION ${PROJECT_VERSION})
+    socute_to_domain(${SOCUTE_PACKAGE} PACKAGE_DOMAIN)
+    set(PACKAGE_DOMAIN "com.${PACKAGE_DOMAIN}")
 
     socute_get_documentation_dir(DOXYGEN_OUTPUT)
     file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT})

@@ -101,5 +101,6 @@ endfunction()
 
 # where we put generated files
 function(socute_generated_dir out)
-    set(${out} "${CMAKE_BINARY_DIR}/src/${SOCUTE_ORGANIZATION}/${SOCUTE_PACKAGE}" PARENT_SCOPE)
+    socute_to_subfolder("${SOCUTE_PACKAGE}" package_subfolder)
+    set(${out} "${CMAKE_BINARY_DIR}/src/${package_subfolder}" PARENT_SCOPE)
 endfunction()

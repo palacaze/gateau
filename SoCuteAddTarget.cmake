@@ -28,7 +28,7 @@ macro(socute_generate_metadata alias target target_id)
     set(SOCUTE_BASE_NAME ${target_id})
     set(SOCUTE_TARGET_NAME ${target})
     set(SOCUTE_PROJECT_REVISION unknown)
-    if(GIT_FOUND)
+    if (GIT_FOUND)
         execute_process(
             COMMAND ${GIT_EXECUTABLE} describe --always
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -87,59 +87,61 @@ function(socute_set_properties alias target target_id)
     socute_generate_metadata(${alias} ${target} ${target_id})
 endfunction()
 
-# Function that creates a new library, the first argument must be either an module
+# Function that creates a new library, the first argument must be either a module
 # name for multi libraries projects, or exactly the package name if there is only
 # one library to be built. That way for multi libraries, the library will be
 # called OrgaPackageMod and aliased to Orga::PackageMod, and for single library
-# projects it will be called OrgaPackage and aliasd to Orga::Package
+# projects it will be called OrgaPackage and aliased to Orga::Package
 function(socute_add_library lib)
-    socute_target_full_name(${lib} target)
-    socute_target_short_name(${lib} export_name)
+    socute_target_export_name(${lib} export_name)
+    socute_target_full_name(${lib} target_name)
     socute_target_alias_name(${lib} target_alias)
-    socute_target_id_prefix(${lib} target_base_id)
+    socute_target_identifier_name(${lib} target_identifier)
 
     # create the library
-    add_library(${target} ${ARGN})
-    add_library(${target_alias} ALIAS ${target})
+    add_library(${target_name} ${ARGN})
+    add_library(${target_alias} ALIAS ${target_name})
 
     # record the list of libraries in a property
+    # TODO: Check if lib already exists in list and throw fatal error ?
     set_property(GLOBAL APPEND PROPERTY SOCUTE_LIBRARY_LIST ${lib})
 
     # ensure a proper version and short name
-    set_target_properties(${target} PROPERTIES
+    set_target_properties(${target_name} PROPERTIES
         VERSION ${PROJECT_VERSION}
         EXPORT_NAME ${export_name}
     )
 
     # export header
     socute_generated_dir(gendir)
-    generate_export_header(${target}
-        BASE_NAME ${target_base_id}
+    generate_export_header(${target_name}
+        BASE_NAME ${target_identifier}
         EXPORT_FILE_NAME ${gendir}/${lib}Export.h
     )
     if (NOT BUILD_SHARED_LIBS)
-        target_compile_definitions(${target} PRIVATE ${target_base_id}_STATIC_DEFINE)
+        target_compile_definitions(${target_name} PRIVATE ${target_identifier}_STATIC_DEFINE)
     endif()
 
     # common properties
-    socute_set_properties(${lib} ${target} ${target_base_id})
+    socute_set_properties(${lib} ${target_name} ${target_identifier})
 endfunction()
 
-# Function that creates a new library, the first argument must the name short
-# executalbe name, which will be appended to the package name to form the full
+# Function that creates a new executable, the first argument must the name short
+# executable name, which will be appended to the package name to form the full
 # target name.
 function(socute_add_executable exe)
-    socute_target_full_name(${exe} target)
+    socute_target_export_name(${exe} export_name)
+    socute_target_full_name(${exe} target_name)
     socute_target_alias_name(${exe} target_alias)
-    socute_target_id_prefix(${exe} target_base_id)
+    socute_target_identifier_name(${exe} target_identifier)
 
     # create the executable
-    add_executable(${target} ${ARGN})
+    add_executable(${target_name} ${ARGN})
 
-    set_target_properties(${target} PROPERTIES
-        EXPORT_NAME ${exe}
+    set_target_properties(${target_name} PROPERTIES
+        EXPORT_NAME ${export_name}
     )
 
     # common properties
-    socute_set_properties(${exe} ${target} ${target_base_id})
+    socute_set_properties(${exe} ${target_name} ${target_identifier})
 endfunction()
