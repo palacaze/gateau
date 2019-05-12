@@ -23,5 +23,10 @@ macro(pkg_install)
             "-DSOCUTE_BUILD_BENCHMARKS=OFF"
             "-DSOCUTE_CI_USER=${SOCUTE_CI_USER}"
             "-DSOCUTE_CI_PASS=${SOCUTE_CI_PASS}"
+            # FIXME We pass the module path to allow using cmake-modules of the
+            # parent project, but this is a hack and may possibly break the build
+            # of the external package becase it does not control its modules path
+            # anymore
+            "-DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}"
     )
 endmacro()
