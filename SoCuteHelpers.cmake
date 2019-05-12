@@ -4,7 +4,7 @@ function(socute_append_cached var str)
     if (${var})
         list(REMOVE_DUPLICATES ${var})
     endif()
-    set(${var} ${${var}} CACHE STRINGS "" FORCE)
+    set(${var} ${${var}} CACHE STRING "" FORCE)
     mark_as_advanced(${var})
 endfunction()
 

@@ -62,8 +62,7 @@ function(socute_install_target alias)
         socute_generated_dir(gendir)
         socute_to_subfolder("${SOCUTE_PACKAGE}" package_subfolder)
         install(
-            FILES ${headers}
-                  "${gendir}/${alias}Export.h"
+            FILES "${gendir}/${alias}Export.h"
                   "${gendir}/${alias}Version.h"
             DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${package_subfolder}"
             COMPONENT ${alias}

@@ -35,6 +35,5 @@ macro(pkg_install)
     socute_external_package(celero
         CMAKE_ARGS
             "-DCMAKE_DEBUG_POSTFIX="
-            "-"
     )
 endmacro()
