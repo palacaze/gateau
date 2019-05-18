@@ -126,6 +126,11 @@ function(socute_add_library lib)
     socute_set_properties(${lib} ${target_name} ${target_identifier})
 endfunction()
 
+# Add a plugin, a library declared as a module in cmake parlance
+function(socute_add_plugin lib)
+    socute_add_library("${lib}" MODULE ${ARGN})
+endfunction()
+
 # Function that creates a new executable, the first argument must the name short
 # executable name, which will be appended to the package name to form the full
 # target name.
