@@ -39,4 +39,12 @@ macro(socute_project name)
             HOMEPAGE_URL "${SP_HOMEPAGE_URL}"
             ${SP_UNPARSED_ARGUMENTS}
     )
+
+    # cleanup macro
+    foreach(arg ${opts})
+        unset(SP_${arg})
+    endforeach()
+    unset(opts)
+    unset(arg)
+    unset(package_list)
 endmacro()

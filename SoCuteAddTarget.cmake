@@ -41,6 +41,7 @@ macro(socute_generate_metadata alias target target_id)
     socute_generated_dir(gendir)
     configure_file("${SOCUTE_CMAKE_MODULES_DIR}/templates/version.h.in"
                    "${gendir}/${alias}Version.h" @ONLY)
+    unset(gendir)
 endmacro()
 
 # Function that sets common properties to lib or exec targets

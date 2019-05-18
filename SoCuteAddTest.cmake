@@ -85,4 +85,7 @@ macro(socute_add_test target)
             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         )
     endif()
+
+    unset(target_libraries)
+    unset(target_switches)
 endmacro()
