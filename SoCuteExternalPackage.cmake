@@ -27,53 +27,127 @@ function(socute_prepare_prefix ext_root root_dir)
     endforeach()
 endfunction()
 
-# Function that simplifies working with ExternalProject_Add
-# Setup external project for a dependency to be built.
-# Accepts optional arguments IN_SOURCE and NO_EXTRACT as well as NO_CONFIGURE,
-# NO_BUILD and NO_INSTALL to disable those steps. Other unrecognized arguments
-# will be passed as-is to ExternalProject_Add.
-function(socute_external_package dep)
-    set(options IN_SOURCE NO_EXTRACT NO_CONFIGURE NO_BUILD NO_INSTALL)
-    cmake_parse_arguments(SEP "${options}" "" "" ${ARGN})
+# Same as cmake_parse_arguments, with additional handling of default arguments values
+# For any option/argument name NAME and default prefix name def, the variable
+# named ${def}_NAME will be used as default value if it exists
+function(socute_parse_arguments prefix def_prefix _optionNames _singleArgNames _multiArgNames)
+    # first set all result variables to empty
+    foreach(arg_name ${_singleArgNames} ${_multiArgNames})
+        set(${prefix}_${arg_name})
+    endforeach()
 
-    socute_get_external_root(external_root)
-    socute_get_install_root(install_root)
+    foreach(option ${_optionNames})
+        set(${prefix}_${option} FALSE)
+    endforeach()
+
+    # set to default value if available
+    foreach(arg_name ${_optionNames} ${_singleArgNames} ${_multiArgNames})
+        if (${def_prefix}_${arg_name})
+            set(${prefix}_${arg_name} ${${def_prefix}_${arg_name}})
+        endif()
+    endforeach()
+
+    set(${prefix}_UNPARSED_ARGUMENTS)
+    set(insideValues FALSE)
+    set(currentArgName)
+
+    # now iterate over all arguments and fill the result variables
+    foreach(currentArg ${ARGN})
+        list(FIND _optionNames "${currentArg}" optionIndex)
+        list(FIND _singleArgNames "${currentArg}" singleArgIndex)
+        list(FIND _multiArgNames "${currentArg}" multiArgIndex)
+
+        if(${optionIndex} EQUAL -1  AND  ${singleArgIndex} EQUAL -1  AND  ${multiArgIndex} EQUAL -1)
+            if(insideValues)
+                if("${insideValues}" STREQUAL "SINGLE")
+                    set(${prefix}_${currentArgName} ${currentArg})
+                    set(insideValues FALSE)
+                elseif("${insideValues}" STREQUAL "MULTI")
+                    list(APPEND ${prefix}_${currentArgName} ${currentArg})
+                endif()
+            else()
+                list(APPEND ${prefix}_UNPARSED_ARGUMENTS ${currentArg})
+            endif()
+        else()
+            if(NOT ${optionIndex} EQUAL -1)
+                set(${prefix}_${currentArg} TRUE)
+                set(insideValues FALSE)
+            elseif(NOT ${singleArgIndex} EQUAL -1)
+                set(currentArgName ${currentArg})
+                set(${prefix}_${currentArgName})
+                set(insideValues "SINGLE")
+            elseif(NOT ${multiArgIndex} EQUAL -1)
+                set(currentArgName ${currentArg})
+                set(${prefix}_${currentArgName})
+                set(insideValues "MULTI")
+            endif()
+        endif()
+    endforeach()
+
+    # propagate the result variables to the caller:
+    foreach(arg_name ${_singleArgNames} ${_multiArgNames} ${_optionNames})
+        set(${prefix}_${arg_name} ${${prefix}_${arg_name}} PARENT_SCOPE)
+    endforeach()
+
+    set(${prefix}_UNPARSED_ARGUMENTS ${${prefix}_UNPARSED_ARGUMENTS} PARENT_SCOPE)
+endfunction()
+
+# Function that simplifies working with ExternalProject_Add
+# It set an external project up using the supplied available information and
+# executes it in order to install the dependency immediately.
+# The list of recognized arguments is in the list of options at the begining
+# of the function below, they mostly match the names and meaning of the one
+# accepted by ExternalProject_add.
+# The arguments used to configure the external project are retrieved from two
+# sources: the arguments supplied to the function, as well as any variable in
+# scope that as the form ${dep}_OPTION_NAME, where OPTION_NAME is a variable
+# name from the 3 lists below.
+# Unrecognized arguments will be passed as-is to ExternalProject_Add.
+function(socute_install_dependency dep)
+    set(bool_options IN_SOURCE NO_EXTRACT NO_CONFIGURE NO_BUILD NO_INSTALL)
+    set(mono_options GIT TAG URL MD5 PATCH_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND)
+    set(multi_options CMAKE_ARGS)
+
+    # parse arguments supplied to the function and account for default arguments
+    # stored in variables whose names are prefixed with "${dep}_"
+    socute_parse_arguments(SID ${dep} "${bool_options}" "${mono_options}" "${multi_options}" ${ARGN})
 
     # where stuff will really be installed: per package dir
+    socute_get_external_root(external_root)
+    socute_get_install_root(install_root)
     set(install_prefix "${install_root}/${dep}")
 
-    # we need to import the module to get the appropriate variablese 2 places are possible
-    set(module_path "${SOCUTE_CMAKE_MODULES_DIR}/packages/${dep}.cmake")
-    if (NOT EXISTS "${module_path}")
-        set(module_path "${CMAKE_BINARY_DIR}/gen-modules/${dep}.cmake")
+    # sanity checks, we need a few options and avoid ambiguities
+    if (NOT SID_GIT AND NOT SID_URL)
+        message(FATAL_ERROR "Missing source URL for dependency ${dep}")
     endif()
 
-    if (EXISTS "${module_path}")
-        include("${module_path}")
-    else()
-        message(SEND_ERROR "No description module for package ${dep}, skip installation.")
-        return()
+    # A package can either use an archive or a git repo, we ensure only one
+    # of them is set
+    if (SID_GIT AND SID_URL)
+        if (${dep}_GIT)
+            unset(SID_GIT)
+            unset(SID_TAG)
+        elseif(${dep}_URL)
+            unset(SID_URL)
+            unset(SID_MD5)
+        endif()
     endif()
 
-    if (NOT DEFINED ${dep}_version)
-        message(FATAL_ERROR "Missing version number for package ${dep}")
+    # default to master branch if none supplied
+    if (SID_GIT AND NOT SID_TAG)
+        set(SID_TAG "master")
     endif()
+
+    set(work_dir "${install_prefix}/work")
+    set(prefix_dir "${install_prefix}/prefix")
 
     # A reasonable assumption is that if we stepped in this function the package
     # is currently not installed or its version is not compatible with what is
     # required. The safe bet is to reinstall it from scratch. For git archives,
     # the provided git tag will be used and the install will be reissued no matter
     # what (the prefix content will be deleted beforehand.
-    set(work_dir "${install_prefix}/work")
-    set(prefix_dir "${install_prefix}/prefix")
-    set(version_file "${install_prefix}/.version")
-
-    # Get current version number, if it exists
-    if (EXISTS "${version_file}")
-        file(READ "${version_file}" cur_version)
-    endif()
-
-    if (DEFINED ${dep}_url)
+    if (SID_URL)
         # delete work dir
         file(REMOVE_RECURSE "${work_dir}")
     endif()
@@ -120,49 +194,58 @@ function(socute_external_package dep)
     list(APPEND project_vars UPDATE_DISCONNECTED ${SOCUTE_OFFLINE})
 
     # Archive package
-    if (DEFINED ${dep}_url)
-        list(APPEND project_vars URL ${${dep}_url})
-         message(STATUS "${dep} will download file ${${dep}_url}")
+    if (SID_URL)
+        list(APPEND project_vars URL ${SID_URL})
+         message(STATUS "${dep} will download file ${SID_URL}")
     endif()
 
-    if (DEFINED ${dep}_md5)
-        list(APPEND project_vars URL_MD5 ${${dep}_md5})
+    if (SID_MD5)
+        list(APPEND project_vars URL_MD5 ${SID_MD5})
     endif()
 
     # Git package, the version is used as a tag
-    if (DEFINED ${dep}_git)
-        list(APPEND project_vars GIT_REPOSITORY ${${dep}_git})
+    if (SID_GIT)
+        list(APPEND project_vars GIT_REPOSITORY ${SID_GIT})
         list(APPEND project_vars GIT_SHALLOW 1)
-        list(APPEND project_vars GIT_TAG ${${dep}_version})
+        list(APPEND project_vars GIT_TAG ${SID_TAG})
 
-        message(STATUS "${dep} will clone repo ${${dep}_git}")
+        message(STATUS "${dep} will clone repo ${SID_GIT} branch ${SID_TAG}")
     endif()
 
-    if (SEP_IN_SOURCE)
+    if (SID_IN_SOURCE)
         list(APPEND project_vars BUILD_IN_SOURCE 1)
     else()
         list(APPEND project_vars BINARY_DIR "${work_dir}/build/${dep}")
     endif()
 
-    if (SEP_NO_EXTRACT)
+    if (SID_NO_EXTRACT)
         list(APPEND project_vars DOWNLOAD_NO_EXTRACT 1)
     endif()
 
     foreach(step CONFIGURE BUILD INSTALL)
-        if (SEP_NO_${step})
+        if (SID_NO_${step})
             list(APPEND project_vars ${step}_COMMAND "")
         endif()
     endforeach()
 
-    if (SEP_UNPARSED_ARGUMENTS)
-        list(APPEND project_vars ${SEP_UNPARSED_ARGUMENTS})
+    foreach(step PATCH CONFIGURE BUILD INSTALL)
+        if (SID_${step}_COMMAND)
+            list(APPEND project_vars ${step}_COMMAND "${SID_${step}_COMMAND}")
+        endif()
+    endforeach()
+
+    if (SID_CMAKE_ARGS)
+        list(APPEND project_vars CMAKE_ARGS ${SID_CMAKE_ARGS})
+    endif()
+
+    if (SID_UNPARSED_ARGUMENTS)
+        list(APPEND project_vars ${SID_UNPARSED_ARGUMENTS})
     endif()
 
     # We setup a mock project and execute it in a process to force immediate
     # installation of the package. ExternalProject_Add would defer installation
     # at build time instead and that would make using external dependencies for
     # the current project very difficult.
-
     set(ext_dir ${work_dir}/ext)
     file(MAKE_DIRECTORY ${ext_dir}/build)
 
@@ -191,7 +274,4 @@ function(socute_external_package dep)
         COMMAND ${CMAKE_COMMAND} --build .
         WORKING_DIRECTORY "${ext_dir}/build"
     )
-
-    # record version
-    file(WRITE "${version_file}" "${${dep}_version}")
 endfunction()

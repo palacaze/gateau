@@ -11,6 +11,10 @@ endif()
 # Set a variable with the path of the present module
 set(SOCUTE_CMAKE_MODULES_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "")
 
+# Set a variable with a list of paths where package files can be found
+# This list can be extended with socute_add_package_module_dir()
+set(SOCUTE_PACKAGE_MODULE_DIRS "${SOCUTE_CMAKE_MODULES_DIR}/packages" CACHE INTERNAL "")
+
 # Default build type
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)

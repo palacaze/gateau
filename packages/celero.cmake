@@ -1,7 +1,7 @@
 set(celero_version "master")
 set(celero_git "https://github.com/DigitalInBlue/Celero.git")
 
-macro(pkg_find)
+macro(celero_find name)
     include(FindPackageHandleStandardArgs)
 
     find_path(celero_INCLUDE_DIRS
@@ -30,9 +30,8 @@ macro(pkg_find)
     endif()
 endmacro()
 
-macro(pkg_install)
-    include(SoCuteExternalPackage)
-    socute_external_package(celero
+macro(celero_install name)
+    socute_install_dependency(celero
         CMAKE_ARGS
             "-DCMAKE_DEBUG_POSTFIX="
     )

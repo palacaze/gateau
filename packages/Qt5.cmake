@@ -1,7 +1,5 @@
-set(Qt5_version 5.10.0)
-
-macro(pkg_find)
-    find_package(Qt5 ${Qt5_version} ${ARGN} REQUIRED)
+macro(Qt5_find name)
+    find_package(Qt5 ${ARGN} REQUIRED)
 
     # We add some definitions that make Qt stricter
     if (TARGET Qt5::Core)
@@ -20,8 +18,4 @@ macro(pkg_find)
             APPEND
         )
     endif()
-endmacro()
-
-macro(pkg_install)
-    message(FATAL_ERROR "Eh. I don't know how to build Qt.")
 endmacro()

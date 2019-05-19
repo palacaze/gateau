@@ -96,15 +96,15 @@ function(socute_install_project)
     )
 
     # copy the modules we used to find dependencies, they will be reused
-    foreach(mod ${SOCUTE_PACKAGE_KNOWN_DEP_MODULE})
+    foreach(mod ${SOCUTE_PACKAGE_CONFIG_FIND_MODULE})
         install(FILES "${mod}" DESTINATION ${cmake_dir})
     endforeach()
 
     # Create the Config file
     # We rely on the information gathered from the calls to socute_find_package
     # to generate a Config file that looks for the appropriate dependencies
-    list(JOIN SOCUTE_PACKAGE_KNOWN_DEP_CMD "\n" SOCUTE_PACKAGE_FIND_DEP_CMDS)
-    string(REPLACE "|||" "\n" SOCUTE_PACKAGE_FIND_DEP_CMDS "${SOCUTE_PACKAGE_FIND_DEP_CMDS}")
+    list(JOIN SOCUTE_PACKAGE_CONFIG_FIND_CMD "\n" SOCUTE_PACKAGE_CONFIG_FIND_CMDS)
+    string(REPLACE "|||" "\n" SOCUTE_PACKAGE_CONFIG_FIND_CMDS "${SOCUTE_PACKAGE_CONFIG_FIND_CMDS}")
 
     configure_package_config_file(
         ${SOCUTE_CMAKE_MODULES_DIR}/templates/PackageConfig.cmake.in
