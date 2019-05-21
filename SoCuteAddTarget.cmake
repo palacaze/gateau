@@ -55,6 +55,7 @@ function(socute_set_properties alias target target_id)
     target_include_directories(${target} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
         $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
+        $<INSTALL_INTERFACE:include>
     )
 
     # account for options

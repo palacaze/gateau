@@ -6,9 +6,19 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
 # This function should be called for every target that needs to be installed
-# It basically declares the target as installable and also installed headers
-# for library targets
+# It basically declares the target as installable and also installs headers
+# for library targets.
+# It must be called from the same cmake file that created the target.
+#
+# The following options are offered:
+# - BINARY_ONLY to only install binaries
+# - INSTALL_BINDIR to override the binaries installation directory
+# - INSTALL_LIBDIR to override the libraries installation directory
+# - INSTALL_INCLUDEDIR to override the headers installation directory
 function(socute_install_target alias)
+    set(opts BINARY_ONLY INSTALL_BINDIR INSTALL_LIBDIR INSTALL_INCLUDEDIR)
+    cmake_parse_arguments(SIT "" "${opts}" "" ${ARGN})
+
     socute_to_target("${SOCUTE_PACKAGE}" projectname_target)
 
     # Set default install location if not already set
@@ -19,8 +29,20 @@ function(socute_install_target alias)
             "Install path prefix, prepended onto install directories." FORCE)
     endif()
 
+    if (NOT SIT_INSTALL_BINDIR)
+        set(SIT_INSTALL_BINDIR "${CMAKE_INSTALL_BINDIR}")
+    endif()
+
+    if (NOT SIT_INSTALL_LIBDIR)
+        set(SIT_INSTALL_LIBDIR "${CMAKE_INSTALL_LIBDIR}")
+    endif()
+
+    if (NOT SIT_INSTALL_INCLUDEDIR)
+        set(SIT_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}")
+    endif()
+
     # rpath
-    socute_append_cached(CMAKE_INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+    socute_append_cached(CMAKE_INSTALL_RPATH "$ORIGIN/../${SIT_INSTALL_LIBDIR}")
 
     socute_target_full_name(${alias} target)
     set(targets_name "${projectname_target}Targets")
@@ -33,7 +55,7 @@ function(socute_install_target alias)
         install(
             TARGETS ${target}
             EXPORT ${targets_name}
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${alias}
+            RUNTIME DESTINATION ${SIT_INSTALL_BINDIR} COMPONENT ${alias}
         )
 
     else()
@@ -41,40 +63,55 @@ function(socute_install_target alias)
         install(
             TARGETS ${target}
             EXPORT ${targets_name}
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${alias}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${alias}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${alias}
-            INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            RUNTIME DESTINATION ${SIT_INSTALL_BINDIR} COMPONENT ${alias}
+            LIBRARY DESTINATION ${SIT_INSTALL_LIBDIR} COMPONENT ${alias}
+            ARCHIVE DESTINATION ${SIT_INSTALL_LIBDIR} COMPONENT ${alias}
         )
 
-        # Headers will be installed relative to the "src" directory, we calculate
-        # the relative path name to append to the install prefix.
-        file(RELATIVE_PATH headers_relpath "${CMAKE_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/")
+        # Install headers if they are requested
+        if (NOT SIT_BINARY_ONLY)
+            # get a list of headers for this particular target
+            get_target_property(sources ${target} SOURCES)
+            list(FILTER sources INCLUDE REGEX ".+\\.h?(h|pp)$")
 
-        # Get the list of headers of the target, those will be installed
-        install(
-            DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/"
-            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${headers_relpath}"
-            COMPONENT ${alias}
-            FILES_MATCHING REGEX ".+\\.h?(h|pp)$"
-        )
+            # install them while respecting the original filesystem structure
+            # We are forced to install every file manually because the function
+            # install(DIRECTORY) cannot select headers for one target and the
+            # install(TARGET PUBLIC_HEADER) does not respect the filesystem structure
+            foreach(header ${sources})
+                if (NOT IS_ABSOLUTE header)
+                    set(header "${CMAKE_CURRENT_SOURCE_DIR}/${header}")
+                endif()
 
-        socute_generated_dir(gendir)
-        socute_to_subfolder("${SOCUTE_PACKAGE}" package_subfolder)
-        install(
-            FILES "${gendir}/${alias}Export.h"
-                  "${gendir}/${alias}Version.h"
-            DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${package_subfolder}"
-            COMPONENT ${alias}
-        )
+                # Headers will be installed relative to the "src" directory, we calculate
+                # the relative path name to append to the install prefix.
+                get_filename_component(header_relpath "${header}" DIRECTORY)
+                file(RELATIVE_PATH header_relpath "${CMAKE_SOURCE_DIR}/src" "${header_relpath}")
+
+                install(
+                    FILES "${header}"
+                    DESTINATION "${SIT_INSTALL_INCLUDEDIR}/${header_relpath}"
+                    COMPONENT ${alias}
+                )
+            endforeach()
+
+            # also install generated headers
+            socute_generated_dir(gendir)
+            socute_to_subfolder("${SOCUTE_PACKAGE}" package_subfolder)
+            install(
+                FILES "${gendir}/${alias}Export.h"
+                      "${gendir}/${alias}Version.h"
+                DESTINATION "${SIT_INSTALL_INCLUDEDIR}/${package_subfolder}"
+                COMPONENT ${alias}
+            )
+        endif()
     endif()
 
     # mark the target as installable
     socute_append_cached(SOCUTE_PACKAGE_KNOWN_TARGETS ${target})
 endfunction()
 
-# function to use once at the end of the main CMakeLists.txt to really
-# install things
+# function to use once at the end of the main CMakeLists.txt to really install things
 function(socute_install_project)
     socute_to_target("${SOCUTE_PACKAGE}" projectname_target)
 
