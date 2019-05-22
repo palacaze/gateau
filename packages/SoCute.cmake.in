@@ -6,12 +6,20 @@ string(REPLACE "SoCute" "" SOCUTE_PACKAGE_REPO_NAME "@SOCUTE_PACKAGE_MODULE_NAME
 socute_to_snakecase(${SOCUTE_PACKAGE_REPO_NAME} SOCUTE_PACKAGE_REPO_NAME)
 string(REPLACE "_" "-" SOCUTE_PACKAGE_REPO_NAME "${SOCUTE_PACKAGE_REPO_NAME}")
 
-set(@SOCUTE_PACKAGE_MODULE_NAME@_TAG "master")
-if (SOCUTE_CI_USER AND SOCUTE_CI_PASS)
-    set(@SOCUTE_PACKAGE_MODULE_NAME@_GIT "https://${SOCUTE_CI_USER}:${SOCUTE_CI_PASS}@gitlab.pasnox.com:9443/so-cute/libs/${SOCUTE_PACKAGE_REPO_NAME}")
-else()
-    set(@SOCUTE_PACKAGE_MODULE_NAME@_GIT "ssh://git@gitlab.pasnox.com:99/so-cute/libs/${SOCUTE_PACKAGE_REPO_NAME}.git")
+# find out where to fetch the module code from
+if (NOT DEFINED SOCUTE_GIT_SERVER)
+    set(SOCUTE_GIT_SERVER "$ENV{SOCUTE_GIT_SERVER}")
+    if (NOT SOCUTE_GIT_SERVER)
+        if (SOCUTE_CI_USER AND SOCUTE_CI_PASS)
+            set(SOCUTE_GIT_SERVER "https://${SOCUTE_CI_USER}:${SOCUTE_CI_PASS}@gitlab.pasnox.com:9443/so-cute/libs")
+        else()
+            set(SOCUTE_GIT_SERVER "ssh://git@gitlab.pasnox.com:99/so-cute/libs")
+        endif()
+    endif()
 endif()
+
+set(@SOCUTE_PACKAGE_MODULE_NAME@_TAG "master")
+set(@SOCUTE_PACKAGE_MODULE_NAME@_GIT "${SOCUTE_GIT_SERVER}/${SOCUTE_PACKAGE_REPO_NAME}")
 
 # FIXME We pass the module path to allow using cmake-modules of the
 # parent project, but this is a hack and may possibly break the build
@@ -25,6 +33,7 @@ set(@SOCUTE_PACKAGE_MODULE_NAME@_CMAKE_ARGS
     "-DSOCUTE_CI_USER=${SOCUTE_CI_USER}"
     "-DSOCUTE_CI_PASS=${SOCUTE_CI_PASS}"
     "-DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}"
+    "-DSOCUTE_GIT_SERVER=${SOCUTE_GIT_SERVER}"
 )
 
 unset(SOCUTE_PACKAGE_REPO_NAME)
