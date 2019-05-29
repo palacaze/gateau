@@ -5,6 +5,17 @@ include(SoCuteSystemVars)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
+# Set default install location if not already set
+function(_socute_setup_install_prefix)
+    if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        # Find out where to install stuff
+        socute_get_install_root(install_root)
+        socute_to_target("${SOCUTE_PACKAGE}" projectname_target)
+        set(CMAKE_INSTALL_PREFIX "${install_root}/${projectname_target}/prefix" CACHE PATH
+            "Install path prefix, prepended onto install directories." FORCE)
+    endif()
+endfunction()
+
 # This function should be called for every target that needs to be installed
 # It basically declares the target as installable and also installs headers
 # for library targets.
@@ -19,15 +30,7 @@ function(socute_install_target alias)
     set(opts BINARY_ONLY INSTALL_BINDIR INSTALL_LIBDIR INSTALL_INCLUDEDIR)
     cmake_parse_arguments(SIT "" "${opts}" "" ${ARGN})
 
-    socute_to_target("${SOCUTE_PACKAGE}" projectname_target)
-
-    # Set default install location if not already set
-    if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        # Find out where to install stuff
-        socute_get_install_root(install_root)
-        set(CMAKE_INSTALL_PREFIX "${install_root}/${projectname_target}/prefix" CACHE PATH
-            "Install path prefix, prepended onto install directories." FORCE)
-    endif()
+    _socute_setup_install_prefix()
 
     if (NOT SIT_INSTALL_BINDIR)
         set(SIT_INSTALL_BINDIR "${CMAKE_INSTALL_BINDIR}")
@@ -45,6 +48,7 @@ function(socute_install_target alias)
     socute_append_cached(CMAKE_INSTALL_RPATH "$ORIGIN/../${SIT_INSTALL_LIBDIR}")
 
     socute_target_full_name(${alias} target)
+    socute_to_target("${SOCUTE_PACKAGE}" projectname_target)
     set(targets_name "${projectname_target}Targets")
 
     # for libraries, we must install headers and declare a component
@@ -109,6 +113,38 @@ function(socute_install_target alias)
 
     # mark the target as installable
     socute_append_cached(SOCUTE_PACKAGE_KNOWN_TARGETS ${target})
+endfunction()
+
+# Wrap native install() to overwrite DESTINATION with our custom prefix if needed
+function(socute_install)
+    set(mono_options TYPE DESTINATION)
+    set(multi_options FILES DIRECTORY)
+
+    cmake_parse_arguments(SI "" "${mono_options}" "${multi_options}" ${ARGN})
+
+    if (NOT SI_DESTINATION)
+        message(FATAL_ERROR "The DESTINATION argument of socute_install is missing")
+    endif()
+
+    _socute_setup_install_prefix()
+
+    set(args ${SI_UNPARSED_ARGUMENTS})
+
+    list(INSERT args 0 DESTINATION "${SI_DESTINATION}")
+
+    if (SI_TYPE)
+        list(INSERT args 0 TYPE "${SI_TYPE}")
+    endif()
+
+    if (SI_DIRECTORY)
+        list(INSERT args 0 DIRECTORY ${SI_DIRECTORY})
+    endif()
+
+    if (SI_FILES)
+        list(INSERT args 0 FILES ${SI_FILES})
+    endif()
+
+    install(${args})
 endfunction()
 
 # function to use once at the end of the main CMakeLists.txt to really install things
