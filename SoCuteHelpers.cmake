@@ -101,7 +101,11 @@ endfunction()
 function(socute_target_identifier_name name out)
     # The first word of the string should contain the full organization name,
     # because it may be very ugly otherwise (wink at SoCute and its mid-word capital C).
-    string(TOLOWER "${SOCUTE_ORGANIZATION}" lower_organization)
+    if (SOCUTE_ORGANIZATION)
+        string(TOLOWER "${SOCUTE_ORGANIZATION}" lower_organization)
+    else()
+        string(TOLOWER "${SOCUTE_PACKAGE_EXPORT_NAME}" lower_organization)
+    endif()
     string(LENGTH "${lower_organization}" lower_organization_length)
     socute_target_full_name("${name}" tfn)
     string(SUBSTRING "${tfn}" ${lower_organization_length} -1 tfn)
