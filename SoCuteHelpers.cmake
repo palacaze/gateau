@@ -38,6 +38,12 @@ function(socute_to_subfolder var out)
     set(${out} "${txt}" PARENT_SCOPE)
 endfunction()
 
+# Build a sub filename out of variable
+function(socute_to_filename var out)
+    string(REPLACE "::" "_" txt "${var}")
+    set(${out} "${txt}" PARENT_SCOPE)
+endfunction()
+
 # Build a domain name out of variable
 function(socute_to_domain var out)
     string(REPLACE "::" "." txt "${var}")
@@ -76,6 +82,18 @@ function(socute_target_alias_name name out)
         string(JOIN "::" txt "${SOCUTE_PACKAGE}" "${name}")
     endif()
 
+    set(${out} "${txt}" PARENT_SCOPE)
+endfunction()
+
+# Build the filename of a short module name
+function(socute_target_file_name name out)
+    if ("${name}" STREQUAL "${SOCUTE_PACKAGE_EXPORT_NAME}")
+        set(txt "${SOCUTE_PACKAGE}")
+    else()
+        string(JOIN "::" txt "${SOCUTE_PACKAGE}" "${name}")
+    endif()
+
+    socute_to_filename(${txt} txt)
     set(${out} "${txt}" PARENT_SCOPE)
 endfunction()
 
