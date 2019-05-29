@@ -7,7 +7,7 @@ include(SoCuteExternalPackage)
 # Add a directory to the list of directories to search when looking for a
 # package module file with installation instructions inside of it
 function(socute_add_package_module_dir dir)
-    socute_append_cached(SOCUTE_PACKAGE_MODULE_DIRS ${repo})
+    socute_append_cached(SOCUTE_PACKAGE_MODULE_DIRS "${dir}")
 endfunction()
 
 # List directories in ${dir} and append them into CMAKE_PREFIX_PATH
