@@ -25,10 +25,14 @@ endfunction()
 
 # Function that creates translations files and automatically updates them and
 # generates their binary representation.
+# If you use a custom target in your project that is not considered by cmake as *compilable*
+# then donc forget to use the ALL parameter in your add_custom_target() call.
 function(socute_add_qt_translations target)
     set(opts_single TS_DIR QM_DIR)
     set(opts_multi LOCALES TS_OPTIONS)
     cmake_parse_arguments(SAQT "" "${opts_single}" "${opts_multi}" ${ARGN})
+
+    _socute_setup_install_prefix()
 
     foreach(arg ${opts_single} ${opts_multi})
         if (NOT SAQT_${arg} AND NOT "${arg}" STREQUAL "TS_OPTIONS")
@@ -37,10 +41,10 @@ function(socute_add_qt_translations target)
     endforeach()
 
     socute_target_full_name(${target} target_name)
+    socute_target_file_name(${target} target_file_name)
 
     foreach(locale ${SAQT_LOCALES})
-        set(basename "${PROJECT_NAME}_${target}")
-        string(TOLOWER "${basename}" basename)
+        string(TOLOWER "${target_file_name}" basename)
         list(APPEND ts_files "${SAQT_TS_DIR}/${basename}_${locale}.ts")
     endforeach()
 
@@ -48,10 +52,23 @@ function(socute_add_qt_translations target)
 
     qt5_create_translation(qm_files ${sources} ${ts_files} OPTIONS ${SAQT_TS_OPTIONS})
 
-    target_sources(${target_name}
-        PRIVATE
-            ${qm_files}
-    )
+    get_target_property(target_type ${target_name} TYPE)
+
+    if (target_type STREQUAL EXECUTABLE OR target_type STREQUAL LIBRARY)
+        target_sources(${target_name}
+            PRIVATE
+                ${qm_files}
+        )
+    else()
+        set_property(
+            TARGET
+                ${target_name}
+            APPEND
+            PROPERTY
+                SOURCES
+                    ${qm_files}
+        )
+    endif()
 
     add_custom_command(
         TARGET ${target_name}
