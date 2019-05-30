@@ -162,7 +162,6 @@ function(socute_install_dependency dep)
 
     # some cmake "cached" arguments that we wish to pass to ExternalProject_Add
     set(cache_args
-        "-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}"
         "-DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}"
         "-DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}"
         "-DCMAKE_INSTALL_PREFIX:PATH=${prefix_dir}"
@@ -170,6 +169,12 @@ function(socute_install_dependency dep)
         "-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY:BOOL=ON"
         "-DSOCUTE_EXTERNAL_ROOT:PATH=${external_root}"
     )
+
+    if (SOCUTE_EXTERNAL_BUILD_TYPE)
+        list(APPEND cache_args "-DCMAKE_BUILD_TYPE:STRING=${SOCUTE_EXTERNAL_BUILD_TYPE}")
+    else()
+        list(APPEND cache_args "-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}")
+    endif()
 
     # pass compiler or toolchain file
     if (CMAKE_TOOLCHAIN_FILE)

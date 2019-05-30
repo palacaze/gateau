@@ -80,9 +80,13 @@ function(socute_get_install_root dir)
     socute_get_external_root(external_root)
 
     # default build type folder name
-    set(build_type_folder ${CMAKE_BUILD_TYPE})
-    if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-        set(build_type_folder Defaut)
+    if (SOCUTE_EXTERNAL_BUILD_TYPE)
+        set(build_type_folder ${SOCUTE_EXTERNAL_BUILD_TYPE})
+    else()
+        set(build_type_folder ${CMAKE_BUILD_TYPE})
+    endif()
+    if (NOT build_type_folder)
+        set(build_type_folder Default)
     endif()
 
     # Compose full path
