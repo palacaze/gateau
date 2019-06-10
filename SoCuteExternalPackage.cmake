@@ -104,8 +104,8 @@ endfunction()
 # name from the 3 lists below.
 # Unrecognized arguments will be passed as-is to ExternalProject_Add.
 function(socute_install_dependency dep)
-    set(bool_options IN_SOURCE NO_EXTRACT NO_CONFIGURE NO_BUILD NO_INSTALL)
-    set(mono_options GIT TAG MD5 PATCH_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND)
+    set(bool_options IN_SOURCE NO_EXTRACT NO_CONFIGURE NO_PATCH NO_UPDATE NO_BUILD NO_INSTALL)
+    set(mono_options GIT TAG MD5 PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND)
     set(multi_options URL CMAKE_ARGS)
 
     # parse arguments supplied to the function and account for default arguments
@@ -227,13 +227,10 @@ function(socute_install_dependency dep)
         list(APPEND project_vars DOWNLOAD_NO_EXTRACT 1)
     endif()
 
-    foreach(step CONFIGURE BUILD INSTALL)
+    foreach(step UPDATE PATCH CONFIGURE BUILD INSTALL)
         if (SID_NO_${step})
             list(APPEND project_vars ${step}_COMMAND "")
         endif()
-    endforeach()
-
-    foreach(step PATCH CONFIGURE BUILD INSTALL)
         if (SID_${step}_COMMAND)
             list(APPEND project_vars ${step}_COMMAND "${SID_${step}_COMMAND}")
         endif()
@@ -258,7 +255,7 @@ function(socute_install_dependency dep)
     set(ext_cmake_content "
         cmake_minimum_required(VERSION 3.8)
         include(ExternalProject)
-        ExternalProject_add(${dep} ${project_vars})
+        ExternalProject_add(${dep} \"${project_vars}\")
         add_custom_target(trigger_${dep})
         add_dependencies(trigger_${dep} ${dep})
     ")
