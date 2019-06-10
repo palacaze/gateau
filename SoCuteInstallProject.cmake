@@ -202,7 +202,7 @@ function(socute_install_project)
 
     # create the export-set file for our targets
     export(
-        TARGETS ${full_targets}
+        TARGETS ${targets}
         NAMESPACE ${namespace}::
         FILE ${targets_file}
     )
