@@ -141,8 +141,8 @@ endmacro()
 # caches and would be limited unavailable if created inside a function scope.
 macro(socute_find_package name)
     set(bool_options IN_SOURCE NO_EXTRACT NO_PATCH NO_UPDATE NO_CONFIGURE NO_BUILD NO_INSTALL)
-    set(mono_options GIT TAG URL MD5 PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND HEADERS_DIR)
-    set(multi_options CMAKE_ARGS HEADERS)
+    set(mono_options GIT TAG URL MD5 HEADERS_DIR SOURCE_SUBDIR)
+    set(multi_options CMAKE_ARGS PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND HEADERS)
     cmake_parse_arguments(SAD "${bool_options};OPTIONAL" "${mono_options}" "${multi_options}" ${ARGN})
 
     # Prepare paths

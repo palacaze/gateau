@@ -105,7 +105,7 @@ endfunction()
 # Unrecognized arguments will be passed as-is to ExternalProject_Add.
 function(socute_install_dependency dep)
     set(bool_options IN_SOURCE NO_EXTRACT NO_CONFIGURE NO_PATCH NO_UPDATE NO_BUILD NO_INSTALL)
-    set(mono_options GIT TAG MD5)
+    set(mono_options GIT TAG MD5 SOURCE_SUBDIR)
     set(multi_options URL CMAKE_ARGS PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND)
 
     # parse arguments supplied to the function and account for default arguments
@@ -254,6 +254,7 @@ function(socute_install_dependency dep)
     #generate false dependency project
     set(ext_cmake_content "
         cmake_minimum_required(VERSION 3.8)
+        project(dep)
         include(ExternalProject)
         ExternalProject_add(${dep} \"${project_vars}\")
         add_custom_target(trigger_${dep})
