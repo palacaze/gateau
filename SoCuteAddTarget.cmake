@@ -49,7 +49,7 @@ function(socute_set_properties alias target target_id)
     # compile flags
     target_compile_definitions(${target} PRIVATE $<$<CONFIG:Release>:NDEBUG>)
     set_target_properties(${target} PROPERTIES CXX_EXTENSIONS NO)
-    target_compile_features(${target} PRIVATE cxx_std_14)
+#    target_compile_features(${target} PRIVATE cxx_std_14)
 
     # add the src dir to the include directories
     target_include_directories(${target} PUBLIC
