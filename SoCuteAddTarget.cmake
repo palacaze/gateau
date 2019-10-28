@@ -147,6 +147,7 @@ function(socute_add_executable exe)
 
     set_target_properties(${target_name} PROPERTIES
         EXPORT_NAME ${export_name}
+        OUTPUT_NAME ${exe}
     )
 
     # common properties
