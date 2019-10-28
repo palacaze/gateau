@@ -227,6 +227,10 @@ function(socute_install_dependency dep)
         list(APPEND project_vars DOWNLOAD_NO_EXTRACT 1)
     endif()
 
+    if (SID_SOURCE_SUBDIR)
+        list(APPEND project_vars SOURCE_SUBDIR "${SID_SOURCE_SUBDIR}")
+    endif()
+
     foreach(step UPDATE PATCH CONFIGURE BUILD INSTALL)
         if (SID_NO_${step})
             list(APPEND project_vars ${step}_COMMAND "")
