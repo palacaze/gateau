@@ -20,18 +20,26 @@ include(CMakeParseArguments)
 include(GenerateExportHeader)
 include(SoCuteHelpers)
 
+# default defines
+if (WIN32)
+    list(APPEND SOCUTE_DEFAULT_DEFINES UNICODE _UNICODE _CRT_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN)
+endif()
+
 # for vcs information
 find_package(Git)
 
-# Macro that creates a header with metadata information
-macro(socute_generate_metadata alias target target_id)
+# Function that creates a header with metadata information
+function(socute_generate_version_header name out)
+    socute_target_full_name(${name} target_name)
+    socute_target_identifier_name(${name} target_id)
+
     set(SOCUTE_BASE_NAME ${target_id})
-    set(SOCUTE_TARGET_NAME ${target})
+    set(SOCUTE_TARGET_NAME ${target_name})
     set(SOCUTE_PROJECT_REVISION unknown)
     if (GIT_FOUND)
         execute_process(
             COMMAND ${GIT_EXECUTABLE} describe --always
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             OUTPUT_VARIABLE SOCUTE_PROJECT_REVISION
             ERROR_QUIET
             OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -39,17 +47,27 @@ macro(socute_generate_metadata alias target target_id)
     endif()
 
     socute_generated_dir(gendir)
+    set(header_out "${gendir}/${name}Version.h")
     configure_file("${SOCUTE_CMAKE_MODULES_DIR}/templates/version.h.in"
-                   "${gendir}/${alias}Version.h" @ONLY)
-    unset(gendir)
-endmacro()
+                   "${header_out}" @ONLY)
+    set(${out} "${header_out}" PARENT_SCOPE)
+endfunction()
+
+# add public include dirs to a target
+function(socute_set_public_includes target includes)
+    foreach(inc_dir IN LISTS includes)
+        if (NOT IS_ABSOLUTE ${inc_dir})
+            set(inc_dir "${CMAKE_CURRENT_SOURCE_DIR}/${inc_dir}")
+        endif()
+        target_include_directories(${target} PUBLIC $<BUILD_INTERFACE:${inc_dir}>)
+    endforeach()
+endfunction()
 
 # Function that sets common properties to lib or exec targets
 function(socute_set_properties alias target target_id)
     # compile flags
-    target_compile_definitions(${target} PRIVATE $<$<CONFIG:Release>:NDEBUG>)
-    set_target_properties(${target} PROPERTIES CXX_EXTENSIONS NO)
-#    target_compile_features(${target} PRIVATE cxx_std_14)
+    # set_target_properties(${target} PROPERTIES CXX_EXTENSIONS NO)
+    # target_compile_features(${target} PRIVATE cxx_std_14)
 
     # add the src dir to the include directories
     target_include_directories(${target} PUBLIC
@@ -82,11 +100,12 @@ function(socute_set_properties alias target target_id)
 
     # default to hidden to catch symbol export problems
     set_target_properties(${target} PROPERTIES
+        $<$<CONFIG:Release>:C_VISIBILITY_PRESET hidden>
         $<$<CONFIG:Release>:CXX_VISIBILITY_PRESET hidden>
         $<$<CONFIG:Release>:VISIBILITY_INLINES_HIDDEN 1>
     )
 
-    socute_generate_metadata(${alias} ${target} ${target_id})
+    socute_generate_version_header(${alias} out)
 endfunction()
 
 # Function that creates a new library, the first argument must be either a module
