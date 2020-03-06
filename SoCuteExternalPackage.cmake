@@ -99,8 +99,8 @@ function(socute_install_dependency dep)
     # some cmake "cached" arguments that we wish to pass to ExternalProject_Add
     set(cache_args
         "-DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}"
-        "-DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}"
         "-DCMAKE_INSTALL_PREFIX:PATH=${prefix_dir}"
+        "-DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}"
         "-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY:BOOL=ON"
         "-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY:BOOL=ON"
         "-DCMAKE_FIND_USE_PACKAGE_REGISTRY:BOOL=OFF"
@@ -118,8 +118,8 @@ function(socute_install_dependency dep)
         list(APPEND cache_args "-DCMAKE_TOOLCHAIN_FILE:FILEPATH=${CMAKE_TOOLCHAIN_FILE}")
         list(APPEND cache_args "-DSOCUTE_TOOLCHAIN_COMPILER_VERSION:STRING=${SOCUTE_TOOLCHAIN_COMPILER_VERSION}")
     else()
-        list(APPEND cache_args "-DCMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}")
-        list(APPEND cache_args "-DCMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}")
+        list(APPEND cache_args "-DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}")
+        list(APPEND cache_args "-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}")
     endif()
 
     set(project_vars
