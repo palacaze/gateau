@@ -133,23 +133,23 @@ function(socute_install_dependency dep)
     )
 
     # Work offline ?
-    list(APPEND project_vars UPDATE_DISCONNECTED ${SOCUTE_OFFLINE})
+    list(APPEND project_vars UPDATE_DISCONNECTED "${SOCUTE_OFFLINE}")
 
     # Archive package
     if (SID_URL)
-        list(APPEND project_vars URL ${SID_URL})
+        list(APPEND project_vars URL "${SID_URL}")
          message(STATUS "${dep} will download file ${SID_URL}")
     endif()
 
     if (SID_MD5)
-        list(APPEND project_vars URL_MD5 ${SID_MD5})
+        list(APPEND project_vars URL_MD5 "${SID_MD5}")
     endif()
 
     # Git package, the version is used as a tag
     if (SID_GIT)
-        list(APPEND project_vars GIT_REPOSITORY ${SID_GIT})
+        list(APPEND project_vars GIT_REPOSITORY "${SID_GIT}")
         list(APPEND project_vars GIT_SHALLOW 1)
-        list(APPEND project_vars GIT_TAG ${SID_TAG})
+        list(APPEND project_vars GIT_TAG "${SID_TAG}")
 
         message(STATUS "${dep} will clone repo ${SID_GIT} branch ${SID_TAG}")
     endif()
@@ -178,7 +178,7 @@ function(socute_install_dependency dep)
     endforeach()
 
     if (SID_CMAKE_ARGS)
-        list(APPEND project_vars CMAKE_ARGS ${SID_CMAKE_ARGS})
+        list(APPEND project_vars CMAKE_ARGS "${SID_CMAKE_ARGS}")
     endif()
 
     if (SID_UNPARSED_ARGUMENTS)
@@ -192,14 +192,14 @@ function(socute_install_dependency dep)
     set(ext_dir "${build_dir}/ext")
 
     #generate false dependency project
-    set(ext_cmake_content "
-        cmake_minimum_required(VERSION 3.8)
-        project(dep)
-        include(ExternalProject)
-        ExternalProject_add(${dep} \"${project_vars}\")
-        add_custom_target(trigger_${dep})
-        add_dependencies(trigger_${dep} ${dep})
-    ")
+    set(ext_cmake_content
+        "cmake_minimum_required(VERSION 3.14)
+         project(dep)
+         include(ExternalProject)
+         ExternalProject_add(${dep} \"${project_vars}\")
+         add_custom_target(trigger_${dep})
+         add_dependencies(trigger_${dep} ${dep})"
+    )
 
     file(WRITE "${ext_dir}/CMakeLists.txt" "${ext_cmake_content}")
 
@@ -210,11 +210,9 @@ function(socute_install_dependency dep)
 
     # execute installation process
     execute_process(
-        COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" ${toolchain_cmd} ..
-        WORKING_DIRECTORY "${ext_dir}/build"
+        COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" ${toolchain_cmd} -S "${ext_dir}" -B "${ext_dir}/build"
     )
     execute_process(
-        COMMAND ${CMAKE_COMMAND} --build .
-        WORKING_DIRECTORY "${ext_dir}/build"
+        COMMAND ${CMAKE_COMMAND} --build "${ext_dir}/build"
     )
 endfunction()
