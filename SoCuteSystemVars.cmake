@@ -56,6 +56,12 @@ else()
     set(SOCUTE_ARCH 32)
 endif()
 
+# where we put generated files
+function(socute_generated_dir out)
+    socute_to_subfolder("${SOCUTE_PACKAGE}" package_subfolder)
+    set(${out} "${CMAKE_BINARY_DIR}/src/${package_subfolder}" PARENT_SCOPE)
+endfunction()
+
 # The actual build type used to build external deps.
 # for multiconfig generators, we choose an appropriate one, Release if possible
 function(socute_external_build_type build_type)
@@ -91,40 +97,102 @@ function(socute_get_external_root dir)
     set(${dir} "${SOCUTE_EXTERNAL_ROOT}" PARENT_SCOPE)
 endfunction()
 
-# Get the root directory which will be used to install stuff for this
-# particular compiler/system/config triplet.
-# This path is composed of socute_external_root followed by the SYSTEM name/version,
-# the compiler name-version and the config.
-function(socute_get_install_root dir)
-    # Find the root directory
-    socute_get_external_root(external_root)
-
+# Create a config specific path that builds a subdirectory of prefix containing
+# the compiler/system/config triplet to ensure abi consistency.
+function(_socute_config_specific_dir prefix out_dir)
     # default build type folder name
-    if (SOCUTE_EXTERNAL_BUILD_TYPE)
-        set(build_type_folder ${SOCUTE_EXTERNAL_BUILD_TYPE})
-    else()
-        set(build_type_folder ${CMAKE_BUILD_TYPE})
-    endif()
-    if (NOT build_type_folder)
-        set(build_type_folder Default)
-    endif()
+    socute_external_build_type(build_type_folder)
 
     # Compose full path
     set(sys "${SOCUTE_SYSTEM_FLAVOUR}-${SOCUTE_SYSTEM_VERSION}")
     set(comp "${SOCUTE_COMPILER_NAME}-${SOCUTE_COMPILER_VERSION}")
-    set(datadir "${external_root}/${sys}/${comp}/${build_type_folder}")
+    set(datadir "${prefix}/${sys}/${comp}/${build_type_folder}")
 
     # Ensure we can actually use this directory
-    file(MAKE_DIRECTORY "${datadir}")
-    if (NOT IS_DIRECTORY "${datadir}")
-        message(FATAL_ERROR "Could not create directory ${datadir}")
-    endif()
-
-    set(${dir} "${datadir}" PARENT_SCOPE)
+    socute_create_dir("${datadir}")
+    set(${out_dir} "${datadir}" PARENT_SCOPE)
 endfunction()
 
-# where we put generated files
-function(socute_generated_dir out)
-    socute_to_subfolder("${SOCUTE_PACKAGE}" package_subfolder)
-    set(${out} "${CMAKE_BINARY_DIR}/src/${package_subfolder}" PARENT_SCOPE)
+# Get the root directory where all external packages will be handled
+# SOCUTE_EXTERNAL_ROOT may be supplied to cmake at configure time, or as an
+# environment variable of the same name.
+# The fallback is ${SOCUTE_BINARY_DIR}/external.
+function(socute_external_root out_dir)
+    if (NOT DEFINED SOCUTE_EXTERNAL_ROOT)
+        set(SOCUTE_EXTERNAL_ROOT "$ENV{SOCUTE_EXTERNAL_ROOT}")
+        if (NOT SOCUTE_EXTERNAL_ROOT)
+            set(SOCUTE_EXTERNAL_ROOT "${CMAKE_BINARY_DIR}/external")
+        endif()
+    endif()
+
+    set(${out_dir} "${SOCUTE_EXTERNAL_ROOT}" PARENT_SCOPE)
+endfunction()
+
+# Get the download directory for external package archives to be saved.
+# SOCUTE_DOWNLOAD_CACHE may be supplied to cmake at configure time, or as an
+# environment variable of the same name.
+# The fallback is ${socute_external_root}/download.
+function(socute_external_download_root out_dir)
+    if (NOT DEFINED SOCUTE_DOWNLOAD_CACHE)
+        set(SOCUTE_DOWNLOAD_CACHE "$ENV{SOCUTE_DOWNLOAD_CACHE}")
+        if (NOT SOCUTE_DOWNLOAD_CACHE)
+            socute_external_root(external_root)
+            set(SOCUTE_DOWNLOAD_CACHE "${external_root}/download")
+        endif()
+    endif()
+
+    set(${out_dir} "${SOCUTE_DOWNLOAD_CACHE}" PARENT_SCOPE)
+endfunction()
+
+# The package-specific download dir
+function(socute_external_download_dir pkg out_dir)
+    socute_external_download_root(download_root)
+    set(${out_dir} "${download_root}/${pkg}" PARENT_SCOPE)
+endfunction()
+
+# Where external packages source code is decompressed
+function(socute_external_source_root out_dir)
+    socute_external_root(external_root)
+    set(${out_dir} "${external_root}/src" PARENT_SCOPE)
+endfunction()
+
+# The package-specific source dir
+function(socute_external_source_dir pkg out_dir)
+    socute_external_source_root(source_root)
+    set(${out_dir} "${source_root}/${pkg}" PARENT_SCOPE)
+endfunction()
+
+# Where external packages source code is built
+function(socute_external_build_root out_dir)
+    socute_external_root(external_root)
+    _socute_config_specific_dir("${external_root}/build" build_root)
+    set(${out_dir} "${build_root}" PARENT_SCOPE)
+endfunction()
+
+# The package-specific build dir
+function(socute_external_build_dir pkg out_dir)
+    socute_external_build_root(build_root)
+    set(${out_dir} "${build_root}/${pkg}" PARENT_SCOPE)
+endfunction()
+
+# Get the install root directory for external package.
+# SOCUTE_EXTERNAL_INSTALL_PREFIX may be supplied to cmake at configure time,
+# or as an environment variable of the same name.
+# The fallback is ${socute_external_root}/prefix/${config_specific}.
+function(socute_external_install_root out_dir)
+    if (NOT DEFINED SOCUTE_EXTERNAL_INSTALL_PREFIX)
+        set(SOCUTE_EXTERNAL_INSTALL_PREFIX "$ENV{SOCUTE_EXTERNAL_INSTALL_PREFIX}")
+        if (NOT SOCUTE_EXTERNAL_INSTALL_PREFIX)
+            socute_external_root(external_root)
+            _socute_config_specific_dir("${external_root}/prefix" SOCUTE_EXTERNAL_INSTALL_PREFIX)
+        endif()
+    endif()
+
+    set(${out_dir} "${SOCUTE_EXTERNAL_INSTALL_PREFIX}" PARENT_SCOPE)
+endfunction()
+
+# The package-specific install dir.
+function(socute_external_install_dir pkg out_dir)
+    socute_external_install_root(install_root)
+    set(${out_dir} "${install_root}/${pkg}" PARENT_SCOPE)
 endfunction()

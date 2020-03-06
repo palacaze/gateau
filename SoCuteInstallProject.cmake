@@ -5,13 +5,13 @@ include(SoCuteSystemVars)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-# Set default install location if not already set
+# Setup install location if not already set
 function(_socute_setup_install_prefix)
     if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         # Find out where to install stuff
-        socute_get_install_root(install_root)
         socute_to_target("${SOCUTE_PACKAGE}" projectname_target)
-        set(CMAKE_INSTALL_PREFIX "${install_root}/${projectname_target}/prefix" CACHE PATH
+        socute_external_install_dir("${projectname_target}" install_dir)
+        set(CMAKE_INSTALL_PREFIX "${install_dir}" CACHE PATH
             "Install path prefix, prepended onto install directories." FORCE)
     endif()
 endfunction()

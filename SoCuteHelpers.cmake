@@ -113,3 +113,11 @@ function(socute_target_identifier_name name out)
     socute_to_identifier(${txt} txt)
     set(${out} "${txt}" PARENT_SCOPE)
 endfunction()
+# create a directory and ensure existence
+function(socute_create_dir dir)
+    file(MAKE_DIRECTORY "${dir}")
+    if (NOT EXISTS "${dir}")
+        message(FATAL_ERROR "could not find or make directory ${dir}")
+    endif()
+endfunction()
+

@@ -12,17 +12,18 @@ endfunction()
 
 # List directories in ${dir} and append them into CMAKE_PREFIX_PATH
 # Theses directories contain external packages installed in their own prefix dir.
-function(_socute_update_prefix_path dir)
+function(_socute_update_prefix_path)
     # Find packages directories
+    socute_external_install_root(dir)
     file(GLOB package_prefixes LIST_DIRECTORIES true "${dir}/*")
 
     foreach(prefix ${package_prefixes})
         if (IS_DIRECTORY "${prefix}")
-            socute_append_cached(CMAKE_PREFIX_PATH "${prefix}/prefix")
+            socute_append_cached(CMAKE_PREFIX_PATH "${prefix}")
 
             # Search paths are restricted in the toolchain files in cross-compile mode,
             # however our prefix directories are safe to use so we allow to use it from find_*
-            socute_append_cached(CMAKE_FIND_ROOT_PATH "${prefix}/prefix")
+            socute_append_cached(CMAKE_FIND_ROOT_PATH "${prefix}")
         endif()
     endforeach()
 endfunction()

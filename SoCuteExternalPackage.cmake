@@ -3,28 +3,27 @@
 include(ExternalProject)
 include(SoCuteParseArguments)
 
-# Create the tree of directories needed to install a package
-# - prefix      // where stuff will be installed
-# - work        // work dir
-#   - build     // build dir
-#   - ext/build // dir where we execute a cmake file with ExternalProject_Add
-# ${SOCUTE_EXTERNAL_ROOT}/download  // archive download, shared
-# "{SOCUTE_EXTERNAL_ROOT}/src       // source dir, shared
-function(socute_prepare_prefix ext_root root_dir)
+# Create the directories needed to install the dependency dep
+function(_socute_prepare_external_dirs dep)
+    socute_external_root(d)
+    socute_create_dir("${d}")
+    socute_external_download_dir("${dep}" d)
+    socute_create_dir("${d}")
+    socute_external_source_dir("${dep}" d)
+    socute_create_dir("${d}")
+    socute_external_install_dir("${dep}" d)
+    socute_create_dir("${d}")
+
+    # several locations are used by externalproject for the build
+    socute_external_build_dir("${dep}" bd)
     set (_dirs
-        "${root_dir}/prefix"
-        "${external_root}/download"
-        "${external_root}/src"
-        "${root_dir}/work/build"
-        "${root_dir}/work/stamp"
-        "${root_dir}/work/tmp"
-        "${root_dir}/work/ext/build")
+        "${bd}/build"
+        "${bd}/stamp"
+        "${bd}/tmp"
+        "${bd}/ext/build")
 
     foreach(dir ${_dirs})
-        file(MAKE_DIRECTORY "${dir}")
-        if (NOT EXISTS "${dir}")
-            message(FATAL_ERROR "could not find or make directory ${dir}")
-        endif()
+        socute_create_dir("${dir}")
     endforeach()
 endfunction()
 
@@ -48,11 +47,6 @@ function(socute_install_dependency dep)
     # stored in variables whose names are prefixed with "${dep}_"
     socute_parse_arguments(SID ${dep} "${bool_options}" "${mono_options}" "${multi_options}" ${ARGN})
 
-    # where stuff will really be installed: per package dir
-    socute_get_external_root(external_root)
-    socute_get_install_root(install_root)
-    set(install_prefix "${install_root}/${dep}")
-
     # sanity checks, we need a few options and avoid ambiguities
     if (NOT SID_GIT AND NOT SID_URL)
         message(FATAL_ERROR "Missing source URL for dependency ${dep}")
@@ -75,8 +69,12 @@ function(socute_install_dependency dep)
         set(SID_TAG "master")
     endif()
 
-    set(work_dir "${install_prefix}/work")
-    set(prefix_dir "${install_prefix}/prefix")
+    # where stuff will be built and installed: per package dirs
+    socute_external_root(external_root)
+    socute_external_download_dir("${dep}" download_dir)
+    socute_external_source_dir("${dep}" source_dir)
+    socute_external_build_dir("${dep}" build_dir)
+    socute_external_install_dir("${dep}" install_prefix)
 
     # A reasonable assumption is that if we stepped in this function the package
     # is currently not installed or its version is not compatible with what is
@@ -84,23 +82,23 @@ function(socute_install_dependency dep)
     # the provided git tag will be used and the install will be reissued no matter
     # what (the prefix content will be deleted beforehand.
     if (SID_URL)
-        # delete work dir
-        file(REMOVE_RECURSE "${work_dir}")
+        file(REMOVE_RECURSE "${build_dir}")
     endif()
 
-    # we delete the prefix dir to avoid stale files
-    file(REMOVE_RECURSE "${prefix_dir}")
-
-    message(STATUS "Dependency ${dep} will be built in ${prefix_dir}")
+    # We also delete the prefix dir to avoid stale files
+    file(REMOVE_RECURSE "${install_prefix}")
 
     # ensure the needed working directories exist
-    socute_prepare_prefix("${external_root}" "${install_prefix}")
+    _socute_prepare_external_dirs(${dep})
+
+    message(STATUS "Dependency ${dep} will be built in ${build_dir}")
+    message(STATUS "Dependency ${dep} will be installed in ${install_prefix}")
 
     # some cmake "cached" arguments that we wish to pass to ExternalProject_Add
     set(cache_args
         "-DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}"
-        "-DCMAKE_INSTALL_PREFIX:PATH=${prefix_dir}"
         "-DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}"
+        "-DCMAKE_INSTALL_PREFIX:PATH=${install_prefix}"
         "-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY:BOOL=ON"
         "-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY:BOOL=ON"
         "-DCMAKE_FIND_USE_PACKAGE_REGISTRY:BOOL=OFF"
@@ -125,12 +123,12 @@ function(socute_install_dependency dep)
     endif()
 
     set(project_vars
-        PREFIX "${work_dir}"
-        STAMP_DIR "${work_dir}/stamp"
-        TMP_DIR "${work_dir}/tmp"
-        DOWNLOAD_DIR "${external_root}/download/${dep}"
-        SOURCE_DIR "${external_root}/src/${dep}"
-        INSTALL_DIR "${prefix_dir}"
+        PREFIX "${build_dir}"
+        STAMP_DIR "${build_dir}/stamp"
+        TMP_DIR "${build_dir}/tmp"
+        DOWNLOAD_DIR "${download_dir}"
+        SOURCE_DIR "${source_dir}"
+        INSTALL_DIR "${install_prefix}"
         CMAKE_CACHE_ARGS ${cache_args}
     )
 
@@ -159,7 +157,7 @@ function(socute_install_dependency dep)
     if (SID_IN_SOURCE)
         list(APPEND project_vars BUILD_IN_SOURCE 1)
     else()
-        list(APPEND project_vars BINARY_DIR "${work_dir}/build/${dep}")
+        list(APPEND project_vars BINARY_DIR "${build_dir}/build")
     endif()
 
     if (SID_NO_EXTRACT)
@@ -191,8 +189,7 @@ function(socute_install_dependency dep)
     # installation of the package. ExternalProject_Add would defer installation
     # at build time instead and that would make using external dependencies for
     # the current project very difficult.
-    set(ext_dir ${work_dir}/ext)
-    file(MAKE_DIRECTORY ${ext_dir}/build)
+    set(ext_dir "${build_dir}/ext")
 
     #generate false dependency project
     set(ext_cmake_content "
