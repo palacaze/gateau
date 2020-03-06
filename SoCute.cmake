@@ -16,8 +16,17 @@ set(SOCUTE_CMAKE_MODULES_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "")
 set(SOCUTE_PACKAGE_MODULE_DIRS "${SOCUTE_CMAKE_MODULES_DIR}/packages" CACHE INTERNAL "")
 
 # Default build type
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+if (NOT _SOCUTE_SETUP_CONFIGURATIONS_DONE)
+    set(_SOCUTE_SETUP_CONFIGURATIONS_DONE TRUE)
+    if (GENERATOR_IS_MULTI_CONFIG)
+        if (NOT CMAKE_CONFIGURATION_TYPES)
+            set(CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "" FORCE)
+        endif()
+    else()
+        if (NOT CMAKE_BUILD_TYPE)
+            set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+        endif()
+    endif()
 endif()
 
 # Satic or Shared libraries

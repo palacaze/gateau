@@ -56,6 +56,26 @@ else()
     set(SOCUTE_ARCH 32)
 endif()
 
+# The actual build type used to build external deps.
+# for multiconfig generators, we choose an appropriate one, Release if possible
+function(socute_external_build_type build_type)
+    if (GENERATOR_IS_MULTI_CONFIG)
+        if (Release IN_LIST CMAKE_CONFIGURATION_TYPES)
+            set(_build_type Release)
+        else()
+            list(GET CMAKE_CONFIGURATION_TYPES 0 _build_type)
+        endif()
+    else()
+        if (SOCUTE_EXTERNAL_BUILD_TYPE)
+            set(_build_type "${SOCUTE_EXTERNAL_BUILD_TYPE}")
+        else()
+            set(_build_type "${CMAKE_BUILD_TYPE}")
+        endif()
+    endif()
+
+    set(${build_type} "${_build_type}" PARENT_SCOPE)
+endfunction()
+
 # Get the root directory where all external packages will be installed
 # SOCUTE_EXTERNAL_ROOT may be supplied to cmake at configure time, otherwise the
 # environment variable of the same name will be picked. At last the fallback will

@@ -107,10 +107,12 @@ function(socute_install_dependency dep)
         "-DSOCUTE_EXTERNAL_ROOT:PATH=${external_root}"
     )
 
-    if (SOCUTE_EXTERNAL_BUILD_TYPE)
-        list(APPEND cache_args "-DCMAKE_BUILD_TYPE:STRING=${SOCUTE_EXTERNAL_BUILD_TYPE}")
+    # build type
+    socute_external_build_type(build_type)
+    if (GENERATOR_IS_MULTI_CONFIG)
+        list(APPEND cache_args "-DCMAKE_CONFIGURATION_TYPES:STRING=${build_type}")
     else()
-        list(APPEND cache_args "-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}")
+        list(APPEND cache_args "-DCMAKE_BUILD_TYPE:STRING=${build_type}")
     endif()
 
     # pass compiler or toolchain file
