@@ -113,6 +113,13 @@ function(socute_target_identifier_name name out)
     socute_to_identifier(${txt} txt)
     set(${out} "${txt}" PARENT_SCOPE)
 endfunction()
+
+# cat in_file into out_file
+function(socute_concat_file in_file out_file)
+    file(READ ${in_file} _contents)
+    file(APPEND ${out_file} "${_contents}")
+endfunction()
+
 # create a directory and ensure existence
 function(socute_create_dir dir)
     file(MAKE_DIRECTORY "${dir}")

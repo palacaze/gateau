@@ -31,18 +31,24 @@ endfunction()
 # Look for a package file module for the given dependency name.
 # It may either have the name "${name}.cmake" or be a template file with a name
 # "${nameprefix}.cmake.in" that is a prefix of the name passed in argument
-function(_socute_find_dependency_package_file name headers headers_dir out)
+function(_socute_find_dependency_package_file name single_header out)
+    set(_package_file "NOTFOUND")
+
     # first look for exact name
     foreach (dir ${SOCUTE_PACKAGE_MODULE_DIRS})
         set(module_path "${dir}/${name}.cmake")
         if (EXISTS "${module_path}")
-            set(${out} "${module_path}" PARENT_SCOPE)
-            return()
+            set(_package_file "${module_path}")
+            break()
         endif()
     endforeach()
 
     # Otherwise look for a template file that matches
     foreach (dir ${SOCUTE_PACKAGE_MODULE_DIRS})
+        if (_package_file)
+            break()
+        endif()
+
         file(GLOB_RECURSE file_templates RELATIVE "${dir}" "${dir}/*.cmake.in")
 
         foreach (templ ${file_templates})
@@ -56,25 +62,39 @@ function(_socute_find_dependency_package_file name headers headers_dir out)
                 configure_file("${dir}/${templ}" "${module_path}" @ONLY)
                 unset(SOCUTE_PACKAGE_MODULE_NAME)
 
-                set(${out} "${module_path}" PARENT_SCOPE)
-                return()
+                set(_package_file "${module_path}")
+                break()
             endif()
         endforeach()
     endforeach()
 
-    # if we handle a single header dependency, we may generate an appropriate
-    # package file for that dependency.
-    if (headers)
-        set(module_path "${CMAKE_BINARY_DIR}/gen-modules/${name}.cmake")
-        set(SOCUTE_PACKAGE_MODULE_NAME ${name})
-        set(SOCUTE_PACKAGE_MODULE_HEADERS_FILES ${headers})
-        set(SOCUTE_PACKAGE_MODULE_HEADERS_DIR ${headers_dir})
-        configure_file("${SOCUTE_CMAKE_MODULES_DIR}/templates/HeadersOnlyPackageFile.cmake.in" "${module_path}" @ONLY)
-        set(${out} "${module_path}" PARENT_SCOPE)
-    else()
-        # not found
-        set(${out} "NOTFOUND" PARENT_SCOPE)
+    # if we handle a single header dependency, we have to generate an appropriate
+    # package file
+    if (_package_file)
+        include(${_package_file})
     endif()
+
+    if (single_header)
+        set(${name}_SINGLE_HEADER "${single_header}")
+    endif()
+
+    # build a package_file from a template with consideration to potentially
+    # existing hand made custom package file to be prepended to the generated one.
+    if (${name}_SINGLE_HEADER)
+        set(module_path "${CMAKE_BINARY_DIR}/gen-modules/${name}.cmake")
+
+        if (_package_file)
+            file(COPY ${_package_file} DESTINATION "${CMAKE_BINARY_DIR}/gen-modules")
+        endif()
+
+        set(SOCUTE_PACKAGE_MODULE_NAME ${name})
+        set(SOCUTE_PACKAGE_MODULE_SINGLE_HEADER_FILE ${${name}_SINGLE_HEADER})
+        configure_file("${SOCUTE_CMAKE_MODULES_DIR}/templates/HeadersOnlyPackageFile.cmake.in" "${module_path}.tmp" @ONLY)
+        socute_concat_file("${module_path}.tmp" "${module_path}")
+        set(_package_file "${module_path}")
+    endif()
+
+    set(${out} "${_package_file}" PARENT_SCOPE)
 endfunction()
 
 # Cmake does not support dynamic macro names, ie we can't have a macro whose name
@@ -121,6 +141,9 @@ endfunction()
 # There are two ways of doing this: either using a custom pkg_find() macro that
 # may be supplied in a package file, or from a standard call to find_package otherwise.
 macro(_socute_find_dependency name package_file)
+    # In case we installed this dependency previously, we search the expected install dir too
+    _socute_update_prefix_path()
+
     if (package_file)
         include(${package_file})
         if (COMMAND ${name}_find)
@@ -133,6 +156,26 @@ macro(_socute_find_dependency name package_file)
     endif()
 endmacro()
 
+# Perform actual installation of a package
+# Installation instructions can be either contained inside a package file
+# or directly in the arguments passed to this macro.
+# When both are available, the arguments passed to socute_add_dependency
+# are forwarded to the pkg_install macro of the package file, which, in
+# turn, will be responsible to handle these arguments
+function(_socute_do_install_dependency name package_file)
+    if (package_file)
+        include(${package_file})
+    endif()
+
+    # try to install from package file
+    if (COMMAND ${name}_install)
+        _socute_call_dynamic_macro(${name}_install ${name} ${ARGN})
+    else()
+        # default action is to call install_dependency
+        socute_install_dependency(${name} ${ARGN})
+    endif()
+endfunction()
+
 # Macro that handles looking for packages and installing them in the right
 # place if missing. It uses specially crafted modules (in the packages directory)
 # containing directives that specify how to find and install said packages.
@@ -142,17 +185,14 @@ endmacro()
 # caches and would be limited unavailable if created inside a function scope.
 macro(socute_find_package name)
     set(bool_options IN_SOURCE NO_EXTRACT NO_PATCH NO_UPDATE NO_CONFIGURE NO_BUILD NO_INSTALL)
-    set(mono_options GIT TAG URL MD5 HEADERS_DIR SOURCE_SUBDIR)
-    set(multi_options CMAKE_ARGS PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND HEADERS)
+    set(mono_options GIT TAG URL MD5 SINGLE_HEADER SOURCE_SUBDIR)
+    set(multi_options CMAKE_ARGS PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND)
     cmake_parse_arguments(SAD "${bool_options};OPTIONAL" "${mono_options}" "${multi_options}" ${ARGN})
 
-    # Prepare paths
-    socute_get_install_root(install_root)
-    _socute_update_prefix_path("${install_root}")
-
     # try to find the dependency package file that contains instructions on how
-    # to find and install a package
-    _socute_find_dependency_package_file(${name} "${SAD_HEADERS}" "${SAD_HEADERS_DIR}" package_file)
+    # to find and install a package. Also handle the single header special-case
+    _socute_find_dependency_package_file(${name} "${SAD_SINGLE_HEADER}" package_file)
+    unset(SAD_SINGLE_HEADER)
 
     # try to find the dependency
     _socute_find_dependency(${name} ${package_file} ${SAD_UNPARSED_ARGUMENTS} QUIET)
@@ -171,29 +211,11 @@ macro(socute_find_package name)
             endif()
         endforeach()
 
-        # Installation instructions can be either contained inside a package file
-        # or directly in the arguments passed to this macro.
-        # When both are available, the arguments passed to socute_add_dependency
-        # are forwarded to the pkg_install macro of the package file, which, in
-        # turn, will be responsible to handle these arguments
-        if (package_file)
-            include(${package_file})
-        endif()
-
-        # try to install from package file
-        if (COMMAND ${name}_install)
-            _socute_call_dynamic_macro(${name}_install ${name} ${opts})
-        else()
-            # default action is to call
-            socute_install_dependency(${name} ${opts})
-        endif()
-
-        # update paths after installation
-        _socute_update_prefix_path("${install_root}")
+        # perform installation
+        _socute_do_install_dependency(${name} ${package_file} ${opts})
 
         # search again
-        list(APPEND SAD_UNPARSED_ARGUMENTS "REQUIRED")
-        _socute_find_dependency(${name} ${package_file} ${SAD_UNPARSED_ARGUMENTS})
+        _socute_find_dependency(${name} ${package_file} ${SAD_UNPARSED_ARGUMENTS} REQUIRED)
 
         if (NOT ${name}_FOUND)
             message(FATAL_ERROR "Installation of package '${name}' failed.")
@@ -216,4 +238,5 @@ macro(socute_find_package name)
     unset(multi_options)
     unset(opt)
     unset(opts)
+    unset(package_file)
 endmacro()

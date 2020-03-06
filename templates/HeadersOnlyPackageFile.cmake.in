@@ -3,28 +3,20 @@
 
 # find the first provided header and create an imported target
 macro(@SOCUTE_PACKAGE_MODULE_NAME@_find name)
-    set(_headers_list @SOCUTE_PACKAGE_MODULE_HEADERS_FILES@)
-    set(_headers_dir @SOCUTE_PACKAGE_MODULE_HEADERS_DIR@)
+    set(_header_url @SOCUTE_PACKAGE_MODULE_SINGLE_HEADER_FILE@)
+    set(_header_dir ${name})
 
     include(FindPackageHandleStandardArgs)
 
-    # look for the first header from the list
-    list(GET _headers_list 0 _first_header)
-    get_filename_component(_first_header ${_first_header} NAME)
-    set(_find_path_cmd NAMES ${_first_header})
-
-    # account for expected subdir
-    if (_headers_dir)
-        list(APPEND _find_path_cmd PATH_SUFFIXES ${_headers_dir})
-    endif()
-
-    find_path(${name}_INCLUDE_DIRS ${_find_path_cmd})
+    # look for the header
+    get_filename_component(_header_name ${_header_url} NAME)
+    find_path(${name}_INCLUDE_DIRS NAMES ${_header_name} PATH_SUFFIXES ${_header_dir})
 
     find_package_handle_standard_args(
         ${name} DEFAULT_MSG ${name}_INCLUDE_DIRS)
 
     # rewind once to move out of the expected subdir
-    if(${name}_FOUND AND _headers_dir)
+    if(${name}_FOUND)
         get_filename_component(${name}_INCLUDE_DIRS
             "${${name}_INCLUDE_DIRS}/.." ABSOLUTE)
     endif()
@@ -38,27 +30,20 @@ macro(@SOCUTE_PACKAGE_MODULE_NAME@_find name)
             INTERFACE_INCLUDE_DIRECTORIES "${${name}_INCLUDE_DIRS}")
     endif()
 
-    unset(_headers_list)
-    unset(_headers_dir)
-    unset(_first_header)
-    unset(_find_path_cmd)
+    unset(_header_url)
+    unset(_header_dir)
+    unset(_header_name)
 endmacro()
 
 # install headers for this dep
 macro(@SOCUTE_PACKAGE_MODULE_NAME@_install name)
-    set(_headers_list @SOCUTE_PACKAGE_MODULE_HEADERS_FILES@)
-    set(_headers_dir @SOCUTE_PACKAGE_MODULE_HEADERS_DIR@)
-
-    # build install command: create a dir if necessary, then copy the files
-    if (_headers_dir)
-        set(_install_dest "include/${_headers_dir}")
-    else()
-        set(_install_dest "include")
-    endif()
+    set(_header_url @SOCUTE_PACKAGE_MODULE_SINGLE_HEADER_FILE@)
+    set(_header_dir ${name})
+    set(_install_dest "include/${_header_dir}")
 
     # call to external project, which installs the dep
     socute_install_dependency(${name}
-        URL ${_headers_list}
+        URL ${_header_url}
         NO_EXTRACT
         NO_UPDATE
         NO_PATCH
@@ -68,7 +53,7 @@ macro(@SOCUTE_PACKAGE_MODULE_NAME@_install name)
                 COMMAND ${CMAKE_COMMAND} -E copy "<DOWNLOADED_FILE>" "<INSTALL_DIR>/${_install_dest}"
     )
 
-    unset(_headers_list)
-    unset(_headers_dir)
+    unset(_header_url)
+    unset(_header_dir)
     unset(_install_dest)
 endmacro()
