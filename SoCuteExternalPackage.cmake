@@ -103,6 +103,7 @@ function(socute_install_dependency dep)
         "-DCMAKE_INSTALL_PREFIX:PATH=${prefix_dir}"
         "-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY:BOOL=ON"
         "-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY:BOOL=ON"
+        "-DCMAKE_FIND_USE_PACKAGE_REGISTRY:BOOL=OFF"
         "-DSOCUTE_EXTERNAL_ROOT:PATH=${external_root}"
     )
 

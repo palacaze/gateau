@@ -60,6 +60,7 @@ endif()
 # in unexpected derectories
 set(CMAKE_EXPORT_NO_PACKAGE_REGISTRY ON)
 set(CMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY ON)
+set(CMAKE_FIND_USE_PACKAGE_REGISTRY OFF)
 
 # Option to work offline
 option(SOCUTE_OFFLINE "Don't go online to fetch dependency updates unless necessary" OFF)
