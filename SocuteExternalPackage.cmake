@@ -1,7 +1,7 @@
 # A wrapper over ExternalProject_Add that simplifies its use
 
 include(ExternalProject)
-include(SoCuteParseArguments)
+include(SocuteParseArguments)
 
 # Create the directories needed to install the dependency dep
 function(_socute_prepare_external_dirs dep)

@@ -1,10 +1,10 @@
-# SoCute CMake Modules
+# Socute CMake Modules
 
-This library consists in a set of CMake modules that make working with CMake both easier and safer. It has been developed for SoCute projects at first, but is quite generic and can be used outside of SoCute projects too.
+This library consists in a set of CMake modules that make working with CMake both easier and safer. It has been developed for Socute projects at first, but is quite generic and can be used outside of Socute projects too.
 
 It contains functions that make it very simple to create a project with dependencies and a few targets. In particular it is capable of:
 
-- Setting up useful options to make c++ development a breeze: reasonable compiler options, sanitizers integration, on demand lto and ccache utilization...
+- Setting up useful options to make c++ development a breeze: reasonable compiler options, sanitizers integration, on demand lto and ccache utilization...
 - Looking for dependencies, downloading, compiling and installing them if missing with minimal syntax overhead,
 - Declaring new targets that will be configured in a sensible way for you to make it both installable and importable. An export header and versioning header get generated for every target.
 - Making target trivially installable in a uniform way, with automatic installation of binaries, headers as well as generation of CMake config, version and target modules so that your project can be found and used by other projects.
@@ -14,11 +14,11 @@ It contains functions that make it very simple to create a project with dependen
 
 Below is a breakdown of the features and example code to explain how to use them.
 
-## Before you start: conventions that the project should follow
+## Before you start: conventions that the project should follow
 
 ### CMake version
 
-CMake version 3.14 or later is mandatory, as SoCute modules relies on modern CMake constructs to achieve its goals.
+CMake version 3.14 or later is mandatory, as Socute modules relies on modern CMake constructs to achieve its goals.
 
 ### Naming conventions
 
@@ -31,7 +31,7 @@ We distinguish the following three parts used to name things:
 The Organization and Project names are defined by calling the `socute_project()` function.
 Every target will be created by a call to either `socute_add_library()`, `socute_add_module()` or `socute_add_executable()`.
 
-The following table recapitulates how things get named when using SoCute cmake modules.
+The following table recapitulates how things get named when using Socute cmake modules.
 
 | Name | Meaning |
 |------|---------|
@@ -78,22 +78,22 @@ Tests and examples should be placed in directories whose name is "test" and "exa
 
 ## Declaring a project
 
-Before declaring anything, the top level CMakeLists.txt must declare a minimum version and include SoCute CMake module. This must appear at the top of the file.
-Let's assume SoCute modules lie in a socute-cmake directory in the root of the project, we expect the following:
+Before declaring anything, the top level CMakeLists.txt must declare a minimum version and include Socute CMake module. This must appear at the top of the file.
+Let's assume Socute modules lie in a socute-cmake directory in the root of the project, we expect the following:
 
 ```
 cmake_minimum_required(VERSION 3.14)
 
-# Configure SoCute cmake modules before import
+# Configure Socute cmake modules before import
 # set(SOCUTE_EXTERNAL_ROOT "$ENV{HOME}/code/external")
-# set(SOCUTE_EXTERNAL_BUILD_TYPE Release)
+# set(SOCUTE_EXTERNAL_BUILD_TYPE Release)
 # set(SOCUTE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 
-# Make SoCute modules available to CMake
+# Make Socute modules available to CMake
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/socute-cmake")
 
-# Include all the SoCute modules
-include(SoCute)
+# Include all the Socute modules
+include(Socute)
 
 # Declare the project
 socute_project(Project

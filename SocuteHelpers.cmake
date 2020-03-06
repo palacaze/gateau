@@ -1,4 +1,4 @@
-# A function that appends text to a CACHE variable
+# A function that appends elements to a CACHE variable of list/string type
 function(socute_append_cached var str)
     list(APPEND ${var} ${str})
     if (${var})
@@ -100,7 +100,7 @@ endfunction()
 # Build the prefix name that will be used to namespace C macros in generated headers
 function(socute_target_identifier_name name out)
     # The first word of the string should contain the full organization name,
-    # because it may be very ugly otherwise (wink at SoCute and its mid-word capital C).
+    # because it may be very ugly otherwise (wink at Socute and its mid-word capital C).
     if (SOCUTE_ORGANIZATION)
         string(TOLOWER "${SOCUTE_ORGANIZATION}" lower_organization)
     else()

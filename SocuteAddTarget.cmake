@@ -18,7 +18,7 @@ option(SOCUTE_KEEP_TEMPS "keep temporary compiler-generated files for debugging 
 
 include(CMakeParseArguments)
 include(GenerateExportHeader)
-include(SoCuteHelpers)
+include(SocuteHelpers)
 
 # default defines
 if (WIN32)
@@ -70,27 +70,30 @@ function(socute_set_properties alias target target_id)
     # target_compile_features(${target} PRIVATE cxx_std_14)
 
     # add the src dir to the include directories
-    target_include_directories(${target} PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
-        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
-        $<INSTALL_INTERFACE:include>
+    target_include_directories(${target}
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+            $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/src>
+            $<INSTALL_INTERFACE:include>
     )
 
     # account for options
-    target_link_libraries(${target} PRIVATE
-        $<$<BOOL:${SOCUTE_ENABLE_COMMON_WARNINGS}>:SoCute_CommonWarnings>
-        $<$<BOOL:${SOCUTE_KEEP_TEMPS}>:SoCute_SaveTemps>
-        $<$<BOOL:${SOCUTE_ENABLE_LIBCXX}>:SoCute_Libcxx>
-        $<$<BOOL:${SOCUTE_ENABLE_MANY_WARNINGS}>:SoCute_HighWarnings>
-        $<$<BOOL:${SOCUTE_ENABLE_PROFILING}>:SoCute_Profiling>
-        $<$<BOOL:${SOCUTE_SANITIZE_ADDRESS}>:SoCute_AddressSanitizer>
-        $<$<BOOL:${SOCUTE_SANITIZE_THREADS}>:SoCute_ThreadSanitizer>
-        $<$<BOOL:${SOCUTE_SANITIZE_UNDEFINED}>:SoCute_UndefinedSanitizer>
+    target_link_libraries(${target}
+        PRIVATE
+            $<$<BOOL:${SOCUTE_ENABLE_COMMON_WARNINGS}>:Socute_CommonWarnings>
+            $<$<BOOL:${SOCUTE_KEEP_TEMPS}>:Socute_SaveTemps>
+            $<$<BOOL:${SOCUTE_ENABLE_LIBCXX}>:Socute_Libcxx>
+            $<$<BOOL:${SOCUTE_ENABLE_MANY_WARNINGS}>:Socute_HighWarnings>
+            $<$<BOOL:${SOCUTE_ENABLE_PROFILING}>:Socute_Profiling>
+            $<$<BOOL:${SOCUTE_SANITIZE_ADDRESS}>:Socute_AddressSanitizer>
+            $<$<BOOL:${SOCUTE_SANITIZE_THREADS}>:Socute_ThreadSanitizer>
+            $<$<BOOL:${SOCUTE_SANITIZE_UNDEFINED}>:Socute_UndefinedSanitizer>
     )
 
     if (UNIX AND SOCUTE_COMPILER_CLANG_OR_GCC)
-        target_link_libraries(${target} PRIVATE
-            $<$<BOOL:${SOCUTE_ENABLE_AUTOSELECT_LINKER}>:SoCute_Linker>
+        target_link_libraries(${target}
+            PRIVATE
+                $<$<BOOL:${SOCUTE_ENABLE_AUTOSELECT_LINKER}>:Socute_Linker>
         )
     endif()
 

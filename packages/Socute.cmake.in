@@ -1,8 +1,8 @@
-# This package module is the default module for packages in the SoCute collection.
+# This package module is the default module for packages in the Socute collection.
 # It assumes default search strategy and git repository location.
 
-# repo name is lowercase project name, "SoCute" excluded and with "-" between words
-string(REPLACE "SoCute" "" SOCUTE_PACKAGE_REPO_NAME "@SOCUTE_PACKAGE_MODULE_NAME@")
+# repo name is lowercase project name, "Socute" excluded and with "-" between words
+string(REPLACE "Socute" "" SOCUTE_PACKAGE_REPO_NAME "@SOCUTE_PACKAGE_MODULE_NAME@")
 socute_to_snakecase(${SOCUTE_PACKAGE_REPO_NAME} SOCUTE_PACKAGE_REPO_NAME)
 string(REPLACE "_" "-" SOCUTE_PACKAGE_REPO_NAME "${SOCUTE_PACKAGE_REPO_NAME}")
 

@@ -1,4 +1,4 @@
-# This module is the main entry point of SoCute's cmake modules distribution.
+# This module is the main entry point of Socute's cmake modules distribution.
 # It should be include near the top of each project's top level CMakeLists.txt.
 
 # Guard against in-source builds
@@ -80,13 +80,13 @@ option(SOCUTE_BUILD_TESTS "Build tests" ON)
 option(SOCUTE_BUILD_DOC "Build documentation" ON)
 option(SOCUTE_BUILD_BENCHMARKS "Build benchmarks" ON)
 
-include(SoCuteHelpers)
-include(SoCuteSystemVars)
-include(SoCuteCompilerOptions)
-include(SoCuteProject)
-include(SoCuteAddTarget)
-include(SoCuteAddTest)
-include(SoCuteQtHelpers)
-include(SoCuteFindPackage)
-include(SoCuteDoxygen)
-include(SoCuteInstallProject)
+include(SocuteHelpers)
+include(SocuteConfig)
+include(SocuteCompilerOptions)
+include(SocuteProject)
+include(SocuteAddTarget)
+include(SocuteAddTest)
+include(SocuteQtHelpers)
+include(SocuteFindPackage)
+include(SocuteDoxygen)
+include(SocuteInstallProject)

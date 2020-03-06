@@ -1,7 +1,7 @@
 # This module declares function that considerably simplify project installation
 
-include(SoCuteHelpers)
-include(SoCuteSystemVars)
+include(SocuteHelpers)
+include(SocuteConfig)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 

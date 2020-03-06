@@ -1,4 +1,4 @@
-# This module can be used to generate documentation for a SoCute project.
+# This module can be used to generate documentation for a Socute project.
 # It generates an appropriate Doxygen project file from a generic template and
 # adds a "docs" target to the project that will build the documentation on demand.
 

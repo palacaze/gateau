@@ -1,8 +1,8 @@
 # This module proposes a streamlined way of handling external package dependencies.
 
-include(SoCuteHelpers)
-include(SoCuteSystemVars)
-include(SoCuteExternalPackage)
+include(SocuteHelpers)
+include(SocuteConfig)
+include(SocuteExternalPackage)
 
 # Add a directory to the list of directories to search when looking for a
 # package module file with installation instructions inside of it
@@ -89,7 +89,7 @@ function(_socute_find_dependency_package_file name single_header out)
 
         set(SOCUTE_PACKAGE_MODULE_NAME ${name})
         set(SOCUTE_PACKAGE_MODULE_SINGLE_HEADER_FILE ${${name}_SINGLE_HEADER})
-        configure_file("${SOCUTE_CMAKE_MODULES_DIR}/templates/HeadersOnlyPackageFile.cmake.in" "${module_path}.tmp" @ONLY)
+        configure_file("${SOCUTE_CMAKE_MODULES_DIR}/templates/SingleHeaderPackageFile.cmake.in" "${module_path}.tmp" @ONLY)
         socute_concat_file("${module_path}.tmp" "${module_path}")
         set(_package_file "${module_path}")
     endif()
