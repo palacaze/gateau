@@ -7,6 +7,7 @@ include(SocuteParseArguments)
 function(_socute_prepare_external_dirs dep)
     socute_external_root(d)
     socute_create_dir("${d}")
+    socute_create_dir("${d}/targets")
     socute_external_download_dir("${dep}" d)
     socute_create_dir("${d}")
     socute_external_source_dir("${dep}" d)
@@ -28,15 +29,18 @@ function(_socute_prepare_external_dirs dep)
 endfunction()
 
 # Function that simplifies working with ExternalProject_Add
-# It set an external project up using the supplied available information and
-# executes it in order to install the dependency immediately.
+# It sets an external project up using the supplied available information and
+# creates an install and uninstall target for later use.
+#
 # The list of recognized arguments is in the list of options at the begining
 # of the function below, they mostly match the names and meaning of the one
 # accepted by ExternalProject_add.
+#
 # The arguments used to configure the external project are retrieved from two
 # sources: the arguments supplied to the function, as well as any variable in
 # scope that as the form ${dep}_OPTION_NAME, where OPTION_NAME is a variable
 # name from the 3 lists below.
+#
 # Unrecognized arguments will be passed as-is to ExternalProject_Add.
 function(socute_install_dependency dep)
     set(bool_options IN_SOURCE NO_EXTRACT NO_CONFIGURE NO_PATCH NO_UPDATE NO_BUILD NO_INSTALL)
@@ -133,7 +137,7 @@ function(socute_install_dependency dep)
     )
 
     # Work offline ?
-    list(APPEND project_vars UPDATE_DISCONNECTED "${SOCUTE_OFFLINE}")
+    list(APPEND project_vars UPDATE_DISCONNECTED "${${PROJECT_IDENT}_OFFLINE}")
 
     # Archive package
     if (SID_URL)
@@ -197,22 +201,31 @@ function(socute_install_dependency dep)
          project(dep)
          include(ExternalProject)
          ExternalProject_add(${dep} \"${project_vars}\")
-         add_custom_target(trigger_${dep})
+         add_custom_target(trigger_${dep} ALL)
          add_dependencies(trigger_${dep} ${dep})"
     )
 
     file(WRITE "${ext_dir}/CMakeLists.txt" "${ext_cmake_content}")
 
+    # configure uninstallation/reinstallation targets to be reused in a specific module
+    set(SOCUTE_DEP ${dep})
+    socute_get_project_var(TEMPLATES_DIR templates)
+    configure_file(
+        "${templates}/InstallDepTarget.cmake.in"
+        "${external_root}/targets/${dep}.cmake"
+        @ONLY
+    )
+
     # we must set a toochain file if the project needs one
     if (CMAKE_TOOLCHAIN_FILE)
-        set(toolchain_cmd -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
+        set(toolchain_cmd -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_FILE}")
     endif()
 
-    # execute installation process
+    # Install right now
     execute_process(
-        COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" ${toolchain_cmd} -S "${ext_dir}" -B "${ext_dir}/build"
+        COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" ${toolchain_cmd} -S "${ext_dir}" -B "${ext_dir}/build"
     )
     execute_process(
-        COMMAND ${CMAKE_COMMAND} --build "${ext_dir}/build"
+        COMMAND "${CMAKE_COMMAND}" --build "${ext_dir}/build"
     )
 endfunction()

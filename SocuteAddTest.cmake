@@ -1,91 +1,109 @@
 # This module encapsulates add_test in order to ensure proper execution with
 # Windows and linux-mingw plateforms
+include(SocuteHelpers)
+include(SocuteAddTarget)
 
-# Extracts the library paths needed by the mingw compiler
-function(socute_mingw_library_paths out)
-    # determine library path for later execution of executables with wine
-    execute_process(
-        COMMAND ${CMAKE_CXX_COMPILER} -print-search-dirs
-        OUTPUT_VARIABLE COMPILER_LIBRARIES
-        OUTPUT_STRIP_TRAILING_WHITESPACE
+# register a test
+function(_socute_register_test target wd)
+    cmake_parse_arguments(_O "" "" "PROPERTIES;ARGUMENTS" ${ARGN})
+    add_test(
+        NAME test_${target}
+        COMMAND ${target} ${_O_ARGUMENTS}
+        WORKING_DIRECTORY "${wd}"
     )
-
-    string(FIND "${COMPILER_LIBRARIES}" "libraries: =" POS)
-    string(SUBSTRING "${COMPILER_LIBRARIES}" ${POS} -1 COMPILER_LIBRARIES)
-    string(REGEX REPLACE "libraries: =([^ ]*)" "\\1" COMPILER_LIBRARIES "${COMPILER_LIBRARIES}")
-    string(REPLACE ":" "\;" COMPILER_LIBRARIES "${COMPILER_LIBRARIES}")
-    set(${out} ${COMPILER_LIBRARIES} PARENT_SCOPE)
+    if (_O_PROPERTIES)
+        set_tests_properties(test_${target} PROPERTIES ${_O_PROPERTIES})
+    endif()
 endfunction()
 
-# converts a list of unix paths to a list of wine paths
-function(socute_to_wine_paths path_list out)
-    execute_process(
-        COMMAND winepath -w ${path_list}
-        OUTPUT_VARIABLE RESULT
-    )
-    string(REPLACE "\n" "\;" RESULT ${RESULT})
-    set(${out} ${RESULT} PARENT_SCOPE)
-endfunction()
+# register a doctest test
+function(_socute_register_doctest_test target wd)
+    target_link_libraries(${target} PRIVATE doctest::doctest)
 
-# converts a list of unix paths to a list of windows paths
-function(socute_to_win_paths path_list out)
-    foreach(p ${path_list})
-        file(TO_NATIVE_PATH "${p}" res)
-        list(APPEND out_list "${res}")
-    endforeach()
-
-    set(${out} ${out_list} PARENT_SCOPE)
-endfunction()
-
-# Obtain a list of library directories needed to execute the tests on windows.
-# Needed because of the lack of rpath.
-function(socute_win_library_paths out)
-    socute_mingw_library_paths(paths)
-    foreach(prefix ${CMAKE_PREFIX_PATH})
-        foreach(dir bin lib lib64)
-            set(path "${prefix}/${dir}")
-            if (IS_DIRECTORY ${path})
-                list(APPEND paths ${path})
-            endif()
-        endforeach()
-    endforeach()
-    set(${out} ${paths} PARENT_SCOPE)
-endfunction()
-
-macro(socute_add_test target)
-    get_property(
-        target_libraries
-        TARGET ${target}
-        PROPERTY LINK_LIBRARIES
-    )
-
-    if ("Qt5::Gui" IN_LIST target_libraries)
-        set(target_switches -platform minimal)
+    cmake_parse_arguments(_O "" "" "PROPERTIES;ARGUMENTS" ${ARGN})
+    if (_O_ARGUMENTS)
+        set(args EXTRA_ARGS ${_O_ARGUMENTS})
+    endif()
+    if (_O_PROPERTIES)
+        set(props PROPERTIES ${_O_PROPERTIES})
     endif()
 
-    if (CMAKE_SYSTEM_NAME STREQUAL Windows)
-        socute_win_library_paths(lib_paths)
+    include(doctest)
+    doctest_discover_tests(${target} WORKING_DIRECTORY "${wd}" ${args} ${props})
+endfunction()
 
-        # we need to use wine pathes
-        if (CROSSCOMPILING_EMULATOR)
-            socute_to_wine_paths("${lib_paths}" win_paths)
-        else()
-            socute_to_win_paths(${lib_paths} win_paths)
-        endif()
+# register a catch test
+function(_socute_register_catch_test target wd)
+    target_link_libraries(${target} PRIVATE Catch2::Catch2)
 
-        add_test(
-            NAME ${target}
-            COMMAND ${CROSSCOMPILING_EMULATOR} cmd /c "PATH=${win_paths};%PATH%" \\& ${target}${CMAKE_EXECUTABLE_SUFFIX} ${target_switches}
-            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-        )
+    cmake_parse_arguments(_O "" "" "PROPERTIES;ARGUMENTS" ${ARGN})
+
+    if (_O_ARGUMENTS)
+        set(args EXTRA_ARGS ${_O_ARGUMENTS})
+    endif()
+    if (_O_PROPERTIES)
+        set(props PROPERTIES ${_O_PROPERTIES})
+    endif()
+
+    include(Catch)
+    catch_discover_tests(${target} WORKING_DIRECTORY "${wd}" ${args} ${props})
+endfunction()
+
+# Setup tests with optional test provider
+macro(socute_setup_testing tests_target)
+    set(bool_options CATCH DOCTEST)
+    cmake_parse_arguments(_O "${bool_options}" "" "" ${ARGN})
+
+    enable_testing()
+
+    add_custom_target(${tests_target}
+        COMMAND "${CMAKE_CTEST_COMMAND}" --output-on-failure
+        COMMENT "Build and run all the unit tests."
+    )
+
+    socute_set_project_var(TESTS_TARGET ${tests_target})
+
+    # unit tests are provided by Catch2
+    if (_O_CATCH)
+        socute_find_package(Catch2 BUILD_DEP)
+        socute_set_project_var(TEST_PROVIDER CATCH)
+    elseif (_O_DOCTEST)
+        socute_find_package(doctest BUILD_DEP)
+        socute_set_project_var(TEST_PROVIDER DOCTEST)
     else()
-        add_test(
-            NAME ${target}
-            COMMAND ${target} ${target_switches}
-            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-        )
+        socute_set_project_var(TEST_PROVIDER UNKNOWN)
     endif()
 
-    unset(target_libraries)
-    unset(target_switches)
+    socute_cleanup_parsed(_O "${bool_options}" "" "")
+    unset(bool_options)
 endmacro()
+
+# Add a test, this is the same as calling socute_add_executable,
+# then performs auto-registration of the test
+function(socute_add_test name)
+    cmake_parse_arguments(_O "" "WORKING_DIRECTORY" "TEST_PROPERTIES;ARGUMENTS" ${ARGN})
+
+    socute_add_executable(${name} ${_O_UNPARSED_ARGUMENTS} NO_INSTALL)
+
+    socute_get_project_var(TESTS_TARGET tests_target)
+    add_dependencies(${tests_target} ${name})
+
+    if (NOT _O_WORKING_DIRECTORY)
+        set(_O_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
+    if (_O_ARGUMENTS)
+        set(args ARGUMENTS ${_O_ARGUMENTS})
+    endif()
+    if (_O_TEST_PROPERTIES)
+        set(props PROPERTIES ${_O_TEST_PROPERTIES})
+    endif()
+
+    socute_get_project_var(TEST_PROVIDER provider)
+    if (provider STREQUAL CATCH)
+        _socute_register_catch_test(${name} "${_O_WORKING_DIRECTORY}" ${args} ${props})
+    elseif(provider STREQUAL DOCTEST)
+        _socute_register_doctest_test(${name} "${_O_WORKING_DIRECTORY}" ${args} ${props})
+    else()
+        _socute_register_test(${name} "${_O_WORKING_DIRECTORY}" ${args} ${props})
+    endif()
+endfunction()

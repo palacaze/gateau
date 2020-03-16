@@ -2,24 +2,14 @@
 # It generates an appropriate Doxygen project file from a generic template and
 # adds a "docs" target to the project that will build the documentation on demand.
 
-# config option for documentation installation
-set(SOCUTE_DOCUMENTATION_ROOT "" CACHE PATH "Documentation installation root directory.")
+include(SocuteHelpers)
 
 # Get the directory where all the documentation will be installed.
-# SOCUTE_DOCUMENATION_ROOT may be supplied to cmake at configure time, otherwise the
-# environment variable of the same name will be picked. At last the fallback will
-# be ${SOCUTE_BINARY_DIR}/doc.
+# The DOCUMENATION_ROOT option may be supplied in various ways (see _socute_get_optional_var).
+# The fallback is ${PROJECT_BINARY_DIR}/doc.
 function(socute_get_documentation_dir dir)
-    if (NOT SOCUTE_DOCUMENTATION_ROOT)
-        set(SOCUTE_DOCUMENTATION_ROOT "$ENV{SOCUTE_DOCUMENTATION_ROOT}")
-        if (NOT SOCUTE_DOCUMENTATION_ROOT)
-            set(SOCUTE_DOCUMENTATION_ROOT "${CMAKE_BINARY_DIR}/doc")
-        endif()
-    endif()
-
-    socute_to_target("${SOCUTE_PACKAGE}" package_target)
-    string(APPEND SOCUTE_DOCUMENTATION_ROOT "/${package_target}")
-    set(${dir} "${SOCUTE_DOCUMENTATION_ROOT}" PARENT_SCOPE)
+    socute_get_optional_var(DOCUMENTATION_ROOT "${PROJECT_BINARY_DIR}/doc" doc_root)
+    set(${dir} "${doc_root}/${PROJECT_NAME}" PARENT_SCOPE)
 endfunction()
 
 # Generate a Doxygen file for this package from a template and a few variables
@@ -33,14 +23,27 @@ function(socute_generate_doxygen_file)
         DOXYGEN_IGNORE=1
         Q_NAMESPACE Q_DECLARE_LOGGING_CATEGORY Q_OBJECT Q_GADGET Q_BEGIN_NAMESPACE Q_END_NAMESPACE
     )
-    list(APPEND GD_INPUT_PATHS src README.md)
-    list(APPEND GD_EXCLUDED_PATHS src/3rdparty)
 
-    # we automatically add EXPORT macros generated for every library
-    get_property(targets GLOBAL PROPERTY SOCUTE_LIBRARY_LIST)
-    foreach(lib ${targets})
-        socute_target_identifier_name(${lib} target_identifier)
-        list(APPEND GD_PREDEFINED_MACROS ${target_identifier}_EXPORT)
+    # append source dirs to the input paths to scan
+    socute_get_project_var(RELATIVE_HEADERS_DIRS relative_dirs)
+    foreach(rel_dir ${relative_dirs})
+        set(_sdir "${PROJECT_SOURCE_DIR}/${rel_dir}")
+        if (IS_DIRECTORY "${_sdir}")
+            list(APPEND GD_INPUT_PATHS "${_sdir}")
+        endif()
+    endforeach()
+    if (EXISTS README.md)
+        list(APPEND GD_INPUT_PATHS README.md)
+    endif()
+
+    # we automatically add EXPORT macros generated for every non interface library
+    socute_get_project_var(KNOWN_TARGETS targets)
+    foreach(tgt ${targets})
+        get_target_property(_type ${tgt} TYPE)
+        if ((NOT _type STREQUAL "INTERFACE_LIBRARY") AND (NOT _type STREQUAL "EXECUTABLE"))
+            socute_target_identifier_name(${tgt} ident)
+            list(APPEND GD_PREDEFINED_MACROS ${ident}_EXPORT)
+        endif()
     endforeach()
 
     # Build Doxygen compatible value list
@@ -49,25 +52,21 @@ function(socute_generate_doxygen_file)
         set(${string_out} "\"${out}\"" PARENT_SCOPE)
     endfunction()
 
-    set(PACKAGE_NAME ${SOCUTE_PACKAGE})
+    set(PACKAGE_NAME ${PROJECT_NAME})
     set(PACKAGE_DESCRIPTION ${PROJECT_DESCRIPTION})
     set(PACKAGE_VERSION ${PROJECT_VERSION})
-    socute_to_domain(${SOCUTE_PACKAGE} PACKAGE_DOMAIN)
-    set(PACKAGE_DOMAIN "com.${PACKAGE_DOMAIN}")
+    string(TOLOWER "com.${PROJECT_NAME}" PACKAGE_DOMAIN)
 
     socute_get_documentation_dir(DOXYGEN_OUTPUT)
-    file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT})
-    if (NOT IS_DIRECTORY ${DOXYGEN_OUTPUT})
+    file(MAKE_DIRECTORY "${DOXYGEN_OUTPUT}")
+    if (NOT IS_DIRECTORY "${DOXYGEN_OUTPUT}")
         message(ERROR "Could not create directory ${DOXYGEN_OUTPUT} for documentation installation.\n"
-            "Please modify SOCUTE_DOCUMENTATION_ROOT option or env var to a valid path.")
+            "Please modify the SOCUTE_DOCUMENTATION_ROOT option or env var to a valid path.")
         return()
     endif()
 
-    set(DOXYGEN_IN ${SOCUTE_CMAKE_MODULES_DIR}/templates/Doxyfile.in)
-    set(DOXYGEN_OUT ${CMAKE_BINARY_DIR}/doc/Doxyfile)
-
     # qhelpgenerator executable is needed to generate a qch file
-    find_package(Qt5 COMPONENTS Help)
+    find_package(Qt5 COMPONENTS Help QUIET)
     if (TARGET Qt5::qhelpgenerator)
         get_target_property(DOXYGEN_QHG_LOCATION Qt5::qhelpgenerator IMPORTED_LOCATION)
     else()
@@ -78,8 +77,10 @@ function(socute_generate_doxygen_file)
     create_doxygen_list("${GD_EXCLUDED_PATHS}" DOXYGEN_EXCLUDE)
     create_doxygen_list("${GD_EXCLUDED_SYMBOLS}" DOXYGEN_EXCLUDE_SYMBOLS)
     create_doxygen_list("${GD_PREDEFINED_MACROS}" DOXYGEN_PREDEFINED)
-
-    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT})
+    socute_get_project_var(TEMPLATES_DIR templates)
+    set(DOXYGEN_IN "${templates}/Doxyfile.in")
+    set(DOXYGEN_OUT "${PROJECT_BINARY_DIR}/doc/Doxyfile")
+    configure_file("${DOXYGEN_IN}" "${DOXYGEN_OUT}")
 endfunction()
 
 # Generate documentation for this socute package
@@ -98,8 +99,8 @@ function(socute_build_documentation)
     socute_generate_doxygen_file("${ARGN}")
 
     add_custom_target(docs
-        COMMAND Doxygen::doxygen ${CMAKE_BINARY_DIR}/doc/Doxyfile
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMAND Doxygen::doxygen "${PROJECT_BINARY_DIR}/doc/Doxyfile"
+        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM
     )

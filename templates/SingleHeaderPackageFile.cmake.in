@@ -24,9 +24,9 @@ macro(@SOCUTE_PACKAGE_MODULE_NAME@_find name)
     mark_as_advanced(${name}_INCLUDE_DIRS)
 
     # create an imported target
-    if(${name}_FOUND AND NOT TARGET ${name})
-        add_library(${name} INTERFACE IMPORTED)
-        set_target_properties(${name} PROPERTIES
+    if(${name}_FOUND AND NOT TARGET ${name}::${name})
+        add_library(${name}::${name} INTERFACE IMPORTED)
+        set_target_properties(${name}::${name} PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "${${name}_INCLUDE_DIRS}")
     endif()
 

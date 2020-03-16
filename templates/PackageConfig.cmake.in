@@ -2,10 +2,10 @@
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 
-@SOCUTE_PACKAGE_CONFIG_FIND_CMDS@
+@SOCUTE_PACKAGE_CONFIG_FIND_PACKAGE_COMMANDS@
 
 list(REMOVE_AT CMAKE_MODULE_PATH -1)
 
-include("${CMAKE_CURRENT_LIST_DIR}/@projectname_target@Targets.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
 
-check_required_components(@projectname_target@)
+check_required_components(@PROJECT_NAME@)

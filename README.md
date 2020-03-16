@@ -1,127 +1,193 @@
 # Socute CMake Modules
 
-This library consists in a set of CMake modules that make working with CMake both easier and safer. It has been developed for Socute projects at first, but is quite generic and can be used outside of Socute projects too.
+This project consists in a set of CMake modules that make working with CMake both
+easier and safer.
 
-It contains functions that make it very simple to create a project with dependencies and a few targets. In particular it is capable of:
+It has been designed as a pragmatic tool to quickly create a working cmake
+configuration for C++ projects. As such, it is quite opiniated and equiped to
+handle the situations I commonly encounter. However, it may not be able to cope
+with random project layouts and unusual or complex needs.
 
-- Setting up useful options to make c++ development a breeze: reasonable compiler options, sanitizers integration, on demand lto and ccache utilization...
-- Looking for dependencies, downloading, compiling and installing them if missing with minimal syntax overhead,
-- Declaring new targets that will be configured in a sensible way for you to make it both installable and importable. An export header and versioning header get generated for every target.
-- Making target trivially installable in a uniform way, with automatic installation of binaries, headers as well as generation of CMake config, version and target modules so that your project can be found and used by other projects.
+This tool is currently being used to build C++ software, mostly on GNU/Linux,
+sometimes on MS Windows, using the GCC, Clang and Mingw compilers. Help will be
+needed to improve compatibility with other systems and compilers.
+
+## Features
+
+Socute aims to simplify the definition of the CMake configuration for your
+project. To paraphrase a famous book title, It does so by automating the boring
+stuff, and choosing sane defaults so you don't need to.
+
+It contains a few functions, macros and configuration variables that make it
+very simple to create an installable project with external dependencies, a few
+targets, unit test and some documentation.
+
+In particular it is capable of:
+
+- Setting up useful options to make c++ development convenient:
+  - Sane compiler options,
+  - Sanitizers integration,
+  - LTO, ccache use...
+- Looking for dependencies, downloading and compiling for you if missing,
+- Declaring new targets that will be configured in a sensible way for you to
+  make it both installable and importable by other projects. An export header
+  and version header get generated for every target.
+- Making targets trivially installable, with automatic installation of binaries,
+  headers as well as generation of CMake config, version and target modules so
+  that your project can be found and used by other projects.
 - Declaring tests in a simple way,
 - Automatically generating Doxygen documentation,
 - Generating translation files for Qt based projects.
 
-Below is a breakdown of the features and example code to explain how to use them.
+Again, it is a simple tool, not a full-fledge package manager.
 
-## Before you start: conventions that the project should follow
+## Requirements
 
-### CMake version
+### CMake
 
-CMake version 3.14 or later is mandatory, as Socute modules relies on modern CMake constructs to achieve its goals.
+Only CMake is needed. Version 3.15 or later is mandatory, as Socute modules
+relies on modern CMake constructs to achieve its goals.
 
-### Naming conventions
+### Project organization
 
-We distinguish the following three parts used to name things:
+The project layout on the file system is not imposed but it is recommended to
+organize public headers in the same way you want them installed. That way it will
+be possible to automate installation.
 
-- An optional Organization name, that shelters several projects under a common name prefix,
-- A Project name, that uniquely identifies the current project,
-- One or several target names, that will be built by the project.
-
-The Organization and Project names are defined by calling the `socute_project()` function.
-Every target will be created by a call to either `socute_add_library()`, `socute_add_module()` or `socute_add_executable()`.
-
-The following table recapitulates how things get named when using Socute cmake modules.
-
-| Name | Meaning |
-|------|---------|
-| Orga | Organization name |
-| Project | Shorthand project name declared in socute_project() |
-| Target | Shorthand target name declared in socute_add_lib/exe/mod and expected to be passed to socute api requiring a target name |
-| Orga::Project | Full project name |
-| OrgaProject | Name of the exported package when calling CMake find_pakage() |
-| OrgaProjectTarget | Full target name, this is the name to use when passing the target name to a cmake API |
-| OrgaTarget | Simplified full target name if one declares a target with the same name than the project |
-| Orga::Project::Target | Full target name alias that gets exported, to be used for linking |
-| Orga::Target | Full target name alias that gets exported when Project name == Target name |
-
-### File system structure
-
-Here is the recommended file system layout:
+A possible layout is the following:
 
 ```
-.
+Project
 ├── CMakeLists.txt
-├── data
+├── data/
 │  └── Misc.svg
-├── example
+├── doc/
+├── example/
 │  ├── CMakeLists.txt
 │  ├── Example1.cpp
 │  └── Example2.cpp
 ├── README.md
-├── src
-│  └── Organization
-│     ├── CMakeLists.txt
-│     └── Project
+├── src/
+│  └── Project/
+│     └── Target/
+│        ├── CMakeLists.txt
 │        ├── File.h
 │        ├── File.cpp
-│        └── Header.h
-└── test
+│        └── PublicHeader1.h
+│        └── PublicHeader2.h
+└── test/
    ├── CMakeLists.txt
    ├── Test1.cpp
    └── Test2.cpp
 ```
 
-The source code for the project is expected to be placed in the  src/Organization/Project directory and subdirectories. Only "src" is mandatory, but header files installation will follow the directory structure of the source code, so if one wants a nice headers layout, the above recommendation should be followed.
+This makes it possible to `#include <Project/Target/PublicHeader1.h>` from any
+other public header. The singular `test` and `example` directories make it
+possible to defined idiomatic `tests` and `examples` CMake targets.
 
-Tests and examples should be placed in directories whose name is "test" and "example", mind the lack of plural. The reason lies in the fact that CMake automatically creates mock targets for every directory name. So if we want the "tests" and "examples" target to be available for compiling those, we must avoid directory names with the exact same name (hence the singular).
 
-## Declaring a project
-
-Before declaring anything, the top level CMakeLists.txt must declare a minimum version and include Socute CMake module. This must appear at the top of the file.
-Let's assume Socute modules lie in a socute-cmake directory in the root of the project, we expect the following:
+Another customary layout is to put the public headers in the `include` directory:
 
 ```
-cmake_minimum_required(VERSION 3.14)
-
-# Configure Socute cmake modules before import
-# set(SOCUTE_EXTERNAL_ROOT "$ENV{HOME}/code/external")
-# set(SOCUTE_EXTERNAL_BUILD_TYPE Release)
-# set(SOCUTE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
-
-# Make Socute modules available to CMake
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/socute-cmake")
-
-# Include all the Socute modules
-include(Socute)
-
-# Declare the project
-socute_project(Project
-    VERSION 0.1
-    ORGANIZATION Orga
-    DESCRIPTION "My great Project"
-    HOMEPAGE_URL "https://project.orga.com"
-    LANGUAGES C CXX
-)
+Project
+├── CMakeLists.txt
+├── include/
+│  └── Project/
+│     └── Target/
+│        ├── CMakeLists.txt
+│        └── PublicHeader1.h
+│        └── PublicHeader2.h
+├── README.md
+├── src/
+   └── Target/
+      ├── CMakeLists.txt
+      ├── File.h
+      ├── File.cpp
 ```
 
-`socute_project` expects a project name as first argument, a few mandatory named arguments (VERSION, DESCRIPTION and HOMEPAGE). ORGANIZATION is optional and the other named arguments will be forwarded to the raw CMake `project` function.
+Socute can be customized to look for public headers from other base directories,
+chances are that you current project layout can be handled easily.
 
-## Finding dependencies
+## tutorial
 
-## Adding targets
+## User Manual
 
-## Making a target/project installable
+### Configuration and user visible options
 
-## Generating documentation
+Socute generates a number of configuration variables. Some are meant solely
+for to describe the project and are thus internal, others can be used to tweak
+the build configuration.
 
-## Adding tests
+Each variable is prefixed with an identifier created from the project name. The
+identifier is obtained by separating the words of the project name and producing
+a C Identifier equivalent string of it. For instance:
 
-## Qt Helpers
+| Project Name | Equivalent Prefix |
+|--------------|-------------------|
+| myproj       | MYPROJ            |
+| my-proj      | MY_PROJ           |
+| Myproj       | MYPROJ            |
+| MyProj       | MY_PROJ           |
+| my_proj      | MY_PROJ           |
 
-## API
+This prefix identifier is stored in the `PROJECT_IDENT` cache variable.
 
-### Options
+Here is a breakdown of the variables generated by Socute, by type
 
-### Functions
+#### Internal configuration variables
 
+| Variable                        | Description                                 | Default                        |
+|---------------------------------|---------------------------------------------|--------------------------------|
+| ${ID}_RELATIVE_HEADERS_DIRS     | Dirs where headers are expected to be found | src;include;Src;Source;Include |
+| ${ID}_HYPHENATE_GENERATED_FILES | Should we hyphenames generated file names   | OFF                            |
+| ${ID}_CPP_STANDARD              | The C++ standard to use on targets          | cxx_std_17                     |
+
+#### Available information
+
+| Variable           | Description                                    | Value      |
+|--------------------|------------------------------------------------|------------|
+| PROJECT_IDENT      | The identifier string used to prefix variables | ${ID}      |
+| ${ID}_ARCH         | The architecture pointer size                  | 32 or 64   |
+| ${ID}_X32          | Is this a 32 bits build                        | ON or OFF  |
+| ${ID}_X64          | Is this a 64 bits build                        | ON or OFF  |
+
+#### Options and cache variables
+
+BD = PROJECT_BINARY_DIR
+
+| Option                         | Description                                                   | Default                |
+|--------------------------------|---------------------------------------------------------------|------------------------|
+| ${ID}_BUILD_EXAMPLES           | Build code examples                                           | ON                     |
+| ${ID}_BUILD_TESTS              | Build tests                                                   | ON                     |
+| ${ID}_BUILD_DOC                | Build documentation                                           | ON                     |
+| ${ID}_BUILD_BENCHMARKS         | Build benchmarks                                              | OFF                    |
+| ${ID}_OFFLINE                  | Don't go online to fetch dependencies unless necessary        | OFF                    |
+| ${ID}_ENABLE_AUTOSELECT_LINKER | Select the best available linker                              | ON                     |
+| ${ID}_ENABLE_COMMON_WARNINGS   | Enable common compiler flags                                  | ON                     |
+| ${ID}_ENABLE_LIBCXX            | Use libc++ instead of gcc standard library                    | OFF                    |
+| ${ID}_ENABLE_LTO               | Enable link time optimization (release only)                  | OFF                    |
+| ${ID}_ENABLE_MANY_WARNINGS     | Enable more compiler warnings                                 | OFF                    |
+| ${ID}_ENABLE_PROFILING         | Add compile flags to help with profiling                      | OFF                    |
+| ${ID}_SANITIZE_ADDRESS         | Compile with address sanitizer support                        | OFF                    |
+| ${ID}_SANITIZE_THREADS         | Compile with thread sanitizer support                         | OFF                    |
+| ${ID}_SANITIZE_UNDEFINED       | Compile with undefined sanitizer support                      | OFF                    |
+| ${ID}_KEEP_TEMPS               | Keep temporary compiler-generated files for debugging purpose | OFF                    |
+| ${ID}_USE_CCACHE               | Use Ccache to speed-up compilation                            | OFF                    |
+| ${ID}_OUTPUT_DIRECTORY         | Where to place compiled targets                               | ""                     |
+| ${ID}_DOCUMENTATION_ROOT       | Documentation installation root directory                     | ${BD}/doc              |
+| ${ID}_EXTERNAL_ROOT            | Root directory where external packages get handled            | ${BD}/external         |
+| ${ID}_EXTERNAL_BUILD_TYPE      | Build type used to build external packages                    | Release                |
+| ${ID}_EXTERNAL_INSTALL_PREFIX  | Prefix where to install built external packages               | EXTERNAL_ROOT/prefix   |
+| ${ID}_DOWNLOAD_CACHE           | Directory that acts as a download cache for external packages | EXTERNAL_ROOT/download |
+
+### Project creation
+
+### Finding dependencies
+
+### Creating targets
+
+### Installing a project
+
+### Generating documentation
+
+### Adding tests
