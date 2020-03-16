@@ -45,10 +45,10 @@ macro(Qwt_install name)
     endif()
 
     socute_install_dependency(Qwt
-        PATCH_COMMAND ${CMAKE_COMMAND} -DQWT_CONFIG_FILE=<SOURCE_DIR>/qwtconfig.pri -DQWT_INSTALL_DIR=<INSTALL_DIR> -P ${CMAKE_SOURCE_DIR}/cmake/qwt-patch.cmake
-        CONFIGURE_COMMAND ${Qwt_QMAKE_EXECUTABLE} <SOURCE_DIR>/qwt.pro
-        BUILD_COMMAND ${Qwt_MAKE_COMMAND} -j10
-        INSTALL_COMMAND ${Qwt_MAKE_COMMAND} install
+        PATCH_COMMAND "${CMAKE_COMMAND}" -DQWT_CONFIG_FILE=<SOURCE_DIR>/qwtconfig.pri -DQWT_INSTALL_DIR=<INSTALL_DIR> -P "${PROJECT_SOURCE_DIR}/cmake/qwt-patch.cmake"
+        CONFIGURE_COMMAND "${Qwt_QMAKE_EXECUTABLE}" <SOURCE_DIR>/qwt.pro
+        BUILD_COMMAND "${Qwt_MAKE_COMMAND}" -j10
+        INSTALL_COMMAND "${Qwt_MAKE_COMMAND}" install
     )
 endmacro()
 
