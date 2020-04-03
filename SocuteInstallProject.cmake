@@ -45,6 +45,24 @@ function(socute_install_project)
     set(version_file "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake")
     set(cmake_dir    "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
+    # list exported targets
+    socute_get_project_var(KNOWN_TARGETS targets)
+    set(exported_targets)
+    foreach(t ${targets})
+        if (TARGET ${t})
+            get_target_property(no_export ${t} no_export)
+            # a target existing previously may have been removed
+            if (NOT no_export)
+                list(APPEND exported_targets ${t})
+            endif()
+        endif()
+    endforeach()
+
+    if (NOT exported_targets)
+        message(STATUS "No target to export, skipping install of ${PROJECT_NAME}")
+        return()
+    endif()
+
     # Install the Targets file
     install(
         EXPORT ${targets_name}
@@ -88,15 +106,6 @@ function(socute_install_project)
     )
 
     # Create the export-set file for our targets
-    socute_get_project_var(KNOWN_TARGETS targets)
-    set(exported_targets)
-    foreach(t ${targets})
-        get_target_property(no_export ${t} no_export)
-        if (NOT no_export)
-            list(APPEND exported_targets ${t})
-        endif()
-    endforeach()
-
     export(
         TARGETS ${exported_targets}
         NAMESPACE ${PROJECT_NAME}::
