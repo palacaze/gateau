@@ -204,7 +204,7 @@ endfunction()
 macro(socute_find_package name)
     set(bool_options IN_SOURCE NO_EXTRACT NO_PATCH NO_UPDATE NO_CONFIGURE NO_BUILD NO_INSTALL)
     set(mono_options GIT TAG URL MD5 SINGLE_HEADER SOURCE_SUBDIR)
-    set(multi_options CMAKE_ARGS PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND)
+    set(multi_options CMAKE_CACHE_ARGS CMAKE_ARGS PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND)
     cmake_parse_arguments(_O "${bool_options};OPTIONAL;BUILD_DEP" "${mono_options}" "${multi_options}" ${ARGN})
 
     # try to find the dependency package file that contains instructions on how

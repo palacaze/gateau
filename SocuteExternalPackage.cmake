@@ -45,7 +45,7 @@ endfunction()
 function(socute_install_dependency dep)
     set(bool_options IN_SOURCE NO_EXTRACT NO_CONFIGURE NO_PATCH NO_UPDATE NO_BUILD NO_INSTALL)
     set(mono_options GIT TAG MD5 SOURCE_SUBDIR)
-    set(multi_options URL CMAKE_ARGS PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND)
+    set(multi_options URL GIT_CONFIG CMAKE_CACHE_ARGS CMAKE_ARGS PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND)
 
     # parse arguments supplied to the function and account for default arguments
     # stored in variables whose names are prefixed with "${dep}_"
@@ -102,12 +102,17 @@ function(socute_install_dependency dep)
     set(cache_args
         "-DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}"
         "-DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}"
+        "-DCMAKE_INSTALL_RPATH:STRING=${CMAKE_INSTALL_RPATH}"
         "-DCMAKE_INSTALL_PREFIX:PATH=${install_prefix}"
         "-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY:BOOL=ON"
         "-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY:BOOL=ON"
         "-DCMAKE_FIND_USE_PACKAGE_REGISTRY:BOOL=OFF"
         "-DSOCUTE_EXTERNAL_ROOT:PATH=${external_root}"
     )
+
+    if (SID_CMAKE_CACHE_ARGS)
+        list(APPEND cache_args ${SID_CMAKE_CACHE_ARGS})
+    endif()
 
     # build type
     socute_external_build_type(build_type)
@@ -154,6 +159,9 @@ function(socute_install_dependency dep)
         list(APPEND project_vars GIT_REPOSITORY "${SID_GIT}")
         list(APPEND project_vars GIT_SHALLOW 1)
         list(APPEND project_vars GIT_TAG "${SID_TAG}")
+        if (SID_GIT_CONFIG)
+            list(APPEND project_vars GIT_CONFIG ${SID_GIT_CONFIG})
+        endif()
 
         message(STATUS "${dep} will clone repo ${SID_GIT} branch ${SID_TAG}")
     endif()
