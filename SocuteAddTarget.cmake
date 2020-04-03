@@ -258,12 +258,11 @@ function(socute_extend_target target)
 endfunction()
 
 # Set common configuration parameters on the target
-function(_socute_configure_target target)
+function(_socute_configure_target target no_version_header)
     # mark the target as known
     socute_append_project_var(KNOWN_TARGETS ${target})
 
     # extend the target with appropriate defaults
-    _socute_generate_version_header(${target} version_header)
     socute_get_project_var(CPP_STANDARD cppstd)
 
     # find include directories to append
@@ -280,8 +279,6 @@ function(_socute_configure_target target)
         endif()
     endforeach()
     socute_extend_target(${target}
-        HEADERS
-            "${version_header}"
         INCLUDE_DIRECTORIES
             PUBLIC
                 ${build_dirs}
@@ -292,6 +289,12 @@ function(_socute_configure_target target)
             PUBLIC
                 ${cppstd}
     )
+
+    # add a version header
+    if (NOT no_version_header)
+        _socute_generate_version_header(${target} version_header)
+        socute_extend_target(${target} HEADERS "${version_header}")
+    endif()
 
     get_target_property(_type ${target} TYPE)
     if (NOT _type STREQUAL INTERFACE_LIBRARY)
@@ -375,6 +378,8 @@ function(socute_add_library lib)
         NO_EXPORT           # Do not export this target in the cmake package module
         NO_INSTALL          # Do not install this target
         NO_INSTALL_HEADERS  # Do not install development headers
+        NO_EXPORT_HEADER    # Do not generate an export header
+        NO_VERSION_HEADER   # DO not generate a version header
     )
     set(mono_options INSTALL_BINDIR INSTALL_LIBDIR INSTALL_INCLUDEDIR)
     cmake_parse_arguments(SAL "${bool_options}" "${mono_options}" "" ${ARGN})
@@ -427,9 +432,9 @@ function(socute_add_library lib)
     )
 
     # configure the target with good defaults
-    _socute_configure_target(${lib})
+    _socute_configure_target(${lib} ${SAL_NO_VERSION_HEADER})
 
-    if (NOT SAL_INTERFACE)
+    if (NOT SAL_INTERFACE AND NOT SAL_NO_EXPORT_HEADER)
         # Export header and version
         _socute_generate_export_header(${lib} export_header)
         socute_extend_target(${lib}
@@ -485,7 +490,11 @@ endfunction()
 # Function that creates a new executable and configures reasonable defaults as
 # well as installation instructions
 function(socute_add_executable exe)
-    set(bool_options NO_INSTALL NO_EXPORT)
+    set(bool_options
+        NO_INSTALL          # Do not install this target
+        NO_EXPORT           # Do not export this target
+        VERSION_HEADER      # Do generate a version header
+    )
     set(mono_options OUTPUT_NAME INSTALL_BINDIR)
     cmake_parse_arguments(SAE "${bool_options}" "${mono_options}" "" ${ARGN})
 
@@ -509,8 +518,13 @@ function(socute_add_executable exe)
         no_install_headers TRUE
     )
 
+    set(_no_version_header TRUE)
+    if (SAE_VERSION_HEADER)
+        set(_version_header FALSE)
+    endif()
+
     # configure the target with good defaults
-    _socute_configure_target(${exe})
+    _socute_configure_target(${exe} ${_no_version_header})
 
     # extend the target with appropriate defaults
     socute_extend_target(${exe}
