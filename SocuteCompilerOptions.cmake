@@ -35,12 +35,11 @@ function(_socute_setup_compiler_options)
 
     # Ultra verbose warnings
     add_library(Socute_HighWarnings INTERFACE)
-    target_link_libraries(Socute_HighWarnings INTERFACE Socute_HighWarnings)
     target_compile_options(Socute_HighWarnings INTERFACE
         $<${SOCUTE_C_CXX_GCC}:
             -Wcast-qual;-Wconversion-null;-Wmissing-declarations;-Woverlength-strings;
             -Wpointer-arith;-Wunused-local-typedefs;-Wunused-result;-Wvarargs;-Wvla;
-            -Wwrite-strings;-Wconversion;-Wsign-conversion -Wodr>
+            -Wwrite-strings;-Wconversion;-Wsign-conversion;-Wodr;-Wpedantic>
         $<${SOCUTE_C_CXX_CLANG}:
             -Weverything; -Wno-unused-macros;
             -Wno-newline-eof;-Wno-exit-time-destructors;-Wno-global-constructors;
