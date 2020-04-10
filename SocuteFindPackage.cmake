@@ -139,6 +139,19 @@ function(_socute_configure_dep_targets name)
     endif()
 endfunction()
 
+# Maybe update a dep, if it is ours
+function(_socute_maybe_update_dep name)
+    # We check that the dep is ours (it is in our external install prefix)
+    if (${name}_DIR AND IS_DIRECTORY "${${name}_DIR}")
+        socute_external_install_prefix(install_prefix)
+        get_filename_component(install_prefix "${install_prefix}" REALPATH)
+        get_filename_component(_dir "${${name}_DIR}" REALPATH)
+        if(_dir MATCHES "${install_prefix}")
+            socute_update_dep(${name})
+        endif()
+    endif()
+endfunction()
+
 # Append find instructions for this dep to a module that will be installed along
 # with the project.
 function(_socute_register_dep name package_file)
@@ -208,7 +221,7 @@ macro(socute_find_package name)
     set(mono_options GIT TAG URL MD5 SOURCE_SUBDIR)
     set(multi_options CMAKE_CACHE_ARGS CMAKE_ARGS PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND)
     cmake_parse_arguments(_O
-        "${bool_options};OPTIONAL;BUILD_DEP"
+        "${bool_options};OPTIONAL;BUILD_ONLY_DEP;UPDATE_DEP"
         "${mono_options};SINGLE_HEADER"
         "${multi_options}"
         ${ARGN}
@@ -225,6 +238,8 @@ macro(socute_find_package name)
     # try to find the dependency
     _socute_find_dep_wrapper(${name} ${_O_UNPARSED_ARGUMENTS} QUIET)
 
+    set(just_installed FALSE)
+
     # not found, we will try to install it and search again
     if (NOT ${name}_FOUND AND NOT _O_OPTIONAL)
         # build option list from arguments
@@ -239,21 +254,32 @@ macro(socute_find_package name)
         if (NOT ${name}_FOUND)
             message(FATAL_ERROR "Installation of package '${name}' failed.")
         endif()
+
+        set(just_installed TRUE)
     endif()
 
     # configure custom targets for this dep if some are available
     if (${name}_FOUND)
-        _socute_configure_dep_targets(${name})
+        _socute_configure_dep_targets(${name} ${just_installed})
+    endif()
+
+    # update the dep if asked
+    if (${name}_FOUND AND NOT just_installed)
+        if (_O_UPDATE_DEP OR ${PROJECT_IDENT}_UPDATE_DEPS)
+            _socute_maybe_update_dep(${name})
+        endif()
     endif()
 
     # Register this package as a required dependency for software that will use
     # our project, unless it has been marked as a build-only dep.
-    if (${name}_FOUND AND NOT _O_BUILD_DEP)
+    if (${name}_FOUND AND NOT _O_BUILD_ONLY_DEP)
         _socute_register_dep(${name} "${package_file}" ${_O_UNPARSED_ARGUMENTS})
     endif()
 
     # We are a macro, unset everything
     socute_cleanup_parsed(_O "${bool_options}" "${mono_options}" "${multi_options}")
+
+    unset(just_installed)
     unset(bool_options)
     unset(mono_options)
     unset(multi_options)

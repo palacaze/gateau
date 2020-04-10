@@ -161,7 +161,7 @@ BD = PROJECT_BINARY_DIR
 | ${ID}_BUILD_TESTS              | Build tests                                                   | ON                     |
 | ${ID}_BUILD_DOC                | Build documentation                                           | ON                     |
 | ${ID}_BUILD_BENCHMARKS         | Build benchmarks                                              | OFF                    |
-| ${ID}_OFFLINE                  | Don't go online to fetch dependencies unless necessary        | OFF                    |
+| ${ID}_UPDATE_DEPS              | Update the external packages when the project is reconfigured | OFF                    |
 | ${ID}_ENABLE_AUTOSELECT_LINKER | Select the best available linker                              | ON                     |
 | ${ID}_ENABLE_COMMON_WARNINGS   | Enable common compiler flags                                  | ON                     |
 | ${ID}_ENABLE_LIBCXX            | Use libc++ instead of gcc standard library                    | OFF                    |

@@ -216,9 +216,6 @@ function(socute_install_dependency dep)
         CMAKE_CACHE_ARGS ${cache_args}
     )
 
-    # Work offline ?
-    list(APPEND project_vars UPDATE_DISCONNECTED "${${PROJECT_IDENT}_OFFLINE}")
-
     # Archive package
     if (SID_URL)
         list(APPEND project_vars URL "${SID_URL}")

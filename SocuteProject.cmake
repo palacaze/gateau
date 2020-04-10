@@ -117,9 +117,6 @@ endfunction()
 # the way the project is set up.
 # Those are user-facing options, so we make sure to create nice option names.
 function(_socute_declare_options)
-    # Option to work offline
-    socute_declare_option(OFFLINE OFF "Don't fetch dependency updates unless necessary")
-
     # Options that can be used to build optional stuff
     socute_declare_option(BUILD_EXAMPLES ON "Build optional examples")
     socute_declare_option(BUILD_TESTS ON "Build tests")
@@ -138,6 +135,9 @@ function(_socute_declare_options)
     socute_declare_option(SANITIZE_UNDEFINED OFF "Compile with undefined sanitizer support")
     socute_declare_option(KEEP_TEMPS OFF "Keep temporary compiler-generated files for debugging purpose")
     socute_declare_option(USE_CCACHE OFF "Use Ccache to speed-up compilation")
+
+    # Update deps
+    socute_declare_option(UPDATE_DEPS OFF "Fetch dependency updates each time the project is reconfigured")
 
     # Setup a discoverable output dir to simplify program execution
     socute_declare_user_var(OUTPUT_DIRECTORY "" "Where to put all target files when built" PATH)
