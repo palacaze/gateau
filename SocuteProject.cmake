@@ -48,6 +48,8 @@ macro(_socute_setup_defaults)
         endif()
     endif()
 
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
     # IDE
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
