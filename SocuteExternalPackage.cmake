@@ -6,13 +6,14 @@ include(SocuteParseArguments)
 # Create the directories needed to install the dependency dep
 function(_socute_prepare_external_dirs dep)
     socute_external_root(d)
-    socute_create_dir("${d}")
     socute_create_dir("${d}/targets")
     socute_external_download_dir("${dep}" d)
     socute_create_dir("${d}")
     socute_external_source_dir("${dep}" d)
     socute_create_dir("${d}")
-    socute_external_install_dir("${dep}" d)
+    socute_external_install_prefix(d)
+    socute_create_dir("${d}")
+    socute_external_install_manifest_dir(d)
     socute_create_dir("${d}")
 
     # several locations are used by externalproject for the build
@@ -26,6 +27,80 @@ function(_socute_prepare_external_dirs dep)
     foreach(dir ${_dirs})
         socute_create_dir("${dir}")
     endforeach()
+endfunction()
+
+# Path to the install manifest file
+function(socute_install_manifest_file dep out_file)
+    socute_external_install_manifest_dir(_manifest_dir)
+    socute_create_dir("${_manifest_dir}")
+    set(${out_file} "${_manifest_dir}/${dep}_install_manifest.txt" PARENT_SCOPE)
+endfunction()
+
+# Create a manifest of files that have been installed by a dep. This manifest
+# will be kept for later uninstallation of the dep.
+# The paths must be relative to the installation root.
+function(socute_create_install_manifest dep)
+    socute_install_manifest_file(${dep} manifest_file)
+    string(REPLACE ";" "\n" files "${ARGN}")
+    file(WRITE "${manifest_file}" "${files}")
+endfunction()
+
+# Create an uninstall script for the dep
+function(socute_configure_uninstall_script dep script)
+    socute_get_project_var(TEMPLATES_DIR templates)
+    socute_external_root(root_dir)
+    set(uninstall_script "${root_dir}/targets/uninstall_${dep}.cmake")
+
+    # Create an appropriate script
+    set(SOCUTE_DEP ${dep})
+    configure_file(
+        "${templates}/UninstallDepScript.cmake.in"
+        "${uninstall_script}"
+        @ONLY
+    )
+
+    set(${script} "${uninstall_script}" PARENT_SCOPE)
+endfunction()
+
+# Create an uninstall target for the dep
+function(socute_configure_uninstall_target dep)
+    socute_configure_uninstall_script(${dep} uninstall_script)
+    socute_external_install_prefix(install_prefix)
+    if (NOT COMMAND uninstall_${dep})
+        add_custom_target(uninstall_${dep}
+            COMMENT "Uninstall the package ${dep}"
+            COMMAND "${CMAKE_COMMAND}" -DSOCUTE_DEP_INSTALL_PREFIX=${install_prefix} -P "${uninstall_script}"
+            VERBATIM
+        )
+        set_target_properties(uninstall_${dep} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+    endif()
+endfunction()
+
+# Create update and reinstall targets for the dep
+function(socute_configure_update_reinstall_targets dep)
+    socute_external_root(root_dir)
+    set(_script "${root_dir}/targets/update_reinstall_${dep}.cmake")
+    if (EXISTS "${_script}")
+        include("${_script}")
+    endif()
+endfunction()
+
+# Uninstall a dep immediately
+function(socute_uninstall_dep dep)
+    socute_configure_uninstall_script(${dep} uninstall_script)
+    socute_external_install_prefix(install_prefix)
+    execute_process(
+        COMMAND "${CMAKE_COMMAND}" -DSOCUTE_DEP_INSTALL_PREFIX=${install_prefix} -P "${uninstall_script}"
+    )
+endfunction()
+
+# Update a dep immediately
+function(socute_update_dep dep)
+    socute_external_build_dir("${dep}" build_dir)
+    set(ext_dir "${build_dir}/ext")
+    execute_process(
+        COMMAND "${CMAKE_COMMAND}" --build "${ext_dir}/build"
+    )
 endfunction()
 
 # Function that simplifies working with ExternalProject_Add
@@ -78,7 +153,7 @@ function(socute_install_dependency dep)
     socute_external_download_dir("${dep}" download_dir)
     socute_external_source_dir("${dep}" source_dir)
     socute_external_build_dir("${dep}" build_dir)
-    socute_external_install_dir("${dep}" install_prefix)
+    socute_external_install_prefix(install_prefix)
 
     # A reasonable assumption is that if we stepped in this function the package
     # is currently not installed or its version is not compatible with what is
@@ -89,8 +164,8 @@ function(socute_install_dependency dep)
         file(REMOVE_RECURSE "${build_dir}")
     endif()
 
-    # We also delete the prefix dir to avoid stale files
-    file(REMOVE_RECURSE "${install_prefix}")
+    # Also uninstall the previous installation
+    socute_uninstall_dep(${dep})
 
     # ensure the needed working directories exist
     _socute_prepare_external_dirs(${dep})
@@ -203,37 +278,61 @@ function(socute_install_dependency dep)
     # the current project very difficult.
     set(ext_dir "${build_dir}/ext")
 
-    #generate false dependency project
-    set(ext_cmake_content
-        "cmake_minimum_required(VERSION 3.14)
-         project(dep)
-         include(ExternalProject)
-         ExternalProject_add(${dep} \"${project_vars}\")
-         add_custom_target(trigger_${dep} ALL)
-         add_dependencies(trigger_${dep} ${dep})"
-    )
-
-    file(WRITE "${ext_dir}/CMakeLists.txt" "${ext_cmake_content}")
-
-    # configure uninstallation/reinstallation targets to be reused in a specific module
+    # Generate a mock project to force immediate installation of the dep.
+    # This project also creates an install manifest, used for uninstallation purpose
     set(SOCUTE_DEP ${dep})
+    set(SOCUTE_DEP_PROJECT_VARS ${project_vars})
+    set(SOCUTE_DEP_BUILD_DIR "${build_dir}/build")
+    set(SOCUTE_DEP_INSTALL_DIR "${install_prefix}")
     socute_get_project_var(TEMPLATES_DIR templates)
+
     configure_file(
-        "${templates}/InstallDepTarget.cmake.in"
-        "${external_root}/targets/${dep}.cmake"
+        "${templates}/BuildDepProject.cmake.in"
+        "${ext_dir}/CMakeLists.txt"
+        @ONLY
+    )
+    configure_file(
+        "${templates}/CreateDepInstallManifest.cmake.in"
+        "${ext_dir}/CreateManifest.cmake"
         @ONLY
     )
 
-    # we must set a toochain file if the project needs one
+    # We must set a toochain file if the project needs one
     if (CMAKE_TOOLCHAIN_FILE)
         set(toolchain_cmd -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_FILE}")
     endif()
 
     # Install right now
     execute_process(
-        COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" ${toolchain_cmd} -S "${ext_dir}" -B "${ext_dir}/build"
+        COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}"
+                                   -S "${ext_dir}"
+                                   -B "${ext_dir}/build"
+                                   ${toolchain_cmd}
+        COMMAND_ECHO STDOUT
+        RESULT_VARIABLE ext_result
     )
+
+    if (NOT "${ext_result}" STREQUAL "0")
+        message(SEND_ERROR "Could not configure ${dep} build: ${ext_result}")
+        return()
+    endif()
+
     execute_process(
         COMMAND "${CMAKE_COMMAND}" --build "${ext_dir}/build"
+        COMMAND_ECHO STDOUT
+        RESULT_VARIABLE ext_result
     )
+
+    if (NOT "${ext_result}" STREQUAL "0")
+        message(SEND_ERROR "Could not build ${dep}: ${ext_result}")
+        return()
+    endif()
+
+    # Create a script that defines update and reinstall targets for this dep
+    configure_file(
+        "${templates}/DepCustomTargets.cmake.in"
+        "${external_root}/targets/update_reinstall_${dep}.cmake"
+        @ONLY
+    )
+
 endfunction()

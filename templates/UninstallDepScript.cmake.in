@@ -1,0 +1,33 @@
+function(socute_uninstall_dep_@SOCUTE_DEP@ dep)
+    set(_install_prefix "${SOCUTE_DEP_INSTALL_PREFIX}")
+    set(_manifest "${_install_prefix}/share/socute/manifests/${dep}_install_manifest.txt")
+
+    message(STATUS "Install prefix = ${_install_prefix}")
+    message(STATUS "Install manifest = ${_manifest}")
+
+    if (NOT EXISTS "${_manifest}")
+        message(STATUS "No install manifest file available for ${dep}, skipping uninstall")
+        return()
+    endif()
+
+    file(STRINGS "${_manifest}" files)
+
+    # delete the files, and also the manifest
+    foreach(file ${files} "${_manifest}")
+        get_filename_component(abs_file "${file}" ABSOLUTE BASE_DIR "${_install_prefix}")
+        message(STATUS "Uninstalling ${abs_file}")
+        if (IS_SYMLINK "${abs_file}" OR EXISTS "${abs_file}")
+            execute_process(
+                "@CMAKE_COMMAND@" -E remove \"${abs_file}\"
+                RESULT_VARIABLE rm_retval
+            )
+            if (NOT "${rm_retval}" STREQUAL 0)
+                message(FATAL_ERROR "Problem when removing ${file}")
+            endif()
+        else()
+            message(STATUS "File ${file} does not exist.")
+        endif()
+    endforeach()
+endfunction()
+
+socute_uninstall_dep_@SOCUTE_DEP@(@SOCUTE_DEP@)

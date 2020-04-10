@@ -72,16 +72,10 @@ function(socute_install_project)
         COMPONENT ${PROJECT_NAME}_devel
     )
 
-    # Copy the modules we used to find dependencies, they will be reused
-    socute_get_project_var(FIND_PACKAGE_MODULES find_mods)
-    install(FILES ${find_mods} DESTINATION "${cmake_dir}/deps")
-
-    # Create the Config file
-    # We rely on the information gathered from the calls to socute_find_package
-    # to generate a Config file that looks for the appropriate dependencies
-    socute_get_project_var(FIND_PACKAGE_COMMANDS find_cmds)
-    list(JOIN find_cmds "\n" find_cmds)
-    string(REPLACE "|||" "\n" SOCUTE_PACKAGE_CONFIG_FIND_PACKAGE_COMMANDS "${find_cmds}")
+    # Install the module with the instruction to find dependencies
+    socute_get_project_var(DEP_DIR _dep_dir)
+    set(_dep_module "${_dep_dir}/${PROJECT_NAME}FindDeps.cmake")
+    install(FILES "${_dep_module}" DESTINATION "${cmake_dir}")
 
     socute_get_project_var(TEMPLATES_DIR templates)
     configure_package_config_file(

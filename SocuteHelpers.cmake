@@ -263,18 +263,17 @@ function(socute_external_build_dir pkg out_dir)
     set(${out_dir} "${build_root}/${pkg}" PARENT_SCOPE)
 endfunction()
 
-# Get the install root directory for external package.
+# Get the install prefix directory for external package.
 # INSTALL_PREFIX option may be supplied in various ways (see socute_get_optional_var).
 # The fallback is ${socute_external_root}/prefix/${config_specific}.
-function(socute_external_install_root out_dir)
+function(socute_external_install_prefix out_dir)
     socute_external_root(external_root)
     _socute_config_specific_dir("${external_root}/prefix" fallback)
     socute_get_optional_var(EXTERNAL_INSTALL_PREFIX "${fallback}" out)
     set(${out_dir} "${out}" PARENT_SCOPE)
 endfunction()
 
-# The package-specific install dir.
-function(socute_external_install_dir pkg out_dir)
-    socute_external_install_root(install_root)
-    set(${out_dir} "${install_root}/${pkg}" PARENT_SCOPE)
+function(socute_external_install_manifest_dir out_dir)
+    socute_external_install_prefix(install_prefix$)
+    set(${out_dir} "${install_prefix}/share/socute/manifests" PARENT_SCOPE)
 endfunction()

@@ -1,7 +1,8 @@
 # Initial configuration of a project
-
+include_guard()
 include(SocuteHelpers)
 include(SocuteCompilerOptions)
+include(SocuteFindPackage)
 
 # Setup build type
 function(_socute_setup_build_type)
@@ -20,9 +21,17 @@ endfunction()
 function(_socute_setup_install_prefix)
     if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         # Find out where to install stuff
-        socute_external_install_dir("${PROJECT_NAME}" install_dir)
-        set(CMAKE_INSTALL_PREFIX "${install_dir}" CACHE PATH
+        socute_external_install_prefix(install_prefix)
+        set(CMAKE_INSTALL_PREFIX "${install_prefix}" CACHE PATH
             "Install path prefix, prepended onto install directories." FORCE)
+    endif()
+endfunction()
+
+# Setup prefix path to include the external prefix containing self installed deps
+function(_socute_setup_prefix_path)
+    socute_external_install_prefix(dir)
+    if (NOT dir IN_LIST CMAKE_PREFIX_PATH)
+        socute_append_cached(CMAKE_PREFIX_PATH "${dir}")
     endif()
 endfunction()
 
@@ -55,6 +64,9 @@ macro(_socute_setup_defaults)
         set(CMAKE_MACOSX_RPATH ON)
     endif()
 
+    set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+    set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../lib64:$ORIGIN")
+
     # Disable the package registry, which could mislead cmake into looking for
     # packages in unexpected derectories
     set(CMAKE_EXPORT_NO_PACKAGE_REGISTRY ON)
@@ -71,12 +83,15 @@ function(_socute_setup_internal_variables)
     # List of paths where package files can be found, extensible with socute_add_package_module_dir()
     socute_set_project_var(PACKAGE_MODULES_DIRS "${CMAKE_CURRENT_LIST_DIR}/packages")
 
+    # Where template files can be found
+    socute_set_project_var(TEMPLATES_DIR "${CMAKE_CURRENT_LIST_DIR}/templates")
+
+    # Where dependency files are manipulated
+    socute_set_project_var(DEP_DIR "${PROJECT_BINARY_DIR}/socute.cmake/dep")
+
     # List of relative directory paths where headers are expected to be found in
     # order to correctly find and compute their install destination.
     socute_set_project_var(RELATIVE_HEADERS_DIRS "src;include;Src;Source;Include")
-
-    # Where template files can be found
-    socute_set_project_var(TEMPLATES_DIR "${CMAKE_CURRENT_LIST_DIR}/templates")
 
     # How to name generated files
     socute_set_project_var(HYPHENATE_GENERATED_FILES OFF)
@@ -134,9 +149,11 @@ macro(socute_setup)
     _socute_setup_internal_variables()
     _socute_setup_build_type()
     _socute_setup_install_prefix()
+    _socute_setup_prefix_path()
     _socute_setup_defaults()
     _socute_declare_options()
     _socute_setup_compiler_options()
+    _socute_setup_build_dirs()
 endmacro()
 
 # Declare other files of the project in an "other files" category

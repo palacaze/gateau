@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.14)
+project(dep)
+
+# create external project
+include(ExternalProject)
+ExternalProject_add(@SOCUTE_DEP@ "@SOCUTE_DEP_PROJECT_VARS@")
+
+# create an install manifest
+add_custom_target(create_manifest ALL
+    COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_SOURCE_DIR}/CreateManifest.cmake"
+    VERBATIM
+)
+
+# ensure the external project gets build first
+add_dependencies(create_manifest @SOCUTE_DEP@)

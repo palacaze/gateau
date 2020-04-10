@@ -1,0 +1,20 @@
+# Create a manifest file with relative paths from absolute paths
+
+set(cmake_manifest "@SOCUTE_DEP_BUILD_DIR@/install_manifest.txt")
+if (NOT EXISTS "${cmake_manifest}")
+    return()
+endif()
+
+file(STRINGS "${cmake_manifest}" files)
+set(rel_files)
+foreach(file ${files})
+    file(RELATIVE_PATH rel_file "@SOCUTE_DEP_INSTALL_DIR@" "${file}")
+    list(APPEND rel_files "${rel_file}")
+endforeach()
+
+set(manifest_dir "@SOCUTE_DEP_INSTALL_DIR@/.socute/manifests")
+file(MAKE_DIRECTORY "${manifest_dir}")
+set(manifest_file "${manifest_dir}/@SOCUTE_DEP@_install_manifest.txt")
+
+string(REPLACE ";" "\n" files "${rel_files}")
+file(WRITE "${manifest_file}" "${files}")
