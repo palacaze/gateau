@@ -5,7 +5,7 @@
 include(SocuteHelpers)
 
 # Get the directory where all the documentation will be installed.
-# The DOCUMENATION_ROOT option may be supplied in various ways (see _socute_get_optional_var).
+# The DOCUMENATION_ROOT option may be supplied in various ways (see socute_get_optional_var).
 # The fallback is ${PROJECT_BINARY_DIR}/doc.
 function(socute_get_documentation_dir dir)
     socute_get_optional_var(DOCUMENTATION_ROOT "${PROJECT_BINARY_DIR}/doc" doc_root)

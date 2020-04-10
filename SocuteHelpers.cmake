@@ -212,21 +212,21 @@ function(_socute_config_specific_dir prefix out_dir)
 endfunction()
 
 # Get the root directory where all external packages will be handled.
-# The EXTERNAL_ROOT option may be supplied in various ways (see _socute_get_optional_var).
+# The EXTERNAL_ROOT option may be supplied in various ways (see socute_get_optional_var).
 # The fallback is ${PROJECT_BINARY_DIR}/external.
 function(socute_external_root out_dir)
     set(fallback "${PROJECT_BINARY_DIR}/external")
-    _socute_get_optional_var(EXTERNAL_ROOT "${fallback}" out)
+    socute_get_optional_var(EXTERNAL_ROOT "${fallback}" out)
     set(${out_dir} "${out}" PARENT_SCOPE)
 endfunction()
 
 # Get the download directory for external package archives to be saved.
-# DOWNLOAD_CACHE option may be supplied in various ways (see _socute_get_optional_var).
+# DOWNLOAD_CACHE option may be supplied in various ways (see socute_get_optional_var).
 # The fallback is ${socute_external_root}/download.
 function(socute_external_download_root out_dir)
     socute_external_root(external_root)
     set(fallback "${external_root}/download")
-    _socute_get_optional_var(DOWNLOAD_CACHE "${fallback}" out)
+    socute_get_optional_var(DOWNLOAD_CACHE "${fallback}" out)
     set(${out_dir} "${out}" PARENT_SCOPE)
 endfunction()
 
@@ -262,12 +262,12 @@ function(socute_external_build_dir pkg out_dir)
 endfunction()
 
 # Get the install root directory for external package.
-# INSTALL_PREFIX option may be supplied in various ways (see _socute_get_optional_var).
+# INSTALL_PREFIX option may be supplied in various ways (see socute_get_optional_var).
 # The fallback is ${socute_external_root}/prefix/${config_specific}.
 function(socute_external_install_root out_dir)
     socute_external_root(external_root)
     _socute_config_specific_dir("${external_root}/prefix" fallback)
-    _socute_get_optional_var(EXTERNAL_INSTALL_PREFIX "${fallback}" out)
+    socute_get_optional_var(EXTERNAL_INSTALL_PREFIX "${fallback}" out)
     set(${out_dir} "${out}" PARENT_SCOPE)
 endfunction()
 
