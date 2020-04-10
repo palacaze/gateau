@@ -18,6 +18,8 @@ if (NOT DEFINED PROJECT_NAME)
     message(FATAL_ERROR "project() must be call prior to Socute inclusion")
 endif()
 
+list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
 # Include the other modules
 include(SocuteHelpers)
 include(SocuteCompilerOptions)
