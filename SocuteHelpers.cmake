@@ -167,8 +167,8 @@ endfunction()
 
 # cat in_file into out_file
 function(socute_concat_file in_file out_file)
-    file(READ ${in_file} _contents)
-    file(APPEND ${out_file} "${_contents}")
+    file(READ "${in_file}" _contents)
+    file(APPEND "${out_file}" "${_contents}")
 endfunction()
 
 # create a directory and ensure existence
