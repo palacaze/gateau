@@ -1,3 +1,5 @@
+include_guard()
+
 # Same as cmake_parse_arguments, with additional handling of default arguments values
 # For any option/argument name NAME and default prefix name def, the variable
 # named ${def}_NAME will be used as default value if it exists

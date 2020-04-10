@@ -1,5 +1,5 @@
 # This module proposes a streamlined way of handling external package dependencies.
-
+include_guard()
 include(SocuteHelpers)
 include(SocuteExternalPackage)
 

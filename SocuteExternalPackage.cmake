@@ -1,5 +1,5 @@
 # A wrapper over ExternalProject_Add that simplifies its use
-
+include_guard()
 include(ExternalProject)
 include(SocuteParseArguments)
 

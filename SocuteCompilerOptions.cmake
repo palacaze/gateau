@@ -1,6 +1,7 @@
 # We define in this module interface libraries whose role are to add compiler flags
 # to a target. This is a convenient way of adding compiler options via the
 # target_link_libraries() directive.
+include_guard()
 
 function(_socute_setup_compiler_options)
     set(SOCUTE_C_GCC "$<COMPILE_LANG_AND_ID:C,GNU>")

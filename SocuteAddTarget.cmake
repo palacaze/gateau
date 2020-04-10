@@ -3,7 +3,7 @@
 #
 # Diverses CMake options are defined here and can be used project-wide to alter
 # the behaviour of those macros.
-
+include_guard()
 include(GNUInstallDirs)
 include(CMakeParseArguments)
 include(GenerateExportHeader)

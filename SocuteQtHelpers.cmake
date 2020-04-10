@@ -1,4 +1,5 @@
 # This module contains helpers that simplify working with Qt
+include_guard()
 
 # Function that queries all qmake properties and exposes them in the parent scope.
 function(socute_read_qt_properties)

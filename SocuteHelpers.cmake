@@ -1,3 +1,5 @@
+include_guard()
+
 # Dump variables bound to current directory on stdout
 function(socute_dump_variables)
     get_cmake_property(_variables VARIABLES)

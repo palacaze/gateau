@@ -1,5 +1,6 @@
 # This module is the main entry point of Socute's cmake modules distribution.
 # It should be include near the top of each project's top level CMakeLists.txt.
+include_guard()
 
 # Enforce minimum version
 if (CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS "3.15")

@@ -1,5 +1,5 @@
 # This module declares function that considerably simplify project installation
-
+include_guard()
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(SocuteHelpers)

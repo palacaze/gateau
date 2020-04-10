@@ -1,5 +1,6 @@
 # This module encapsulates add_test in order to ensure proper execution with
 # Windows and linux-mingw plateforms
+include_guard()
 include(SocuteHelpers)
 include(SocuteAddTarget)
 

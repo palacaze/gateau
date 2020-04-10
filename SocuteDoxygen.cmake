@@ -1,7 +1,7 @@
 # This module can be used to generate documentation for a Socute project.
 # It generates an appropriate Doxygen project file from a generic template and
 # adds a "docs" target to the project that will build the documentation on demand.
-
+include_guard()
 include(SocuteHelpers)
 
 # Get the directory where all the documentation will be installed.
