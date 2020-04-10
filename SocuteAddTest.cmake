@@ -62,17 +62,17 @@ macro(socute_setup_testing tests_target)
         COMMENT "Build and run all the unit tests."
     )
 
-    socute_set_project_var(TESTS_TARGET ${tests_target})
+    set_directory_properties(PROPERTIES socute_tests_target ${tests_target})
 
     # unit tests are provided by Catch2
     if (_O_CATCH)
         socute_find_package(Catch2 BUILD_DEP)
-        socute_set_project_var(TEST_PROVIDER CATCH)
+        set_directory_properties(PROPERTIES socute_test_provider CATCH)
     elseif (_O_DOCTEST)
         socute_find_package(doctest BUILD_DEP)
-        socute_set_project_var(TEST_PROVIDER DOCTEST)
+        set_directory_properties(PROPERTIES socute_test_provider DOCTEST)
     else()
-        socute_set_project_var(TEST_PROVIDER UNKNOWN)
+        set_directory_properties(PROPERTIES socute_test_provider UNKNOWN)
     endif()
 
     socute_cleanup_parsed(_O "${bool_options}" "" "")
@@ -86,7 +86,7 @@ function(socute_add_test name)
 
     socute_add_executable(${name} ${_O_UNPARSED_ARGUMENTS} NO_INSTALL)
 
-    socute_get_project_var(TESTS_TARGET tests_target)
+    get_directory_property(tests_target socute_tests_target)
     add_dependencies(${tests_target} ${name})
 
     if (NOT _O_WORKING_DIRECTORY)
@@ -99,7 +99,7 @@ function(socute_add_test name)
         set(props PROPERTIES ${_O_TEST_PROPERTIES})
     endif()
 
-    socute_get_project_var(TEST_PROVIDER provider)
+    get_directory_property(provider socute_test_provider)
     if (provider STREQUAL CATCH)
         _socute_register_catch_test(${name} "${_O_WORKING_DIRECTORY}" ${args} ${props})
     elseif(provider STREQUAL DOCTEST)
