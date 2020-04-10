@@ -17,17 +17,36 @@ function(_socute_register_test target wd)
     endif()
 endfunction()
 
-# register a doctest test
-function(_socute_register_doctest_test target wd)
-    target_link_libraries(${target} PRIVATE doctest::doctest)
-
-    cmake_parse_arguments(_O "" "" "PROPERTIES;ARGUMENTS" ${ARGN})
+# register a google test
+function(_socute_register_gtest_test target wd)
+    cmake_parse_arguments(_O "NO_MAIN" "" "PROPERTIES;ARGUMENTS" ${ARGN})
     if (_O_ARGUMENTS)
         set(args EXTRA_ARGS ${_O_ARGUMENTS})
     endif()
     if (_O_PROPERTIES)
         set(props PROPERTIES ${_O_PROPERTIES})
     endif()
+
+    target_link_libraries(${target} PRIVATE GTest::gtest GTest::gmock)
+    if (NOT _O_NO_MAIN)
+        target_link_libraries(${target} PRIVATE GTest::gtest_main)
+    endif()
+
+    include(GoogleTest)
+    gtest_discover_tests(${target} WORKING_DIRECTORY "${wd}" ${args} ${props})
+endfunction()
+
+# register a doctest test
+function(_socute_register_doctest_test target wd)
+    cmake_parse_arguments(_O "NO_MAIN" "" "PROPERTIES;ARGUMENTS" ${ARGN})
+    if (_O_ARGUMENTS)
+        set(args EXTRA_ARGS ${_O_ARGUMENTS})
+    endif()
+    if (_O_PROPERTIES)
+        set(props PROPERTIES ${_O_PROPERTIES})
+    endif()
+
+    target_link_libraries(${target} PRIVATE doctest::doctest)
 
     include(doctest)
     doctest_discover_tests(${target} WORKING_DIRECTORY "${wd}" ${args} ${props})
@@ -35,9 +54,7 @@ endfunction()
 
 # register a catch test
 function(_socute_register_catch_test target wd)
-    target_link_libraries(${target} PRIVATE Catch2::Catch2)
-
-    cmake_parse_arguments(_O "" "" "PROPERTIES;ARGUMENTS" ${ARGN})
+    cmake_parse_arguments(_O "NO_MAIN" "" "PROPERTIES;ARGUMENTS" ${ARGN})
 
     if (_O_ARGUMENTS)
         set(args EXTRA_ARGS ${_O_ARGUMENTS})
@@ -46,13 +63,15 @@ function(_socute_register_catch_test target wd)
         set(props PROPERTIES ${_O_PROPERTIES})
     endif()
 
+    target_link_libraries(${target} PRIVATE Catch2::Catch2)
+
     include(Catch)
     catch_discover_tests(${target} WORKING_DIRECTORY "${wd}" ${args} ${props})
 endfunction()
 
 # Setup tests with optional test provider
 macro(socute_setup_testing tests_target)
-    set(bool_options CATCH DOCTEST)
+    set(bool_options CATCH DOCTEST GTEST)
     cmake_parse_arguments(_O "${bool_options}" "" "" ${ARGN})
 
     enable_testing()
@@ -71,6 +90,9 @@ macro(socute_setup_testing tests_target)
     elseif (_O_DOCTEST)
         socute_find_package(doctest BUILD_DEP)
         set_directory_properties(PROPERTIES socute_test_provider DOCTEST)
+    elseif (_O_GTEST)
+        socute_find_package(GTest BUILD_DEP)
+        set_directory_properties(PROPERTIES socute_test_provider GTEST)
     else()
         set_directory_properties(PROPERTIES socute_test_provider UNKNOWN)
     endif()
@@ -82,7 +104,7 @@ endmacro()
 # Add a test, this is the same as calling socute_add_executable,
 # then performs auto-registration of the test
 function(socute_add_test name)
-    cmake_parse_arguments(_O "" "WORKING_DIRECTORY" "TEST_PROPERTIES;ARGUMENTS" ${ARGN})
+    cmake_parse_arguments(_O "NO_MAIN" "WORKING_DIRECTORY" "TEST_PROPERTIES;ARGUMENTS" ${ARGN})
 
     socute_add_executable(${name} ${_O_UNPARSED_ARGUMENTS} NO_INSTALL)
 
@@ -92,19 +114,25 @@ function(socute_add_test name)
     if (NOT _O_WORKING_DIRECTORY)
         set(_O_WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
+    set(args)
+    if (_O_NO_MAIN)
+        list(APPEND args NO_MAIN)
+    endif()
     if (_O_ARGUMENTS)
-        set(args ARGUMENTS ${_O_ARGUMENTS})
+        list(APPEND args ARGUMENTS ${_O_ARGUMENTS})
     endif()
     if (_O_TEST_PROPERTIES)
-        set(props PROPERTIES ${_O_TEST_PROPERTIES})
+        list(APPEND args PROPERTIES ${_O_TEST_PROPERTIES})
     endif()
 
     get_directory_property(provider socute_test_provider)
     if (provider STREQUAL CATCH)
-        _socute_register_catch_test(${name} "${_O_WORKING_DIRECTORY}" ${args} ${props})
+        _socute_register_catch_test(${name} "${_O_WORKING_DIRECTORY}" ${args})
     elseif(provider STREQUAL DOCTEST)
-        _socute_register_doctest_test(${name} "${_O_WORKING_DIRECTORY}" ${args} ${props})
+        _socute_register_doctest_test(${name} "${_O_WORKING_DIRECTORY}" ${args})
+    elseif(provider STREQUAL GTEST)
+        _socute_register_gtest_test(${name} "${_O_WORKING_DIRECTORY}" ${args})
     else()
-        _socute_register_test(${name} "${_O_WORKING_DIRECTORY}" ${args} ${props})
+        _socute_register_test(${name} "${_O_WORKING_DIRECTORY}" ${args})
     endif()
 endfunction()
