@@ -61,6 +61,9 @@ macro(_socute_setup_defaults)
     set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
     set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../lib64:$ORIGIN")
 
+    # config mode should be preferred
+    set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
+
     # Disable the package registry, which could mislead cmake into looking for
     # packages in unexpected derectories
     set(CMAKE_EXPORT_NO_PACKAGE_REGISTRY ON)
