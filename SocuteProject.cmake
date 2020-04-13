@@ -2,7 +2,7 @@
 include_guard()
 include(SocuteHelpers)
 include(SocuteCompilerOptions)
-include(SocuteFindPackage)
+include(SocuteParseArguments)
 
 # Setup build type
 function(_socute_setup_build_type)
@@ -144,7 +144,7 @@ function(_socute_declare_options)
 endfunction()
 
 # Setup CMake with reasonable defaults
-macro(socute_setup)
+macro(socute_init)
     _socute_setup_internal_variables()
     _socute_setup_build_type()
     _socute_setup_defaults()
@@ -153,6 +153,42 @@ macro(socute_setup)
     _socute_setup_compiler_options()
     _socute_setup_build_dirs()
 endmacro()
+
+# Socute offers a number of optional configuration options.
+# This function is the recommended way of overriding those project-wide options from
+# inside the main cmake list file. This is meant to be used by the project devs.
+# The alternatives are setting the corresponding variables prior to inclusion of
+# the main socute module, or overriding the cache variables after inclusion.
+# Users should set those options from the call to cmake at configure time.
+function(socute_configure)
+    # Offering a single API call seems a more practical solution to setting a bunch of variables.
+    set(bool_options
+        UPDATE_DEPS
+    )
+    set(mono_options
+        CPP_STANDARD
+        GENERATED_FILES_CASE
+        OUTPUT_DIRECTORY
+        DOCUMENTATION_ROOT
+        DOWNLOAD_CACHE
+        EXTERNAL_BUILD_TYPE
+        EXTERNAL_ROOT
+        EXTERNAL_INSTALL_PREFIX
+    )
+    set(multi_options
+        RELATIVE_HEADERS_DIRS
+    )
+
+    # All the variables are already defined, using socute_parse_arguments allows
+    # to obtain the current value if not set with socute_configure()
+    socute_parse_arguments(_O "${PROJECT_IDENT}" "${bool_options}" "${mono_options}" "${multi_options}" ${ARGN})
+    foreach(opt ${bool_options} ${mono_options} ${multi_options})
+        socute_set(${opt} "${_O_${opt}}")
+    endforeach()
+
+    # keep prefix path up to date
+    _socute_setup_prefix_path()
+endfunction()
 
 # Declare other files of the project in an "other files" category
 function(socute_other_files)

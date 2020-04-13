@@ -31,4 +31,4 @@ include(SocuteFindPackage)
 include(SocuteDoxygen)
 include(SocuteInstallProject)
 
-socute_setup()
+socute_init()
