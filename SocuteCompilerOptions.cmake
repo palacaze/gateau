@@ -51,6 +51,18 @@ function(_socute_setup_compiler_options)
         $<${SOCUTE_C_CXX_MSVC}:/Wall>
     )
 
+    # Turn some flags into errors
+    add_library(Socute_Werror INTERFACE)
+    target_compile_options(Socute_Werror INTERFACE
+        $<${SOCUTE_C_CXX_CLANG_GCC}:
+            -Werror=format-security;
+            -Werror=reorder;
+            -Werror=return-type;
+            -Werror=switch;
+            -Werror=uninitialized>
+        $<${SOCUTE_C_CXX_MSVC}:/WX>
+    )
+
     # Profiling
     add_library(Socute_Profiling INTERFACE)
     target_compile_options(Socute_Profiling INTERFACE

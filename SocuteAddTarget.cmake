@@ -316,6 +316,7 @@ function(_socute_configure_target target no_version_header)
                 $<$<BOOL:${${PROJECT_IDENT}_KEEP_TEMPS}>:Socute_SaveTemps>
                 $<$<BOOL:${${PROJECT_IDENT}_ENABLE_LIBCXX}>:Socute_Libcxx>
                 $<$<BOOL:${${PROJECT_IDENT}_ENABLE_MANY_WARNINGS}>:Socute_HighWarnings>
+                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_WERROR}>:Socute_Werror>
                 $<$<BOOL:${${PROJECT_IDENT}_ENABLE_PROFILING}>:Socute_Profiling>
                 $<$<BOOL:${${PROJECT_IDENT}_SANITIZE_ADDRESS}>:Socute_AddressSanitizer>
                 $<$<BOOL:${${PROJECT_IDENT}_SANITIZE_THREADS}>:Socute_ThreadSanitizer>

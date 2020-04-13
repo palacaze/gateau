@@ -119,6 +119,7 @@ function(_socute_declare_options)
     # options that can alter the compilation
     socute_declare_option(ENABLE_AUTOSELECT_LINKER ON "Select the best available linker")
     socute_declare_option(ENABLE_COMMON_WARNINGS ON "Enable common compiler flags")
+    socute_declare_option(ENABLE_WERROR ON "Enable werror for a few important compiler flags")
     socute_declare_option(ENABLE_LIBCXX OFF "Use libc++ instead of gcc standard library")
     socute_declare_option(ENABLE_LTO OFF "Enable link time optimization (release only)")
     socute_declare_option(ENABLE_MANY_WARNINGS OFF "Enable more compiler warnings")
