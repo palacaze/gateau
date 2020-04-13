@@ -23,7 +23,7 @@ endmacro()
 
 # Helper function that generates the protobuf stubs from a .proto file and adds
 # the resulting files to target
-function(socute_add_protobuf target)
+function(gateau_add_protobuf target)
     set(_include_path -I "${CMAKE_CURRENT_SOURCE_DIR}")
 
     # add each proto file path to the include dirs
@@ -84,15 +84,15 @@ function(socute_add_protobuf target)
     endif()
 
     # add the generated files to the target sources
-    socute_extend_target(${target} SOURCES ${srcs} HEADERS ${hdrs} ${_proto_libs})
+    gateau_extend_target(${target} SOURCES ${srcs} HEADERS ${hdrs} ${_proto_libs})
 endfunction()
 
 # Helper function that generates the grpc and protobuf stubs from a .proto file
-# and adds the resulting files to target (A call to socute_add_protobuf is not
+# and adds the resulting files to target (A call to gateau_add_protobuf is not
 # needed)
-function(socute_add_grpc target)
+function(gateau_add_grpc target)
     # add protobuf data too
-    socute_add_protobuf(${target} ${ARGN})
+    gateau_add_protobuf(${target} ${ARGN})
 
     set(_include_path -I "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -152,5 +152,5 @@ function(socute_add_grpc target)
     endforeach()
 
     # add the generated files to the target sources
-    socute_extend_target(${target} SOURCES ${srcs} HEADERS ${hdrs} ${_grpc_libs})
+    gateau_extend_target(${target} SOURCES ${srcs} HEADERS ${hdrs} ${_grpc_libs})
 endfunction()

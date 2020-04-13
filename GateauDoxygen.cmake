@@ -1,18 +1,18 @@
-# This module can be used to generate documentation for a Socute project.
+# This module can be used to generate documentation for a Gateau project.
 # It generates an appropriate Doxygen project file from a generic template and
 # adds a "docs" target to the project that will build the documentation on demand.
 include_guard()
-include(SocuteHelpers)
+include(GateauHelpers)
 
 # Get the directory where all the documentation will be installed.
 # The fallback is ${PROJECT_BINARY_DIR}/doc.
-function(socute_get_documentation_dir dir)
-    socute_get_or(DOCUMENTATION_ROOT "${PROJECT_BINARY_DIR}/doc" doc_root)
+function(gateau_get_documentation_dir dir)
+    gateau_get_or(DOCUMENTATION_ROOT "${PROJECT_BINARY_DIR}/doc" doc_root)
     set(${dir} "${doc_root}/${PROJECT_NAME}" PARENT_SCOPE)
 endfunction()
 
 # Generate a Doxygen file for this package from a template and a few variables
-function(socute_generate_doxygen_file)
+function(gateau_generate_doxygen_file)
     set(opts EXCLUDED_SYMBOLS PREDEFINED_MACROS INPUT_PATHS EXCLUDED_PATHS)
     cmake_parse_arguments(GD "" "" "${opts}" ${ARGN})
 
@@ -24,7 +24,7 @@ function(socute_generate_doxygen_file)
     )
 
     # append source dirs to the input paths to scan
-    socute_get(RELATIVE_HEADERS_DIRS relative_dirs)
+    gateau_get(RELATIVE_HEADERS_DIRS relative_dirs)
     foreach(rel_dir ${relative_dirs})
         set(_sdir "${PROJECT_SOURCE_DIR}/${rel_dir}")
         if (IS_DIRECTORY "${_sdir}")
@@ -36,11 +36,11 @@ function(socute_generate_doxygen_file)
     endif()
 
     # we automatically add EXPORT macros generated for every non interface library
-    socute_get(KNOWN_TARGETS targets)
+    gateau_get(KNOWN_TARGETS targets)
     foreach(tgt ${targets})
         get_target_property(_type ${tgt} TYPE)
         if ((NOT _type STREQUAL "INTERFACE_LIBRARY") AND (NOT _type STREQUAL "EXECUTABLE"))
-            socute_target_identifier_name(${tgt} ident)
+            gateau_target_identifier_name(${tgt} ident)
             list(APPEND GD_PREDEFINED_MACROS ${ident}_EXPORT)
         endif()
     endforeach()
@@ -56,11 +56,11 @@ function(socute_generate_doxygen_file)
     set(PACKAGE_VERSION ${PROJECT_VERSION})
     string(TOLOWER "com.${PROJECT_NAME}" PACKAGE_DOMAIN)
 
-    socute_get_documentation_dir(DOXYGEN_OUTPUT)
+    gateau_get_documentation_dir(DOXYGEN_OUTPUT)
     file(MAKE_DIRECTORY "${DOXYGEN_OUTPUT}")
     if (NOT IS_DIRECTORY "${DOXYGEN_OUTPUT}")
         message(ERROR "Could not create directory ${DOXYGEN_OUTPUT} for documentation installation.\n"
-            "Please modify the SOCUTE_DOCUMENTATION_ROOT option or env var to a valid path.")
+            "Please modify the GATEAU_DOCUMENTATION_ROOT option or env var to a valid path.")
         return()
     endif()
 
@@ -76,26 +76,26 @@ function(socute_generate_doxygen_file)
     create_doxygen_list("${GD_EXCLUDED_PATHS}" DOXYGEN_EXCLUDE)
     create_doxygen_list("${GD_EXCLUDED_SYMBOLS}" DOXYGEN_EXCLUDE_SYMBOLS)
     create_doxygen_list("${GD_PREDEFINED_MACROS}" DOXYGEN_PREDEFINED)
-    socute_get(TEMPLATES_DIR templates)
+    gateau_get(TEMPLATES_DIR templates)
     set(DOXYGEN_IN "${templates}/Doxyfile.in")
     set(DOXYGEN_OUT "${PROJECT_BINARY_DIR}/doc/Doxyfile")
     configure_file("${DOXYGEN_IN}" "${DOXYGEN_OUT}")
 endfunction()
 
-# Generate documentation for this socute package
+# Generate documentation for this gateau package
 # The following options are supported. each of them accepts a list
 # - EXCLUDED_SYMBOLS: list of symbols to exclude from the documentation, defaults to "Detail"
 # - PREDEFINED_MACROS: C macros to define, with an optional value, when parsing files
 # - INPUT_PATHS: input paths whose files should be parsed in addition to "src and README.md"
 # - EXCLUDED_PATHS: paths that should be excluded from the parsing, defaults to src/3rdparty
-function(socute_build_documentation)
+function(gateau_build_documentation)
     find_package(Doxygen)
     if (NOT DOXYGEN_FOUND)
         message(WARNING "Doxygen not found, documentation won't be built")
         return()
     endif()
 
-    socute_generate_doxygen_file("${ARGN}")
+    gateau_generate_doxygen_file("${ARGN}")
 
     add_custom_target(docs
         COMMAND Doxygen::doxygen "${PROJECT_BINARY_DIR}/doc/Doxyfile"

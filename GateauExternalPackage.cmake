@@ -1,23 +1,23 @@
 # A wrapper over ExternalProject_Add that simplifies its use
 include_guard()
 include(ExternalProject)
-include(SocuteParseArguments)
+include(GateauParseArguments)
 
 # Create the directories needed to install the dependency dep
-function(_socute_prepare_external_dirs dep)
-    socute_external_root(d)
-    socute_create_dir("${d}/targets")
-    socute_external_download_dir("${dep}" d)
-    socute_create_dir("${d}")
-    socute_external_source_dir("${dep}" d)
-    socute_create_dir("${d}")
-    socute_external_install_prefix(d)
-    socute_create_dir("${d}")
-    socute_external_install_manifest_dir(d)
-    socute_create_dir("${d}")
+function(_gateau_prepare_external_dirs dep)
+    gateau_external_root(d)
+    gateau_create_dir("${d}/targets")
+    gateau_external_download_dir("${dep}" d)
+    gateau_create_dir("${d}")
+    gateau_external_source_dir("${dep}" d)
+    gateau_create_dir("${d}")
+    gateau_external_install_prefix(d)
+    gateau_create_dir("${d}")
+    gateau_external_install_manifest_dir(d)
+    gateau_create_dir("${d}")
 
     # several locations are used by externalproject for the build
-    socute_external_build_dir("${dep}" bd)
+    gateau_external_build_dir("${dep}" bd)
     set (_dirs
         "${bd}/build"
         "${bd}/stamp"
@@ -25,33 +25,33 @@ function(_socute_prepare_external_dirs dep)
         "${bd}/ext/build")
 
     foreach(dir ${_dirs})
-        socute_create_dir("${dir}")
+        gateau_create_dir("${dir}")
     endforeach()
 endfunction()
 
 # Path to the install manifest file
-function(socute_install_manifest_file dep out_file)
-    socute_external_install_manifest_dir(_manifest_dir)
+function(gateau_install_manifest_file dep out_file)
+    gateau_external_install_manifest_dir(_manifest_dir)
     set(${out_file} "${_manifest_dir}/${dep}_install_manifest.txt" PARENT_SCOPE)
 endfunction()
 
 # Create a manifest of files that have been installed by a dep. This manifest
 # will be kept for later uninstallation of the dep.
 # The paths must be relative to the installation root.
-function(socute_create_install_manifest dep)
-    socute_install_manifest_file(${dep} manifest_file)
+function(gateau_create_install_manifest dep)
+    gateau_install_manifest_file(${dep} manifest_file)
     string(REPLACE ";" "\n" files "${ARGN}")
     file(WRITE "${manifest_file}" "${files}")
 endfunction()
 
 # Create an uninstall script for the dep
-function(socute_configure_uninstall_script dep script)
-    socute_get(TEMPLATES_DIR templates)
-    socute_external_root(root_dir)
+function(gateau_configure_uninstall_script dep script)
+    gateau_get(TEMPLATES_DIR templates)
+    gateau_external_root(root_dir)
     set(uninstall_script "${root_dir}/targets/uninstall_${dep}.cmake")
 
     # Create an appropriate script
-    set(SOCUTE_DEP ${dep})
+    set(GATEAU_DEP ${dep})
     configure_file(
         "${templates}/UninstallDepScript.cmake.in"
         "${uninstall_script}"
@@ -62,13 +62,13 @@ function(socute_configure_uninstall_script dep script)
 endfunction()
 
 # Create an uninstall target for the dep
-function(socute_configure_uninstall_target dep)
-    socute_configure_uninstall_script(${dep} uninstall_script)
-    socute_external_install_prefix(install_prefix)
+function(gateau_configure_uninstall_target dep)
+    gateau_configure_uninstall_script(${dep} uninstall_script)
+    gateau_external_install_prefix(install_prefix)
     if (NOT COMMAND uninstall_${dep})
         add_custom_target(uninstall_${dep}
             COMMENT "Uninstall the package ${dep}"
-            COMMAND "${CMAKE_COMMAND}" -DSOCUTE_DEP_INSTALL_PREFIX=${install_prefix} -P "${uninstall_script}"
+            COMMAND "${CMAKE_COMMAND}" -DGATEAU_DEP_INSTALL_PREFIX=${install_prefix} -P "${uninstall_script}"
             VERBATIM
         )
         set_target_properties(uninstall_${dep} PROPERTIES EXCLUDE_FROM_ALL TRUE)
@@ -76,8 +76,8 @@ function(socute_configure_uninstall_target dep)
 endfunction()
 
 # Create update and reinstall targets for the dep
-function(socute_configure_update_reinstall_targets dep)
-    socute_external_root(root_dir)
+function(gateau_configure_update_reinstall_targets dep)
+    gateau_external_root(root_dir)
     set(_script "${root_dir}/targets/update_reinstall_${dep}.cmake")
     if (EXISTS "${_script}")
         include("${_script}")
@@ -85,17 +85,17 @@ function(socute_configure_update_reinstall_targets dep)
 endfunction()
 
 # Uninstall a dep immediately
-function(socute_uninstall_dep dep)
-    socute_configure_uninstall_script(${dep} uninstall_script)
-    socute_external_install_prefix(install_prefix)
+function(gateau_uninstall_dep dep)
+    gateau_configure_uninstall_script(${dep} uninstall_script)
+    gateau_external_install_prefix(install_prefix)
     execute_process(
-        COMMAND "${CMAKE_COMMAND}" -DSOCUTE_DEP_INSTALL_PREFIX=${install_prefix} -P "${uninstall_script}"
+        COMMAND "${CMAKE_COMMAND}" -DGATEAU_DEP_INSTALL_PREFIX=${install_prefix} -P "${uninstall_script}"
     )
 endfunction()
 
 # Update a dep immediately
-function(socute_update_dep dep)
-    socute_external_build_dir("${dep}" build_dir)
+function(gateau_update_dep dep)
+    gateau_external_build_dir("${dep}" build_dir)
     set(ext_dir "${build_dir}/ext")
     execute_process(
         COMMAND "${CMAKE_COMMAND}" --build "${ext_dir}/build"
@@ -116,14 +116,14 @@ endfunction()
 # name from the 3 lists below.
 #
 # Unrecognized arguments will be passed as-is to ExternalProject_Add.
-function(socute_install_dependency dep)
+function(gateau_install_dependency dep)
     set(bool_options IN_SOURCE NO_EXTRACT NO_CONFIGURE NO_PATCH NO_UPDATE NO_BUILD NO_INSTALL)
     set(mono_options GIT TAG MD5 SOURCE_SUBDIR)
     set(multi_options URL GIT_CONFIG CMAKE_CACHE_ARGS CMAKE_ARGS PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND)
 
     # parse arguments supplied to the function and account for default arguments
     # stored in variables whose names are prefixed with "${dep}_"
-    socute_parse_arguments(SID ${dep} "${bool_options}" "${mono_options}" "${multi_options}" ${ARGN})
+    gateau_parse_arguments(SID ${dep} "${bool_options}" "${mono_options}" "${multi_options}" ${ARGN})
 
     # sanity checks, we need a few options and avoid ambiguities
     if (NOT SID_GIT AND NOT SID_URL)
@@ -148,11 +148,11 @@ function(socute_install_dependency dep)
     endif()
 
     # where stuff will be built and installed: per package dirs
-    socute_external_root(external_root)
-    socute_external_download_dir("${dep}" download_dir)
-    socute_external_source_dir("${dep}" source_dir)
-    socute_external_build_dir("${dep}" build_dir)
-    socute_external_install_prefix(install_prefix)
+    gateau_external_root(external_root)
+    gateau_external_download_dir("${dep}" download_dir)
+    gateau_external_source_dir("${dep}" source_dir)
+    gateau_external_build_dir("${dep}" build_dir)
+    gateau_external_install_prefix(install_prefix)
 
     # A reasonable assumption is that if we stepped in this function the package
     # is currently not installed or its version is not compatible with what is
@@ -164,10 +164,10 @@ function(socute_install_dependency dep)
     endif()
 
     # Also uninstall the previous installation
-    socute_uninstall_dep(${dep})
+    gateau_uninstall_dep(${dep})
 
     # ensure the needed working directories exist
-    _socute_prepare_external_dirs(${dep})
+    _gateau_prepare_external_dirs(${dep})
 
     message(STATUS "Dependency ${dep} will be built in ${build_dir}")
     message(STATUS "Dependency ${dep} will be installed in ${install_prefix}")
@@ -181,7 +181,7 @@ function(socute_install_dependency dep)
         "-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY:BOOL=ON"
         "-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY:BOOL=ON"
         "-DCMAKE_FIND_USE_PACKAGE_REGISTRY:BOOL=OFF"
-        "-DSOCUTE_EXTERNAL_ROOT:PATH=${external_root}"
+        "-DGATEAU_EXTERNAL_ROOT:PATH=${external_root}"
     )
 
     if (SID_CMAKE_CACHE_ARGS)
@@ -189,7 +189,7 @@ function(socute_install_dependency dep)
     endif()
 
     # build type
-    socute_external_build_type(build_type)
+    gateau_external_build_type(build_type)
     if (GENERATOR_IS_MULTI_CONFIG)
         list(APPEND cache_args "-DCMAKE_CONFIGURATION_TYPES:STRING=${build_type}")
     else()
@@ -199,7 +199,7 @@ function(socute_install_dependency dep)
     # pass compiler or toolchain file
     if (CMAKE_TOOLCHAIN_FILE)
         list(APPEND cache_args "-DCMAKE_TOOLCHAIN_FILE:FILEPATH=${CMAKE_TOOLCHAIN_FILE}")
-        list(APPEND cache_args "-DSOCUTE_TOOLCHAIN_COMPILER_VERSION:STRING=${SOCUTE_TOOLCHAIN_COMPILER_VERSION}")
+        list(APPEND cache_args "-DGATEAU_TOOLCHAIN_COMPILER_VERSION:STRING=${GATEAU_TOOLCHAIN_COMPILER_VERSION}")
     else()
         list(APPEND cache_args "-DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}")
         list(APPEND cache_args "-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}")
@@ -276,11 +276,11 @@ function(socute_install_dependency dep)
 
     # Generate a mock project to force immediate installation of the dep.
     # This project also creates an install manifest, used for uninstallation purpose
-    set(SOCUTE_DEP ${dep})
-    set(SOCUTE_DEP_PROJECT_VARS "${project_vars}")
-    set(SOCUTE_DEP_BUILD_DIR "${build_dir}/build")
-    set(SOCUTE_DEP_INSTALL_DIR "${install_prefix}")
-    socute_get(TEMPLATES_DIR templates)
+    set(GATEAU_DEP ${dep})
+    set(GATEAU_DEP_PROJECT_VARS "${project_vars}")
+    set(GATEAU_DEP_BUILD_DIR "${build_dir}/build")
+    set(GATEAU_DEP_INSTALL_DIR "${install_prefix}")
+    gateau_get(TEMPLATES_DIR templates)
 
     configure_file(
         "${templates}/BuildDepProject.cmake.in"

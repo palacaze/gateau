@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.14)
 
-macro(socute_list_append_unique lst elem)
+macro(gateau_list_append_unique lst elem)
     if (NOT "${elem}" IN_LIST ${lst})
         list(APPEND ${lst} "${elem}")
     endif()
 endmacro()
 
-function(socute_uninstall_dep_@SOCUTE_DEP@ dep)
-    set(install_prefix "${SOCUTE_DEP_INSTALL_PREFIX}")
-    set(manifest "${install_prefix}/share/socute/manifests/${dep}_install_manifest.txt")
+function(gateau_uninstall_dep_@GATEAU_DEP@ dep)
+    set(install_prefix "${GATEAU_DEP_INSTALL_PREFIX}")
+    set(manifest "${install_prefix}/share/gateau/manifests/${dep}_install_manifest.txt")
 
     # No install manifest file available, skipping uninstall
     if (NOT EXISTS "${manifest}")
@@ -25,12 +25,12 @@ function(socute_uninstall_dep_@SOCUTE_DEP@ dep)
     foreach (path ${files} "${manifest}")
         get_filename_component(abs_path "${path}" ABSOLUTE BASE_DIR "${install_prefix}")
         if (IS_DIRECTORY "${abs_path}")
-            socute_list_append_unique(dirs "${abs_path}")
+            gateau_list_append_unique(dirs "${abs_path}")
             continue()
         endif()
 
         get_filename_component(abs_dir "${abs_path}" DIRECTORY)
-        socute_list_append_unique(dirs "${abs_dir}")
+        gateau_list_append_unique(dirs "${abs_dir}")
 
         if (IS_SYMLINK "${abs_path}" OR EXISTS "${abs_path}")
             message(STATUS "Uninstalling ${abs_path}")
@@ -58,7 +58,7 @@ function(socute_uninstall_dep_@SOCUTE_DEP@ dep)
 
                 # do not descend below the install prefix
                 if (parent_dir MATCHES "^${install_prefix}")
-                    socute_list_append_unique(dirs "${parent_dir}")
+                    gateau_list_append_unique(dirs "${parent_dir}")
                 endif()
 
                 # remove from the list, last, in order to avoid potential recursive situations
@@ -73,4 +73,4 @@ function(socute_uninstall_dep_@SOCUTE_DEP@ dep)
     endwhile()
 endfunction()
 
-socute_uninstall_dep_@SOCUTE_DEP@(@SOCUTE_DEP@)
+gateau_uninstall_dep_@GATEAU_DEP@(@GATEAU_DEP@)

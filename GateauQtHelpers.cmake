@@ -2,7 +2,7 @@
 include_guard()
 
 # Function that queries all qmake properties and exposes them in the parent scope.
-function(socute_read_qt_properties)
+function(gateau_read_qt_properties)
     # qmake executable is needed to query properties
     if (TARGET Qt5::qmake)
         get_target_property(QMAKE_LOCATION Qt5::qmake IMPORTED_LOCATION)
@@ -29,18 +29,18 @@ endfunction()
 # generates their binary representation.
 # Do not forget to use the ALL parameter in your add_custom_target() call if you
 # use it.
-function(socute_add_qt_translations target)
+function(gateau_add_qt_translations target)
     set(opts_single TS_DIR QM_DIR)
     set(opts_multi LOCALES TS_OPTIONS)
     cmake_parse_arguments(SAQT "" "${opts_single}" "${opts_multi}" ${ARGN})
 
     foreach(arg TS_DIR QM_DIR LOCALES)
         if (NOT SAQT_${arg})
-            message(FATAL_ERROR "The ${arg} argument of socute_add_translations is missing")
+            message(FATAL_ERROR "The ${arg} argument of gateau_add_translations is missing")
         endif()
     endforeach()
 
-    socute_target_file_name(${target} target_file_name)
+    gateau_target_file_name(${target} target_file_name)
 
     foreach(locale ${SAQT_LOCALES})
         string(TOLOWER "${target_file_name}" basename)
@@ -68,7 +68,7 @@ function(socute_add_qt_translations target)
 endfunction()
 
 # Function that installs translations files for target
-function(socute_install_qt_translations target install_trdir)
+function(gateau_install_qt_translations target install_trdir)
     get_target_property(sources ${target} SOURCES)
 
     foreach(source ${sources})

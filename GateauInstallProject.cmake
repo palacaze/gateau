@@ -2,31 +2,31 @@
 include_guard()
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
-include(SocuteHelpers)
+include(GateauHelpers)
 
 # Setup install location if not already set
-function(socute_setup_install_prefix)
+function(gateau_setup_install_prefix)
     if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         # Find out where to install stuff
-        socute_external_install_prefix(install_prefix)
+        gateau_external_install_prefix(install_prefix)
         set(CMAKE_INSTALL_PREFIX "${install_prefix}" CACHE PATH
             "Install path prefix, prepended onto install directories." FORCE)
     endif()
 endfunction()
 
 # Wrap native install() to overwrite DESTINATION with our custom prefix if needed
-function(socute_install)
+function(gateau_install)
     set(mono_options TYPE DESTINATION)
     set(multi_options FILES DIRECTORY)
 
     cmake_parse_arguments(SI "" "${mono_options}" "${multi_options}" ${ARGN})
 
     if (NOT SI_DESTINATION)
-        message(FATAL_ERROR "The DESTINATION argument of socute_install is missing")
+        message(FATAL_ERROR "The DESTINATION argument of gateau_install is missing")
     endif()
 
     # ensure a proper install prefix is none was given
-    socute_setup_install_prefix()
+    gateau_setup_install_prefix()
 
     set(args ${SI_UNPARSED_ARGUMENTS})
 
@@ -49,7 +49,7 @@ endfunction()
 
 # Function to use once at the end of the main CMakeLists.txt to declare the
 # project as installable and exportable
-function(socute_install_project)
+function(gateau_install_project)
     set(targets_name "${PROJECT_NAME}Targets")
     set(targets_file "${targets_name}.cmake")
     set(config_file  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake")
@@ -57,10 +57,10 @@ function(socute_install_project)
     set(cmake_dir    "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
     # ensure a proper install prefix is none was given
-    socute_setup_install_prefix()
+    gateau_setup_install_prefix()
 
     # list exported targets
-    socute_get(KNOWN_TARGETS targets)
+    gateau_get(KNOWN_TARGETS targets)
     set(exported_targets)
     foreach(t ${targets})
         if (TARGET ${t})
@@ -87,11 +87,11 @@ function(socute_install_project)
     )
 
     # Install the module with the instruction to find dependencies
-    socute_get(DEP_DIR _dep_dir)
+    gateau_get(DEP_DIR _dep_dir)
     set(_dep_module "${_dep_dir}/${PROJECT_NAME}FindDeps.cmake")
     install(FILES "${_dep_module}" DESTINATION "${cmake_dir}")
 
-    socute_get(TEMPLATES_DIR templates)
+    gateau_get(TEMPLATES_DIR templates)
     configure_package_config_file(
         "${templates}/PackageConfig.cmake.in"
         "${config_file}"

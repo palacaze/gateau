@@ -1,8 +1,8 @@
 # template package file for single header libs
 
 # find the first provided header and create an imported target
-macro(@SOCUTE_PACKAGE_MODULE_NAME@_find name)
-    set(_header_url @SOCUTE_PACKAGE_MODULE_SINGLE_HEADER_FILE@)
+macro(@GATEAU_PACKAGE_MODULE_NAME@_find name)
+    set(_header_url @GATEAU_PACKAGE_MODULE_SINGLE_HEADER_FILE@)
     set(_header_dir ${name})
 
     include(FindPackageHandleStandardArgs)
@@ -42,13 +42,13 @@ macro(@SOCUTE_PACKAGE_MODULE_NAME@_find name)
 endmacro()
 
 # install headers for this dep
-macro(@SOCUTE_PACKAGE_MODULE_NAME@_install name)
-    set(_header_url @SOCUTE_PACKAGE_MODULE_SINGLE_HEADER_FILE@)
+macro(@GATEAU_PACKAGE_MODULE_NAME@_install name)
+    set(_header_url @GATEAU_PACKAGE_MODULE_SINGLE_HEADER_FILE@)
     set(_header_dir ${name})
     set(_install_dest "include/${_header_dir}")
 
     # call to external project, which installs the dep
-    socute_install_dependency(${name}
+    gateau_install_dependency(${name}
         URL ${_header_url}
         NO_EXTRACT
         NO_UPDATE
@@ -61,7 +61,7 @@ macro(@SOCUTE_PACKAGE_MODULE_NAME@_install name)
 
     # create a manifest with the installed files for later uninstallation
     get_filename_component(_header_name ${_header_url} NAME)
-    socute_create_install_manifest(${name}
+    gateau_create_install_manifest(${name}
         "${_install_dest}/${_header_name}"
     )
 

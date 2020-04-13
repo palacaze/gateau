@@ -7,39 +7,39 @@ include_guard()
 include(GNUInstallDirs)
 include(CMakeParseArguments)
 include(GenerateExportHeader)
-include(SocuteHelpers)
-include(SocuteInstallProject)
+include(GateauHelpers)
+include(GateauInstallProject)
 
 # Macro that generates a header with version information
-function(_socute_generate_version_header target out)
+function(_gateau_generate_version_header target out)
     # for vcs information
     if (NOT Git_FOUND)
         find_package(Git QUIET)
     endif()
 
-    socute_target_identifier_name(${target} SOCUTE_BASE_NAME)
-    set(SOCUTE_TARGET_NAME ${target})
-    set(SOCUTE_PROJECT_REVISION unknown)
+    gateau_target_identifier_name(${target} GATEAU_BASE_NAME)
+    set(GATEAU_TARGET_NAME ${target})
+    set(GATEAU_PROJECT_REVISION unknown)
     if (Git_FOUND)
         execute_process(
             COMMAND "${GIT_EXECUTABLE}" describe --always
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-            OUTPUT_VARIABLE SOCUTE_PROJECT_REVISION
+            OUTPUT_VARIABLE GATEAU_PROJECT_REVISION
             ERROR_QUIET
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
     endif()
 
-    socute_get(TEMPLATES_DIR templates)
-    socute_generated_header_path(${target} "Version" header_out)
+    gateau_get(TEMPLATES_DIR templates)
+    gateau_generated_header_path(${target} "Version" header_out)
     configure_file("${templates}/version.h.in" "${header_out}.h" @ONLY)
     set(${out} "${header_out}.h" PARENT_SCOPE)
 endfunction()
 
 # Macro that generates an export header
-function(_socute_generate_export_header target out)
-    socute_target_identifier_name(${target} target_id)
-    socute_generated_header_path(${target} "Export" header_out)
+function(_gateau_generate_export_header target out)
+    gateau_target_identifier_name(${target} target_id)
+    gateau_generated_header_path(${target} "Export" header_out)
     generate_export_header(${target}
         BASE_NAME ${target_id}
         EXPORT_FILE_NAME "${header_out}.h"
@@ -48,11 +48,11 @@ function(_socute_generate_export_header target out)
 endfunction()
 
 # mark headers as installable
-function(_socute_install_headers target includedir)
+function(_gateau_install_headers target includedir)
     # We must handle headers originating from both the source and build dirs
     get_filename_component(real_source "${PROJECT_SOURCE_DIR}" REALPATH)
     get_filename_component(real_binary "${PROJECT_BINARY_DIR}" REALPATH)
-    socute_get(RELATIVE_HEADERS_DIRS relative_dirs)
+    gateau_get(RELATIVE_HEADERS_DIRS relative_dirs)
 
     # Installation instructions for each header
     foreach(header ${ARGN})
@@ -85,7 +85,7 @@ endfunction()
 
 # Extend an existing target with additional build parameters
 # Those will be applied only if the CONDITION evaluates to true
-function(socute_extend_target target)
+function(gateau_extend_target target)
     set(bool_options
         AUTOMOC
         AUTOUIC
@@ -114,7 +114,7 @@ function(socute_extend_target target)
     cmake_parse_arguments(_A "${bool_options}" "${mono_options}" "${multi_options}" ${ARGN})
 
     if (${_A_UNPARSED_ARGUMENTS})
-        message(FATAL_ERROR "socute_extend_target had unparsed arguments: ${_A_UNPARSED_ARGUMENTS}")
+        message(FATAL_ERROR "gateau_extend_target had unparsed arguments: ${_A_UNPARSED_ARGUMENTS}")
     endif()
 
     # test conditions
@@ -231,7 +231,7 @@ function(socute_extend_target target)
             set(_A_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}")
         endif()
 
-        _socute_install_headers(${target}
+        _gateau_install_headers(${target}
             "${_A_INSTALL_INCLUDEDIR}"
             ${_H_INTERFACE} ${_H_PRIVATE} ${_H_PUBLIC} ${_H_UNPARSED_ARGUMENTS}
         )
@@ -259,15 +259,15 @@ function(socute_extend_target target)
 endfunction()
 
 # Set common configuration parameters on the target
-function(_socute_configure_target target no_version_header)
+function(_gateau_configure_target target no_version_header)
     # mark the target as known
-    socute_append(KNOWN_TARGETS ${target})
+    gateau_append(KNOWN_TARGETS ${target})
 
     # extend the target with appropriate defaults
-    socute_get(CPP_STANDARD cppstd)
+    gateau_get(CPP_STANDARD cppstd)
 
     # find include directories to append
-    socute_get(RELATIVE_HEADERS_DIRS relative_dirs)
+    gateau_get(RELATIVE_HEADERS_DIRS relative_dirs)
     set(build_dirs)
     foreach(rel_dir ${relative_dirs})
         set(_sdir "${PROJECT_SOURCE_DIR}/${rel_dir}")
@@ -279,10 +279,12 @@ function(_socute_configure_target target no_version_header)
             )
         endif()
     endforeach()
-    socute_extend_target(${target}
+    gateau_extend_target(${target}
         INCLUDE_DIRECTORIES
             PUBLIC
                 ${build_dirs}
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
                 $<INSTALL_INTERFACE:include>
         PROPERTIES
             EXPORT_NAME ${target}
@@ -293,14 +295,14 @@ function(_socute_configure_target target no_version_header)
 
     # add a version header
     if (NOT no_version_header)
-        _socute_generate_version_header(${target} version_header)
-        socute_extend_target(${target} HEADERS "${version_header}")
+        _gateau_generate_version_header(${target} version_header)
+        gateau_extend_target(${target} HEADERS "${version_header}")
     endif()
 
     get_target_property(_type ${target} TYPE)
     if (NOT _type STREQUAL INTERFACE_LIBRARY)
         # output directory
-        socute_extend_target(${target}
+        gateau_extend_target(${target}
             CONDITION
                 ${PROJECT_IDENT}_OUTPUT_DIRECTORY
             PROPERTIES
@@ -310,18 +312,18 @@ function(_socute_configure_target target no_version_header)
         )
 
         # Compiler options
-        socute_extend_target(${target}
+        gateau_extend_target(${target}
             LINK_LIBRARIES
-                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_COMMON_WARNINGS}>:Socute_CommonWarnings>
-                $<$<BOOL:${${PROJECT_IDENT}_KEEP_TEMPS}>:Socute_SaveTemps>
-                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_LIBCXX}>:Socute_Libcxx>
-                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_MANY_WARNINGS}>:Socute_HighWarnings>
-                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_WERROR}>:Socute_Werror>
-                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_PROFILING}>:Socute_Profiling>
-                $<$<BOOL:${${PROJECT_IDENT}_SANITIZE_ADDRESS}>:Socute_AddressSanitizer>
-                $<$<BOOL:${${PROJECT_IDENT}_SANITIZE_THREADS}>:Socute_ThreadSanitizer>
-                $<$<BOOL:${${PROJECT_IDENT}_SANITIZE_UNDEFINED}>:Socute_UndefinedSanitizer>
-                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_AUTOSELECT_LINKER}>:Socute_Linker>
+                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_COMMON_WARNINGS}>:Gateau_CommonWarnings>
+                $<$<BOOL:${${PROJECT_IDENT}_KEEP_TEMPS}>:Gateau_SaveTemps>
+                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_LIBCXX}>:Gateau_Libcxx>
+                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_MANY_WARNINGS}>:Gateau_HighWarnings>
+                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_WERROR}>:Gateau_Werror>
+                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_PROFILING}>:Gateau_Profiling>
+                $<$<BOOL:${${PROJECT_IDENT}_SANITIZE_ADDRESS}>:Gateau_AddressSanitizer>
+                $<$<BOOL:${${PROJECT_IDENT}_SANITIZE_THREADS}>:Gateau_ThreadSanitizer>
+                $<$<BOOL:${${PROJECT_IDENT}_SANITIZE_UNDEFINED}>:Gateau_UndefinedSanitizer>
+                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_AUTOSELECT_LINKER}>:Gateau_Linker>
             PROPERTIES
                 $<$<CONFIG:Release>:C_VISIBILITY_PRESET hidden>
                 $<$<CONFIG:Release>:CXX_VISIBILITY_PRESET hidden>
@@ -337,7 +339,7 @@ function(_socute_configure_target target no_version_header)
         # CCache
         if (${PROJECT_IDENT}_USE_CCACHE)
             find_program(CCACHE_PROGRAM ccache)
-            socute_extend_target(${target}
+            gateau_extend_target(${target}
                 CONDITION
                     CCACHE_PROGRAM
                 PROPERTIES
@@ -347,7 +349,7 @@ function(_socute_configure_target target no_version_header)
         endif()
 
         # LTO
-        socute_extend_target(${target}
+        gateau_extend_target(${target}
             CONDITION
                 ${PROJECT_IDENT}_ENABLE_LTO
             PROPERTIES
@@ -357,14 +359,14 @@ function(_socute_configure_target target no_version_header)
 endfunction()
 
 # Function that creates a new library
-# socute_add_library(
+# gateau_add_library(
 #     <name>
 #     [STATIC | SHARED | OBJECT | MODULE | INTERFACE]
 #     [NO_INSTALL] [NO_INSTALL_HEADERS]
 #     [NO_EXPORT]
 #     [INSTALL_LIBDIR <dir>]
 #     [INSTALL_INCLUDEDIR <dir>]
-#     [other options accepted by socute_extend_target()]...
+#     [other options accepted by gateau_extend_target()]...
 # )
 #
 # The following options are accepted
@@ -374,7 +376,7 @@ endfunction()
 # - NO_EXPORT: the target is not exported to the cmake package module installed
 # - INSTALL_LIBDIR: override the libraries installation directory path
 # - INSTALL_INCLUDEDIR: override the headers installation directory path
-function(socute_add_library lib)
+function(gateau_add_library lib)
     set(bool_options
         STATIC SHARED OBJECT MODULE INTERFACE  # add_library
         NO_EXPORT           # Do not export this target in the cmake package module
@@ -387,7 +389,7 @@ function(socute_add_library lib)
     cmake_parse_arguments(SAL "${bool_options}" "${mono_options}" "" ${ARGN})
 
     # ensure a proper install prefix is none was given
-    socute_setup_install_prefix()
+    gateau_setup_install_prefix()
 
     set(_type SHARED)
     if (SAL_STATIC)
@@ -416,7 +418,7 @@ function(socute_add_library lib)
         set(SAL_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}")
     endif()
 
-    socute_target_alias_name(${lib} alias)
+    gateau_target_alias_name(${lib} alias)
 
     # create the library
     add_library(${lib} ${_type})
@@ -437,19 +439,19 @@ function(socute_add_library lib)
     )
 
     # configure the target with good defaults
-    _socute_configure_target(${lib} ${SAL_NO_VERSION_HEADER})
+    _gateau_configure_target(${lib} ${SAL_NO_VERSION_HEADER})
 
     if (NOT SAL_INTERFACE AND NOT SAL_NO_EXPORT_HEADER)
         # Export header and version
-        _socute_generate_export_header(${lib} export_header)
-        socute_extend_target(${lib}
+        _gateau_generate_export_header(${lib} export_header)
+        gateau_extend_target(${lib}
             HEADERS "${export_header}"
             PROPERTIES VERSION ${PROJECT_VERSION}
         )
     endif()
 
     # add passed options last, as some may override some of our defaults
-    socute_extend_target(${lib} ${SAL_UNPARSED_ARGUMENTS})
+    gateau_extend_target(${lib} ${SAL_UNPARSED_ARGUMENTS})
 
     # Installation
     if (NOT SAL_NO_INSTALL)
@@ -488,13 +490,13 @@ function(socute_add_library lib)
 endfunction()
 
 # Add a plugin, a library declared as a module in cmake parlance
-function(socute_add_plugin lib)
-    socute_add_library("${lib}" MODULE ${ARGN})
+function(gateau_add_plugin lib)
+    gateau_add_library("${lib}" MODULE ${ARGN})
 endfunction()
 
 # Function that creates a new executable and configures reasonable defaults as
 # well as installation instructions
-function(socute_add_executable exe)
+function(gateau_add_executable exe)
     set(bool_options
         NO_INSTALL          # Do not install this target
         NO_EXPORT           # Do not export this target
@@ -504,7 +506,7 @@ function(socute_add_executable exe)
     cmake_parse_arguments(SAE "${bool_options}" "${mono_options}" "" ${ARGN})
 
     # ensure a proper install prefix is none was given
-    socute_setup_install_prefix()
+    gateau_setup_install_prefix()
 
     if (NOT SAE_INSTALL_BINDIR)
         set(SAE_INSTALL_BINDIR "${CMAKE_INSTALL_BINDIR}")
@@ -532,16 +534,16 @@ function(socute_add_executable exe)
     endif()
 
     # configure the target with good defaults
-    _socute_configure_target(${exe} ${_no_version_header})
+    _gateau_configure_target(${exe} ${_no_version_header})
 
     # extend the target with appropriate defaults
-    socute_extend_target(${exe}
+    gateau_extend_target(${exe}
         PROPERTIES
             OUTPUT_NAME "${SAE_OUTPUT_NAME}"
     )
 
     # add passed options last, as some may override some of our defaults
-    socute_extend_target(${exe} ${SAE_UNPARSED_ARGUMENTS})
+    gateau_extend_target(${exe} ${SAE_UNPARSED_ARGUMENTS})
 
     # Installation instructions for the target
     if (NOT SAE_NO_INSTALL)

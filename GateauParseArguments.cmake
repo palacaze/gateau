@@ -3,7 +3,7 @@ include_guard()
 # Same as cmake_parse_arguments, with additional handling of default arguments values
 # For any option/argument name NAME and default prefix name def, the variable
 # named ${def}_NAME will be used as default value if it exists
-function(socute_parse_arguments prefix def_prefix _bool_names _single_names _multi_names)
+function(gateau_parse_arguments prefix def_prefix _bool_names _single_names _multi_names)
     # first set all result variables to empty
     foreach(arg_name ${_single_names} ${_multi_names})
         set(${prefix}_${arg_name})
@@ -65,9 +65,9 @@ function(socute_parse_arguments prefix def_prefix _bool_names _single_names _mul
     set(${prefix}_UNPARSED_ARGUMENTS ${${prefix}_UNPARSED_ARGUMENTS} PARENT_SCOPE)
 endfunction()
 
-# cleanup created variables by a call to cmake_parse_arguments or socute_parse_arguments
+# cleanup created variables by a call to cmake_parse_arguments or gateau_parse_arguments
 # from a macro
-function(socute_rebuild_parsed prefix _bool_names _single_names _multi_names out_list)
+function(gateau_rebuild_parsed prefix _bool_names _single_names _multi_names out_list)
     set(_opts)
     foreach(_opt ${_bool_names})
         if (${prefix}_${_opt})
@@ -82,9 +82,9 @@ function(socute_rebuild_parsed prefix _bool_names _single_names _multi_names out
     set(${out_list} "${_opts}" PARENT_SCOPE)
 endfunction()
 
-# cleanup created variables by a call to cmake_parse_arguments or socute_parse_arguments
+# cleanup created variables by a call to cmake_parse_arguments or gateau_parse_arguments
 # from a macro
-function(socute_cleanup_parsed prefix _bool_names _single_names _multi_names)
+function(gateau_cleanup_parsed prefix _bool_names _single_names _multi_names)
     foreach(opt ${_bool_names} ${_single_names} ${_multi_names})
         unset(${prefix}_${opt} PARENT_SCOPE)
     endforeach()

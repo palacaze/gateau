@@ -1,7 +1,7 @@
 # This function declares a few custom targets for the dependency dep
-function(socute_configure_custom_targets_@SOCUTE_DEP@ dep)
-    socute_external_build_dir("${dep}" build_dir)
-    socute_external_install_prefix(install_prefix)
+function(gateau_configure_custom_targets_@GATEAU_DEP@ dep)
+    gateau_external_build_dir("${dep}" build_dir)
+    gateau_external_install_prefix(install_prefix)
     set(ext_dir "${build_dir}/ext")
 
     # we must set a toochain file if the project needs one
@@ -40,4 +40,4 @@ function(socute_configure_custom_targets_@SOCUTE_DEP@ dep)
     endif()
 endfunction()
 
-socute_configure_custom_targets_@SOCUTE_DEP@(@SOCUTE_DEP@)
+gateau_configure_custom_targets_@GATEAU_DEP@(@GATEAU_DEP@)

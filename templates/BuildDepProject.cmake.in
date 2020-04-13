@@ -3,7 +3,7 @@ project(dep)
 
 # create external project
 include(ExternalProject)
-ExternalProject_add(@SOCUTE_DEP@ "@SOCUTE_DEP_PROJECT_VARS@")
+ExternalProject_add(@GATEAU_DEP@ "@GATEAU_DEP_PROJECT_VARS@")
 
 # create an install manifest
 add_custom_target(create_manifest ALL
@@ -12,4 +12,4 @@ add_custom_target(create_manifest ALL
 )
 
 # ensure the external project gets build first
-add_dependencies(create_manifest @SOCUTE_DEP@)
+add_dependencies(create_manifest @GATEAU_DEP@)

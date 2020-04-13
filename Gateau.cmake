@@ -1,4 +1,4 @@
-# This module is the main entry point of Socute's cmake modules distribution.
+# This module is the main entry point of Gateau's cmake modules distribution.
 # It should be include near the top of each project's top level CMakeLists.txt.
 include_guard()
 
@@ -15,20 +15,20 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
 endif()
 
 if (NOT DEFINED PROJECT_NAME)
-    message(FATAL_ERROR "project() must be call prior to Socute inclusion")
+    message(FATAL_ERROR "project() must be call prior to Gateau inclusion")
 endif()
 
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 
 # Include the other modules
-include(SocuteHelpers)
-include(SocuteCompilerOptions)
-include(SocuteProject)
-include(SocuteAddTarget)
-include(SocuteAddTest)
-include(SocuteQtHelpers)
-include(SocuteFindPackage)
-include(SocuteDoxygen)
-include(SocuteInstallProject)
+include(GateauHelpers)
+include(GateauCompilerOptions)
+include(GateauProject)
+include(GateauAddTarget)
+include(GateauAddTest)
+include(GateauQtHelpers)
+include(GateauFindPackage)
+include(GateauDoxygen)
+include(GateauInstallProject)
 
-socute_init()
+gateau_init()
