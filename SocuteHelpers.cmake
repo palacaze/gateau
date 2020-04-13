@@ -272,6 +272,6 @@ function(socute_external_install_prefix out_dir)
 endfunction()
 
 function(socute_external_install_manifest_dir out_dir)
-    socute_external_install_prefix(install_prefix$)
+    socute_external_install_prefix(install_prefix)
     set(${out_dir} "${install_prefix}/share/socute/manifests" PARENT_SCOPE)
 endfunction()

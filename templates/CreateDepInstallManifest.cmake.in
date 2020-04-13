@@ -12,7 +12,7 @@ foreach(file ${files})
     list(APPEND rel_files "${rel_file}")
 endforeach()
 
-set(manifest_dir "@SOCUTE_DEP_INSTALL_DIR@/.socute/manifests")
+set(manifest_dir "@SOCUTE_DEP_INSTALL_DIR@/share/socute/manifests")
 file(MAKE_DIRECTORY "${manifest_dir}")
 set(manifest_file "${manifest_dir}/@SOCUTE_DEP@_install_manifest.txt")
 
