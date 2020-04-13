@@ -1,5 +1,6 @@
 set(selene_GIT "https://github.com/kmhofmann/selene")
 set(selene_CMAKE_ARGS
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
     -DBUILD_SHARED_LIBS=OFF
     -DSELENE_BUILD_TESTS=OFF
     -DSELENE_BUILD_EXAMPLES=OFF
