@@ -17,21 +17,13 @@ function(_socute_setup_build_type)
     endif()
 endfunction()
 
-# Setup install location if not already set
-function(_socute_setup_install_prefix)
-    if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        # Find out where to install stuff
-        socute_external_install_prefix(install_prefix)
-        set(CMAKE_INSTALL_PREFIX "${install_prefix}" CACHE PATH
-            "Install path prefix, prepended onto install directories." FORCE)
-    endif()
-endfunction()
-
 # Setup prefix path to include the external prefix containing self installed deps
 function(_socute_setup_prefix_path)
     socute_external_install_prefix(dir)
-    if (NOT dir IN_LIST CMAKE_PREFIX_PATH)
-        socute_append_cached(CMAKE_PREFIX_PATH "${dir}")
+    set(path ${CMAKE_PREFIX_PATH})
+    if (NOT dir IN_LIST path)
+        list(PREPEND path "${dir}")  # prepend to favor last change
+        set(CMAKE_PREFIX_PATH "${path}" CACHE STRING "" FORCE)
     endif()
 endfunction()
 
@@ -155,10 +147,9 @@ endfunction()
 macro(socute_setup)
     _socute_setup_internal_variables()
     _socute_setup_build_type()
-    _socute_setup_install_prefix()
-    _socute_setup_prefix_path()
     _socute_setup_defaults()
     _socute_declare_options()
+    _socute_setup_prefix_path()
     _socute_setup_compiler_options()
     _socute_setup_build_dirs()
 endmacro()

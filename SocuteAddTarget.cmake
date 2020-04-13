@@ -8,6 +8,7 @@ include(GNUInstallDirs)
 include(CMakeParseArguments)
 include(GenerateExportHeader)
 include(SocuteHelpers)
+include(SocuteInstallProject)
 
 # Macro that generates a header with version information
 function(_socute_generate_version_header target out)
@@ -384,6 +385,9 @@ function(socute_add_library lib)
     set(mono_options INSTALL_BINDIR INSTALL_LIBDIR INSTALL_INCLUDEDIR)
     cmake_parse_arguments(SAL "${bool_options}" "${mono_options}" "" ${ARGN})
 
+    # ensure a proper install prefix is none was given
+    socute_setup_install_prefix()
+
     set(_type SHARED)
     if (SAL_STATIC)
         set(_type STATIC)
@@ -497,6 +501,9 @@ function(socute_add_executable exe)
     )
     set(mono_options OUTPUT_NAME INSTALL_BINDIR)
     cmake_parse_arguments(SAE "${bool_options}" "${mono_options}" "" ${ARGN})
+
+    # ensure a proper install prefix is none was given
+    socute_setup_install_prefix()
 
     if (NOT SAE_INSTALL_BINDIR)
         set(SAE_INSTALL_BINDIR "${CMAKE_INSTALL_BINDIR}")

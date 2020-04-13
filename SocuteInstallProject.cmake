@@ -4,6 +4,16 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(SocuteHelpers)
 
+# Setup install location if not already set
+function(socute_setup_install_prefix)
+    if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        # Find out where to install stuff
+        socute_external_install_prefix(install_prefix)
+        set(CMAKE_INSTALL_PREFIX "${install_prefix}" CACHE PATH
+            "Install path prefix, prepended onto install directories." FORCE)
+    endif()
+endfunction()
+
 # Wrap native install() to overwrite DESTINATION with our custom prefix if needed
 function(socute_install)
     set(mono_options TYPE DESTINATION)
@@ -15,7 +25,8 @@ function(socute_install)
         message(FATAL_ERROR "The DESTINATION argument of socute_install is missing")
     endif()
 
-    _socute_setup_install_prefix()
+    # ensure a proper install prefix is none was given
+    socute_setup_install_prefix()
 
     set(args ${SI_UNPARSED_ARGUMENTS})
 
@@ -44,6 +55,9 @@ function(socute_install_project)
     set(config_file  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake")
     set(version_file "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake")
     set(cmake_dir    "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+
+    # ensure a proper install prefix is none was given
+    socute_setup_install_prefix()
 
     # list exported targets
     socute_get(KNOWN_TARGETS targets)
