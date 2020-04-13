@@ -17,6 +17,29 @@ function(_socute_setup_build_dirs)
     file(REMOVE_RECURSE "${_dep_dir}")
 endfunction()
 
+# Decide if a dep has been installed by us
+function(_socute_is_dep_in_install_prefix name test_out)
+    # Assuming the dep has been found, the heuristic is to test a number of
+    # variables known to be commonly defined by find_package and test if they
+    # point to a subpath of the install prefix.
+    socute_external_install_prefix(install_prefix)
+    get_filename_component(install_prefix "${install_prefix}" REALPATH)
+
+    foreach (v DIR INCLUDE_DIR INCLUDE_DIRS LIBRARY LIBRARIES)
+        set(_path ${name}_${v})
+        if (DEFINED ${_path} AND EXISTS "${${_path}}")
+            # We check that the dep is ours (it is in our external install prefix)
+            get_filename_component(_path "${${_path}}" REALPATH)
+            if(_path MATCHES "${install_prefix}")
+                set(${test_out} TRUE PARENT_SCOPE)
+                return()
+            endif()
+        endif()
+    endforeach()
+
+    set(${test_out} FALSE PARENT_SCOPE)
+endfunction()
+
 # Look for a package file module for the given dependency name.
 # It may either have the name "${name}.cmake" or be a template file with a name
 # "${nameprefix}.cmake.in" that is a prefix of the name passed in argument
@@ -121,19 +144,14 @@ endmacro()
 # If we installed a dependency ourselves, we can expose useful targets for this
 # dependency: update, reinstall and uninstall.
 function(_socute_configure_dep_targets name)
-    if (${name}_DIR AND IS_DIRECTORY "${${name}_DIR}")
-        # We check that the dep is ours (it is in our external install prefix)
-        socute_external_install_prefix(install_prefix)
-        get_filename_component(install_prefix "${install_prefix}" REALPATH)
-        get_filename_component(_dir "${${name}_DIR}" REALPATH)
-        if(_dir MATCHES "${install_prefix}")
-            socute_configure_uninstall_target(${name})
-            socute_configure_update_reinstall_targets(${name})
+    _socute_is_dep_in_install_prefix(${name} in_install_prefix)
+    if (in_install_prefix)
+        socute_configure_uninstall_target(${name})
+        socute_configure_update_reinstall_targets(${name})
 
-            # reinstall will be preceded by uninstall if available
-            if (TARGET uninstall_${name} AND TARGET reinstall_${name})
-                add_dependencies(reinstall_${name} uninstall_${name})
-            endif()
+        # reinstall will be preceded by uninstall if available
+        if (TARGET uninstall_${name} AND TARGET reinstall_${name})
+            add_dependencies(reinstall_${name} uninstall_${name})
         endif()
     endif()
 endfunction()
@@ -208,13 +226,33 @@ function(_socute_install_dep_wrapper name)
     socute_append(INSTALLED_PACKAGES ${name})
 endfunction()
 
+# Reset cache variables for a package if some of the files or dirs are missing
+function(_socute_reset_find_package name)
+    set(do_reset FALSE)
+    set(paths DIR INCLUDE_DIR INCLUDE_DIRS LIBRARY LIBRARIES)
+    foreach (var ${paths})
+        if (${name}_${var})
+            foreach (lib ${${name}_${var}})
+                if (NOT EXISTS "${lib}")
+                    set(do_reset TRUE)
+                    break()
+                endif()
+            endforeach()
+        endif()
+    endforeach()
+    if (do_reset)
+        foreach (var ${paths})
+            unet(${var} CACHE)
+        endforeach()
+    endif()
+endfunction()
+
 # Macro that handles looking for packages and installing them in the right
 # place if missing. It uses specially crafted modules (in the packages directory)
 # containing directives that specify how to find and install said packages.
 #
 # NOTE: We use a macro because find_package() creates variables such as:
-# ${package}_FOUND ${package}_LIBRARIES and ${package}_INCLUDE_DIRS that are not
-# caches and would be limited unavailable if created inside a function scope.
+# ${package}_FOUND cached and would be unavailable if created inside a function.
 macro(socute_find_package name)
     set(bool_options IN_SOURCE NO_EXTRACT NO_PATCH NO_UPDATE NO_CONFIGURE NO_BUILD NO_INSTALL)
     set(mono_options GIT TAG URL MD5 SOURCE_SUBDIR)
@@ -233,6 +271,9 @@ macro(socute_find_package name)
     if (EXISTS "${package_file}")
         include("${package_file}")
     endif()
+
+    # if a dep was uninstalled on changed for some reason, we try to reset its status
+    _socute_reset_find_package(${name})
 
     # try to find the dependency
     _socute_find_dep_wrapper(${name} ${_O_UNPARSED_ARGUMENTS} QUIET)

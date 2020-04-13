@@ -5,28 +5,35 @@ set(Qwt_MD5 "4fb1852f694420e3ab9c583526edecc5")
 macro(Qwt_find name)
     include(FindPackageHandleStandardArgs)
 
-    find_path(Qwt_INCLUDE_DIRS
+    if (DEFINED ${name}_INCLUDE_DIRS AND NOT EXISTS "${${name}_INCLUDE_DIRS}/qwt_plot.h")
+        unset(${name}_INCLUDE_DIRS CACHE)
+    endif()
+    if (DEFINED ${name}_LIBRARY AND NOT EXISTS "${${name}_LIBRARY}")
+        unset(${name}_LIBRARIES CACHE)
+    endif()
+
+    find_path(Qwt_INCLUDE_DIR
         NAMES qwt_plot.h
         PATH_SUFFIXES qwt qwt6 qwt-qt5 qwt6-qt5
         HINTS ${Qt5_INCLUDE_DIRS}
     )
 
-    find_library(Qwt_LIBRARIES
+    find_library(Qwt_LIBRARY
         NAMES qwt qwt6 qwt-qt5 qwt6-qt5
         HINTS ${Qt5_LIBRARY_DIRS}
     )
 
     find_package_handle_standard_args(
-        Qwt DEFAULT_MSG Qwt_LIBRARIES Qwt_INCLUDE_DIRS)
+        Qwt DEFAULT_MSG Qwt_LIBRARY Qwt_INCLUDE_DIR)
 
-    mark_as_advanced(Qwt_INCLUDE_DIRS Qwt_LIBRARIES)
+    mark_as_advanced(Qwt_INCLUDE_DIR Qwt_LIBRARY)
 
     if(Qwt_FOUND AND NOT TARGET Qwt::Qwt)
         add_library(Qwt::Qwt UNKNOWN IMPORTED)
         set_target_properties(Qwt::Qwt PROPERTIES
             IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-            INTERFACE_INCLUDE_DIRECTORIES "${Qwt_INCLUDE_DIRS}"
-            IMPORTED_LOCATION "${Qwt_LIBRARIES}"
+            INTERFACE_INCLUDE_DIRECTORIES "${Qwt_INCLUDE_DIR}"
+            IMPORTED_LOCATION "${Qwt_LIBRARY}"
         )
     endif()
 endmacro()

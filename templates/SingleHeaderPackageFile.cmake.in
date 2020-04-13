@@ -9,24 +9,31 @@ macro(@SOCUTE_PACKAGE_MODULE_NAME@_find name)
 
     # look for the header
     get_filename_component(_header_name ${_header_url} NAME)
-    find_path(${name}_INCLUDE_DIRS NAMES ${_header_name} PATH_SUFFIXES ${_header_dir})
+
+    # find_path caches its result, so we must ensure the header really exists
+    # and clear the cache otherwise
+    if (DEFINED ${name}_INCLUDE_DIR AND NOT EXISTS "${${name}_INCLUDE_DIR}/${_header_dir}/${_header_name}")
+        unset(${name}_INCLUDE_DIR CACHE)
+    endif()
+
+    find_path(${name}_INCLUDE_DIR NAMES ${_header_name} PATH_SUFFIXES ${_header_dir})
 
     find_package_handle_standard_args(
-        ${name} DEFAULT_MSG ${name}_INCLUDE_DIRS)
+        ${name} DEFAULT_MSG ${name}_INCLUDE_DIR)
 
     # rewind once to move out of the expected subdir
     if(${name}_FOUND)
-        get_filename_component(${name}_INCLUDE_DIRS
-            "${${name}_INCLUDE_DIRS}/.." ABSOLUTE)
+        get_filename_component(${name}_INCLUDE_DIR
+            "${${name}_INCLUDE_DIR}/.." ABSOLUTE)
     endif()
 
-    mark_as_advanced(${name}_INCLUDE_DIRS)
+    mark_as_advanced(${name}_INCLUDE_DIR)
 
     # create an imported target
     if(${name}_FOUND AND NOT TARGET ${name}::${name})
         add_library(${name}::${name} INTERFACE IMPORTED)
         set_target_properties(${name}::${name} PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES "${${name}_INCLUDE_DIRS}")
+            INTERFACE_INCLUDE_DIRECTORIES "${${name}_INCLUDE_DIR}")
     endif()
 
     unset(_header_url)
