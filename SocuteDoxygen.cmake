@@ -5,10 +5,9 @@ include_guard()
 include(SocuteHelpers)
 
 # Get the directory where all the documentation will be installed.
-# The DOCUMENATION_ROOT option may be supplied in various ways (see socute_get_optional_var).
 # The fallback is ${PROJECT_BINARY_DIR}/doc.
 function(socute_get_documentation_dir dir)
-    socute_get_optional_var(DOCUMENTATION_ROOT "${PROJECT_BINARY_DIR}/doc" doc_root)
+    socute_get_or(DOCUMENTATION_ROOT "${PROJECT_BINARY_DIR}/doc" doc_root)
     set(${dir} "${doc_root}/${PROJECT_NAME}" PARENT_SCOPE)
 endfunction()
 
@@ -25,7 +24,7 @@ function(socute_generate_doxygen_file)
     )
 
     # append source dirs to the input paths to scan
-    socute_get_project_var(RELATIVE_HEADERS_DIRS relative_dirs)
+    socute_get(RELATIVE_HEADERS_DIRS relative_dirs)
     foreach(rel_dir ${relative_dirs})
         set(_sdir "${PROJECT_SOURCE_DIR}/${rel_dir}")
         if (IS_DIRECTORY "${_sdir}")
@@ -37,7 +36,7 @@ function(socute_generate_doxygen_file)
     endif()
 
     # we automatically add EXPORT macros generated for every non interface library
-    socute_get_project_var(KNOWN_TARGETS targets)
+    socute_get(KNOWN_TARGETS targets)
     foreach(tgt ${targets})
         get_target_property(_type ${tgt} TYPE)
         if ((NOT _type STREQUAL "INTERFACE_LIBRARY") AND (NOT _type STREQUAL "EXECUTABLE"))
@@ -77,7 +76,7 @@ function(socute_generate_doxygen_file)
     create_doxygen_list("${GD_EXCLUDED_PATHS}" DOXYGEN_EXCLUDE)
     create_doxygen_list("${GD_EXCLUDED_SYMBOLS}" DOXYGEN_EXCLUDE_SYMBOLS)
     create_doxygen_list("${GD_PREDEFINED_MACROS}" DOXYGEN_PREDEFINED)
-    socute_get_project_var(TEMPLATES_DIR templates)
+    socute_get(TEMPLATES_DIR templates)
     set(DOXYGEN_IN "${templates}/Doxyfile.in")
     set(DOXYGEN_OUT "${PROJECT_BINARY_DIR}/doc/Doxyfile")
     configure_file("${DOXYGEN_IN}" "${DOXYGEN_OUT}")

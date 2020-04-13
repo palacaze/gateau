@@ -46,7 +46,7 @@ function(socute_install_project)
     set(cmake_dir    "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
     # list exported targets
-    socute_get_project_var(KNOWN_TARGETS targets)
+    socute_get(KNOWN_TARGETS targets)
     set(exported_targets)
     foreach(t ${targets})
         if (TARGET ${t})
@@ -73,11 +73,11 @@ function(socute_install_project)
     )
 
     # Install the module with the instruction to find dependencies
-    socute_get_project_var(DEP_DIR _dep_dir)
+    socute_get(DEP_DIR _dep_dir)
     set(_dep_module "${_dep_dir}/${PROJECT_NAME}FindDeps.cmake")
     install(FILES "${_dep_module}" DESTINATION "${cmake_dir}")
 
-    socute_get_project_var(TEMPLATES_DIR templates)
+    socute_get(TEMPLATES_DIR templates)
     configure_package_config_file(
         "${templates}/PackageConfig.cmake.in"
         "${config_file}"

@@ -16,88 +16,87 @@ function(socute_dump_variables)
     endforeach()
 endfunction()
 
-# A function that appends elements to a CACHE variable of list/string type
-function(socute_append_cached var str)
-    if (NOT ${var})
-        set(${var} ${str})
-    else()
-        list(APPEND ${var} "${str}")
-    endif()
-    if (${var})
-        list(REMOVE_DUPLICATES ${var})
-    endif()
-    set(${var} ${${var}} CACHE STRING "" FORCE)
-    mark_as_advanced(${var})
-endfunction()
-
-# A function that appends elements to an INTERNAL variable of list/string type
-function(socute_append_internal var str)
-    if (NOT ${var})
-        set(${var} ${str})
-    else()
-        list(APPEND ${var} "${str}")
-    endif()
-    if (${var})
-        list(REMOVE_DUPLICATES ${var})
-    endif()
-    set(${var} ${${var}} CACHE INTERNAL "")
-endfunction()
-
-# Declare a new option and ensure proper default value
-function(socute_declare_option name default doc)
-    set(def "${default}")
-    if (DEFINED ${PROJECT_IDENT}_${name})
-        set(def "${${PROJECT_IDENT}_${name}}")
-    endif()
-    option(${PROJECT_IDENT}_${name} "${doc}" "${def}")
-endfunction()
-
-# Declare a new user-visible variable and ensure proper default value
-function(socute_declare_user_var name default doc type)
-    set(def "${default}")
-    if (DEFINED ${PROJECT_IDENT}_${name})
-        set(def "${${PROJECT_IDENT}_${name}}")
-    endif()
-    set(${PROJECT_IDENT}_${name} "${def}" CACHE ${type} "${doc}" FORCE)
-endfunction()
-
-# Set a project cache variable
-function(socute_set_project_var name value)
-    set(${PROJECT_IDENT}_${name} "${value}" CACHE INTERNAL "")
-endfunction()
-
-# Get a project cache variable value
-function(socute_get_project_var name value_out)
-    set(${value_out} "${${PROJECT_IDENT}_${name}}" PARENT_SCOPE)
-endfunction()
-
-# Append a value to a project cache variable
-function(socute_append_project_var name value)
-    socute_append_internal(${PROJECT_IDENT}_${name} "${value}")
-endfunction()
-
-# Try to get the value of a variable that may or may not be defined
+# Try to get the value of a variable that may or may not be defined, or fallback
+# to a default value.
 # The order is:
-# 1) ${PROJECT_IDENT}_${opt}
-# 2) $ENV{${PROJECT_IDENT}_${opt}}
-# 3) SOCUTE_${opt}
-# 4) $ENV{SOCUTE_${opt}}
+# 1) ${PROJECT_IDENT}_${name}
+# 2) ENV{${PROJECT_IDENT}_${name}}
+# 3) SOCUTE_${name}
+# 4) ENV{SOCUTE_${name}}
 # 5) fallback
-function(socute_get_optional_var opt fallback out)
-    set(var "${${PROJECT_IDENT}_${opt}}")
-    if (NOT var)
-        set(var "$ENV{${PROJECT_IDENT}_${opt}}")
+function(socute_get_or name fallback out)
+    unset(var)
+    if (DEFINED ${PROJECT_IDENT}_${name})
+        set(var "${${PROJECT_IDENT}_${name}}")
+    elseif (DEFINED ENV{${PROJECT_IDENT}_${name}})
+        set(var "$ENV{${PROJECT_IDENT}_${name}}")
+    elseif (DEFINED SOCUTE_${name})
+        set(var "${SOCUTE_${name}}")
+    elseif (DEFINED ENV{SOCUTE_${name}})
+        set(var "$ENV{SOCUTE_${name}}")
     endif()
-    if (NOT var)
-        set(var "${SOCUTE_${opt}}")
-    endif()
-    if (NOT var)
-        set(var "$ENV{SOCUTE_${opt}}")
-    endif()
-    if (NOT var)
+
+    # if the variable is empty or undefined, set to fallback
+    if (NOT DEFINED var OR "${var}" STREQUAL "")
         set(var "${fallback}")
     endif()
     set(${out} "${var}" PARENT_SCOPE)
+endfunction()
+
+# Declare a cache variable and ensure proper default value
+# If a variable or ENV variable of the same name exists, its value will be used
+# instead of the default value.
+function(socute_declare_var name default doc type)
+    socute_get_or(${name} "${default}" def)
+    set(${PROJECT_IDENT}_${name} "${def}" CACHE ${type} "${doc}")
+endfunction()
+
+# Declare a new option and ensure proper default value
+# Just a shorthand for declare_var(... BOOL)
+function(socute_declare_option name default doc)
+    socute_declare_var(${name} "${default}" "${doc}" BOOL)
+endfunction()
+
+# Declare an internal cache variable and ensure proper default value
+function(socute_declare_internal name default)
+    socute_declare_var(${name} "${default}" "" INTERNAL)
+endfunction()
+
+# Get a project cache variable value
+function(socute_get name value_out)
+    set(${value_out} "${${PROJECT_IDENT}_${name}}" PARENT_SCOPE)
+endfunction()
+
+# Set a project cache variable value
+function(socute_set name value)
+    # use set_property to keep the other properties on this cache value
+    set_property(CACHE ${PROJECT_IDENT}_${name} PROPERTY VALUE "${value}")
+endfunction()
+
+# Append a value to a CACHE variable of list/string type
+function(socute_append name str)
+    if (NOT DEFINED ${PROJECT_IDENT}_${name})
+        socute_declare_var(${name} "${str}" "" INTERNAL)
+    else()
+        socute_get(${name} vals)
+        if (NOT "${str}" IN_LIST vals)
+            list(APPEND vals "${str}")
+            socute_set(${name} "${vals}")
+        endif()
+    endif()
+endfunction()
+
+# Prepend a value to a CACHE variable of list/string type
+function(socute_prepend name str)
+    if (NOT DEFINED ${PROJECT_IDENT}_${name})
+        socute_declare_var(${name} "${str}" "" INTERNAL)
+    else()
+        socute_get(${name} vals)
+        if (NOT "${str}" IN_LIST vals)
+            list(PREPEND vals "${str}")
+            socute_set(${name} "${vals}")
+        endif()
+    endif()
 endfunction()
 
 # Build the snakecase name for a string
@@ -129,9 +128,11 @@ endfunction()
 # Find out the generated header path for the given target and suffix
 function(socute_generated_header_path target suffix header_out)
     set(name "${target}${suffix}")
-    socute_get_project_var(HYPHENATE_GENERATED_FILES hyphen)
-    if (hyphen)
+    socute_get(GENERATED_FILES_CASE case)
+    if (case STREQUAL HYPHEN)
         socute_to_hyphenated("${name}" name)
+    elseif (case STREQUAL SNAKE)
+        socute_to_snakecase("${name}" name)
     endif()
     set(header_out "${CMAKE_CURRENT_BINARY_DIR}/${name}" PARENT_SCOPE)
 endfunction()
@@ -189,7 +190,7 @@ function(socute_external_build_type build_type)
             list(GET CMAKE_CONFIGURATION_TYPES 0 _build_type)
         endif()
     else()
-        socute_get_optional_var(EXTERNAL_BUILD_TYPE Release _build_type)
+        socute_get_or(EXTERNAL_BUILD_TYPE Release _build_type)
     endif()
 
     set(${build_type} "${_build_type}" PARENT_SCOPE)
@@ -205,7 +206,7 @@ function(_socute_config_specific_dir prefix out_dir)
     string(TOLOWER "${build_type}" build_type)
     string(TOLOWER "${CMAKE_SYSTEM_NAME}" sys)
     string(TOLOWER "${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}" comp)
-    socute_get_project_var(ARCH arch)
+    socute_get(ARCH arch)
     set(datadir "${prefix}/${sys}-${comp}-x${arch}-${build_type}")
 
     # Ensure we can actually use this directory
@@ -214,21 +215,19 @@ function(_socute_config_specific_dir prefix out_dir)
 endfunction()
 
 # Get the root directory where all external packages will be handled.
-# The EXTERNAL_ROOT option may be supplied in various ways (see socute_get_optional_var).
 # The fallback is ${PROJECT_BINARY_DIR}/external.
 function(socute_external_root out_dir)
     set(fallback "${PROJECT_BINARY_DIR}/external")
-    socute_get_optional_var(EXTERNAL_ROOT "${fallback}" out)
+    socute_get_or(EXTERNAL_ROOT "${fallback}" out)
     set(${out_dir} "${out}" PARENT_SCOPE)
 endfunction()
 
 # Get the download directory for external package archives to be saved.
-# DOWNLOAD_CACHE option may be supplied in various ways (see socute_get_optional_var).
 # The fallback is ${socute_external_root}/download.
 function(socute_external_download_root out_dir)
     socute_external_root(external_root)
     set(fallback "${external_root}/download")
-    socute_get_optional_var(DOWNLOAD_CACHE "${fallback}" out)
+    socute_get_or(DOWNLOAD_CACHE "${fallback}" out)
     set(${out_dir} "${out}" PARENT_SCOPE)
 endfunction()
 
@@ -264,12 +263,11 @@ function(socute_external_build_dir pkg out_dir)
 endfunction()
 
 # Get the install prefix directory for external package.
-# INSTALL_PREFIX option may be supplied in various ways (see socute_get_optional_var).
 # The fallback is ${socute_external_root}/prefix/${config_specific}.
 function(socute_external_install_prefix out_dir)
     socute_external_root(external_root)
     _socute_config_specific_dir("${external_root}/prefix" fallback)
-    socute_get_optional_var(EXTERNAL_INSTALL_PREFIX "${fallback}" out)
+    socute_get_or(EXTERNAL_INSTALL_PREFIX "${fallback}" out)
     set(${out_dir} "${out}" PARENT_SCOPE)
 endfunction()
 

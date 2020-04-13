@@ -83,33 +83,31 @@ function(_socute_setup_internal_variables)
     set(PROJECT_IDENT "${ident}" CACHE INTERNAL "")
 
     # List of paths where package files can be found, extensible with socute_add_package_module_dir()
-    socute_set_project_var(PACKAGE_MODULES_DIRS "${CMAKE_CURRENT_LIST_DIR}/packages")
+    socute_declare_internal(PACKAGE_MODULES_DIRS "${CMAKE_CURRENT_LIST_DIR}/packages")
 
     # Where template files can be found
-    socute_set_project_var(TEMPLATES_DIR "${CMAKE_CURRENT_LIST_DIR}/templates")
+    socute_declare_internal(TEMPLATES_DIR "${CMAKE_CURRENT_LIST_DIR}/templates")
 
     # Where dependency files are manipulated
-    socute_set_project_var(DEP_DIR "${PROJECT_BINARY_DIR}/socute.cmake/dep")
+    socute_declare_internal(DEP_DIR "${PROJECT_BINARY_DIR}/socute.cmake/dep")
 
     # List of relative directory paths where headers are expected to be found in
     # order to correctly find and compute their install destination.
-    socute_set_project_var(RELATIVE_HEADERS_DIRS "src;include;Src;Source;Include")
+    socute_declare_internal(RELATIVE_HEADERS_DIRS "src;include;Src;Source;Include")
 
-    # How to name generated files
-    socute_set_project_var(HYPHENATE_GENERATED_FILES OFF)
-
-    # A default standard because this is often desired
-    socute_set_project_var(CPP_STANDARD cxx_std_17)
+    # How to name generated files: possible values are CAMEL, SNAKE and HYPHEN
+    socute_declare_internal(GENERATED_FILES_CASE CAMEL)
+    set_property(CACHE ${PROJECT_IDENT}_GENERATED_FILES_CASE PROPERTY STRINGS "CAMEL;SNAKE;HYPHEN")
 
     # Nicer way of handling 32 or 64 bits
     if (CMAKE_CXX_SIZEOF_DATA_PTR EQUAL 8)
-        socute_set_project_var(X64 ON)
-        socute_set_project_var(X32 OFF)
-        socute_set_project_var(ARCH 64)
+        socute_declare_internal(X64 ON)
+        socute_declare_internal(X32 OFF)
+        socute_declare_internal(ARCH 64)
     else()
-        socute_set_project_var(X64 OFF)
-        socute_set_project_var(X32 ON)
-        socute_set_project_var(ARCH 32)
+        socute_declare_internal(X64 OFF)
+        socute_declare_internal(X32 ON)
+        socute_declare_internal(ARCH 32)
     endif()
 endfunction()
 
@@ -139,11 +137,18 @@ function(_socute_declare_options)
     # Update deps
     socute_declare_option(UPDATE_DEPS OFF "Fetch dependency updates each time the project is reconfigured")
 
-    # Setup a discoverable output dir to simplify program execution
-    socute_declare_user_var(OUTPUT_DIRECTORY "" "Where to put all target files when built" PATH)
+    # A default standard because this is often desired
+    socute_declare_var(CPP_STANDARD cxx_std_17 "C++ standard" STRING)
 
-    # config option for documentation installation
-    socute_declare_user_var(DOCUMENTATION_ROOT "" "Documentation installation root directory" PATH)
+    # Other options pertaining to output
+    socute_declare_var(OUTPUT_DIRECTORY "" "Where to put all target files when built" PATH)
+    socute_declare_var(DOCUMENTATION_ROOT "" "Documentation installation root directory" PATH)
+
+    # External dependencies handling
+    socute_declare_var(EXTERNAL_BUILD_TYPE Release "Build type used to build external packages" STRING)
+    socute_declare_var(EXTERNAL_ROOT "" "Root directory where external packages get build" PATH)
+    socute_declare_var(EXTERNAL_INSTALL_PREFIX "" "Prefix where to install external packages" PATH)
+    socute_declare_var(DOWNLOAD_CACHE "" "Directory to store external packages code archives" PATH)
 endfunction()
 
 # Setup CMake with reasonable defaults

@@ -6,17 +6,15 @@ include(SocuteExternalPackage)
 # Add a directory to the list of directories to search when looking for a
 # package module file with installation instructions inside of it
 function(socute_add_package_module_dir dir)
-    socute_append_project_var(PACKAGE_MODULES_DIRS "${dir}")
+    socute_prepend(PACKAGE_MODULES_DIRS "${dir}")
 endfunction()
 
 # A number of files get generated for the purpose of dependency handling and
 # other operations. This function ensures proper creation and cleanup of the
 # directory structure that support those files
 function(_socute_setup_build_dirs)
-    set(_gen_dir "${PROJECT_BINARY_DIR}/socute.cmake")
-    file(REMOVE_RECURSE "${_gen_dir}")
-    socute_create_dir("${_gen_dir}/dep/package-modules")
-    socute_create_dir("${_gen_dir}/dep/call-helpers")
+    socute_get(DEP_DIR _dep_dir)
+    file(REMOVE_RECURSE "${_dep_dir}")
 endfunction()
 
 # Look for a package file module for the given dependency name.
@@ -24,10 +22,9 @@ endfunction()
 # "${nameprefix}.cmake.in" that is a prefix of the name passed in argument
 function(_socute_find_dep_package_file name package_file)
     get_filename_component(_pm_dir "${package_file}" DIRECTORY)
-    set(_pm_dir "${_dep_dir}/package-modules")
 
     # first look for exact name
-    socute_get_project_var(PACKAGE_MODULES_DIRS mod_dirs)
+    socute_get(PACKAGE_MODULES_DIRS mod_dirs)
     foreach (dir ${mod_dirs})
         set(module_path "${dir}/${name}.cmake")
         if (EXISTS "${module_path}")
@@ -65,9 +62,10 @@ endfunction()
 # "${nameprefix}.cmake.in" that is a prefix of the name passed in argument.
 # If single_header is not empty, a package file will be generated for it.
 function(_socute_prepare_dep_package_file name single_header out)
-    socute_get_project_var(TEMPLATES_DIR _templates)
-    socute_get_project_var(DEP_DIR _dep_dir)
+    socute_get(TEMPLATES_DIR _templates)
+    socute_get(DEP_DIR _dep_dir)
     set(_pm_dir "${_dep_dir}/package-modules")
+    socute_create_dir("${_pm_dir}")
 
     # The package file to create
     set(_package_file "${_pm_dir}/${name}.cmake")
@@ -107,14 +105,15 @@ macro(_socute_call_dynamic_macro macro_name)
     if (NOT COMMAND ${macro_name})
         message(FATAL_ERROR "Unknown macro \"${macro_name}\"")
     else()
-        set(_gen_dir "${PROJECT_BINARY_DIR}/socute.cmake")
-        set(_helper "${_gen_dir}/dep/call-helpers/dynamic_helper_${macro_name}.cmake")
+        socute_get(DEP_DIR _dep_dir)
+        socute_create_dir("${_dep_dir}/call-helpers")
+        set(_helper "${_dep_dir}/call-helpers/dynamic_helper_${macro_name}.cmake")
         set(_args "${ARGN}")
         file(WRITE "${_helper}" "${macro_name}(${_args})")
         include("${_helper}")
     endif()
 
-    unset(_gen_dir)
+    unset(_dep_dir)
     unset(_args)
     unset(_helper)
 endmacro()
@@ -157,11 +156,11 @@ endfunction()
 function(_socute_register_dep name package_file)
     list(JOIN ARGN " " args)
 
-    socute_get_project_var(DEP_DIR _dep_dir)
+    socute_get(DEP_DIR _dep_dir)
     set(_dep_module "${_dep_dir}/${PROJECT_NAME}FindDeps.cmake")
 
     # we add the package DIR to the module path if we installed it ourselves
-    socute_get_project_var(INSTALLED_PACKAGES self_installed)
+    socute_get(INSTALLED_PACKAGES self_installed)
     if (name IN_LIST self_installed AND ${name}_DIR)
         file(APPEND "${_dep_module}" "set(${name}_DIR \"${${name}_DIR}\")\n")
     endif()
@@ -206,7 +205,7 @@ function(_socute_install_dep_wrapper name)
         socute_install_dependency(${name} ${ARGN})
     endif()
 
-    socute_append_project_var(INSTALLED_PACKAGES ${name})
+    socute_append(INSTALLED_PACKAGES ${name})
 endfunction()
 
 # Macro that handles looking for packages and installing them in the right
@@ -265,9 +264,11 @@ macro(socute_find_package name)
 
     # update the dep if asked
     if (${name}_FOUND AND NOT just_installed)
-        if (_O_UPDATE_DEP OR ${PROJECT_IDENT}_UPDATE_DEPS)
+        socute_get(UPDATE_DEPS _update_deps)
+        if (_O_UPDATE_DEP OR _update_deps)
             _socute_maybe_update_dep(${name})
         endif()
+        unset(_update_deps)
     endif()
 
     # Register this package as a required dependency for software that will use

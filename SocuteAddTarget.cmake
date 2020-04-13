@@ -29,7 +29,7 @@ function(_socute_generate_version_header target out)
         )
     endif()
 
-    socute_get_project_var(TEMPLATES_DIR templates)
+    socute_get(TEMPLATES_DIR templates)
     socute_generated_header_path(${target} "Version" header_out)
     configure_file("${templates}/version.h.in" "${header_out}.h" @ONLY)
     set(${out} "${header_out}.h" PARENT_SCOPE)
@@ -51,7 +51,7 @@ function(_socute_install_headers target includedir)
     # We must handle headers originating from both the source and build dirs
     get_filename_component(real_source "${PROJECT_SOURCE_DIR}" REALPATH)
     get_filename_component(real_binary "${PROJECT_BINARY_DIR}" REALPATH)
-    socute_get_project_var(RELATIVE_HEADERS_DIRS relative_dirs)
+    socute_get(RELATIVE_HEADERS_DIRS relative_dirs)
 
     # Installation instructions for each header
     foreach(header ${ARGN})
@@ -260,13 +260,13 @@ endfunction()
 # Set common configuration parameters on the target
 function(_socute_configure_target target no_version_header)
     # mark the target as known
-    socute_append_project_var(KNOWN_TARGETS ${target})
+    socute_append(KNOWN_TARGETS ${target})
 
     # extend the target with appropriate defaults
-    socute_get_project_var(CPP_STANDARD cppstd)
+    socute_get(CPP_STANDARD cppstd)
 
     # find include directories to append
-    socute_get_project_var(RELATIVE_HEADERS_DIRS relative_dirs)
+    socute_get(RELATIVE_HEADERS_DIRS relative_dirs)
     set(build_dirs)
     foreach(rel_dir ${relative_dirs})
         set(_sdir "${PROJECT_SOURCE_DIR}/${rel_dir}")

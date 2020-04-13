@@ -32,7 +32,6 @@ endfunction()
 # Path to the install manifest file
 function(socute_install_manifest_file dep out_file)
     socute_external_install_manifest_dir(_manifest_dir)
-    socute_create_dir("${_manifest_dir}")
     set(${out_file} "${_manifest_dir}/${dep}_install_manifest.txt" PARENT_SCOPE)
 endfunction()
 
@@ -47,7 +46,7 @@ endfunction()
 
 # Create an uninstall script for the dep
 function(socute_configure_uninstall_script dep script)
-    socute_get_project_var(TEMPLATES_DIR templates)
+    socute_get(TEMPLATES_DIR templates)
     socute_external_root(root_dir)
     set(uninstall_script "${root_dir}/targets/uninstall_${dep}.cmake")
 
@@ -278,10 +277,10 @@ function(socute_install_dependency dep)
     # Generate a mock project to force immediate installation of the dep.
     # This project also creates an install manifest, used for uninstallation purpose
     set(SOCUTE_DEP ${dep})
-    set(SOCUTE_DEP_PROJECT_VARS ${project_vars})
+    set(SOCUTE_DEP_PROJECT_VARS "${project_vars}")
     set(SOCUTE_DEP_BUILD_DIR "${build_dir}/build")
     set(SOCUTE_DEP_INSTALL_DIR "${install_prefix}")
-    socute_get_project_var(TEMPLATES_DIR templates)
+    socute_get(TEMPLATES_DIR templates)
 
     configure_file(
         "${templates}/BuildDepProject.cmake.in"
