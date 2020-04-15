@@ -99,7 +99,29 @@ function(gateau_prepend name str)
     endif()
 endfunction()
 
+# Build the camelcase name for a string
+function(gateau_to_camelcase var out)
+    string(REGEX REPLACE "([^A-Za-z0-9])" "_\\1" txt "${txt}")
+    string(TOLOWER "${txt}" txt)
+    if (${txt} MATCHES "^_")
+        string(SUBSTRING "${txt}" 1 -1 txt)
+    endif()
+    string(REPLACE "_" ";" txt "${txt}")
+    set(res)
+    foreach (w ${txt})
+        if (w)
+            string(SUBSTRING ${w} 0 1 l)
+            string(TOUPPER ${l} l)
+            string(APPEND res ${l})
+            string(SUBSTRING ${w} 1 -1 l)
+            string(APPEND res ${l})
+        endif()
+    endforeach()
+    set(${out} "${res}" PARENT_SCOPE)
+endfunction()
+
 # Build the snakecase name for a string
+# Precondition: the input string is CamelCase
 function(gateau_to_snakecase var out)
     string(REPLACE " " "_" txt "${var}")
     string(REGEX REPLACE "([A-Z])" "_\\1" txt "${txt}")
@@ -111,7 +133,8 @@ function(gateau_to_snakecase var out)
     set(${out} "${txt}" PARENT_SCOPE)
 endfunction()
 
-# Build the snakecase name for a string
+# Build the hyphenated name for a string
+# Precondition: the input string is CamelCase
 function(gateau_to_hyphenated var out)
     gateau_to_snakecase(${var} txt)
     string(REPLACE "_" "-" txt "${txt}")
@@ -127,14 +150,19 @@ endfunction()
 
 # Find out the generated header path for the given target and suffix
 function(gateau_generated_header_path target suffix header_out)
-    set(name "${target}${suffix}")
-    gateau_get(GENERATED_FILES_CASE case)
+    gateau_get(GENERATED_HEADER_CASE case)
     if (case STREQUAL HYPHEN)
-        gateau_to_hyphenated("${name}" name)
+        gateau_to_hyphenated("${target}-${suffix}" name)
     elseif (case STREQUAL SNAKE)
-        gateau_to_snakecase("${name}" name)
+        gateau_to_snakecase("${target}_${suffix}" name)
+    else()
+        gateau_to_camelcase("${target}" camel_target)
+        gateau_to_camelcase("${suffix}" camel_suffix)
+        set(name "${camel_target}${camel_suffix}")
     endif()
-    set(header_out "${CMAKE_CURRENT_BINARY_DIR}/${name}" PARENT_SCOPE)
+
+    gateau_get(GENERATED_HEADER_EXT ext)
+    set(header_out "${CMAKE_CURRENT_BINARY_DIR}/${name}.${ext}" PARENT_SCOPE)
 endfunction()
 
 # Build the export name of a target

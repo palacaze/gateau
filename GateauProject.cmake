@@ -90,9 +90,12 @@ function(_gateau_setup_internal_variables)
     # order to correctly find and compute their install destination.
     gateau_declare_internal(RELATIVE_HEADERS_DIRS "src;include;Src;Source;Include")
 
-    # How to name generated files: possible values are CAMEL, SNAKE and HYPHEN
-    gateau_declare_internal(GENERATED_FILES_CASE CAMEL)
-    set_property(CACHE ${PROJECT_IDENT}_GENERATED_FILES_CASE PROPERTY STRINGS "CAMEL;SNAKE;HYPHEN")
+    # How to name generated headers: possible values are CAMEL, SNAKE and HYPHEN
+    gateau_declare_internal(GENERATED_HEADER_CASE CAMEL)
+    set_property(CACHE ${PROJECT_IDENT}_GENERATED_HEADER_CASE PROPERTY STRINGS "CAMEL;SNAKE;HYPHEN")
+
+    # generated headers extension
+    gateau_declare_internal(GENERATED_HEADER_EXT "h")
 
     # Nicer way of handling 32 or 64 bits
     if (CMAKE_CXX_SIZEOF_DATA_PTR EQUAL 8)
@@ -171,7 +174,8 @@ function(gateau_configure)
     )
     set(mono_options
         CPP_STANDARD
-        GENERATED_FILES_CASE
+        GENERATED_HEADER_CASE
+        GENERATED_HEADER_EXT
         OUTPUT_DIRECTORY
         DOCUMENTATION_ROOT
         DOWNLOAD_CACHE

@@ -31,20 +31,20 @@ function(_gateau_generate_version_header target out)
     endif()
 
     gateau_get(TEMPLATES_DIR templates)
-    gateau_generated_header_path(${target} "Version" header_out)
-    configure_file("${templates}/version.h.in" "${header_out}.h" @ONLY)
-    set(${out} "${header_out}.h" PARENT_SCOPE)
+    gateau_generated_header_path(${target} "version" header_out)
+    configure_file("${templates}/version.h.in" "${header_out}" @ONLY)
+    set(${out} "${header_out}" PARENT_SCOPE)
 endfunction()
 
 # Macro that generates an export header
 function(_gateau_generate_export_header target out)
     gateau_target_identifier_name(${target} target_id)
-    gateau_generated_header_path(${target} "Export" header_out)
+    gateau_generated_header_path(${target} "export" header_out)
     generate_export_header(${target}
         BASE_NAME ${target_id}
-        EXPORT_FILE_NAME "${header_out}.h"
+        EXPORT_FILE_NAME "${header_out}"
     )
-    set(${out} "${header_out}.h" PARENT_SCOPE)
+    set(${out} "${header_out}" PARENT_SCOPE)
 endfunction()
 
 # mark headers as installable
