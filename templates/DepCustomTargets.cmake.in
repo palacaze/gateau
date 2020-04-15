@@ -17,7 +17,7 @@ function(gateau_configure_custom_targets_@GATEAU_DEP@ dep)
     endif()
 
     # Update target
-    if (NOT COMMAND update_${dep})
+    if (NOT TARGET update_${dep})
         add_custom_target(update_${dep}
             COMMENT "Update the package ${dep}"
             COMMAND "${CMAKE_COMMAND}" --build "${ext_dir}/build"
@@ -27,7 +27,7 @@ function(gateau_configure_custom_targets_@GATEAU_DEP@ dep)
     endif()
 
     # Reinstallation target
-    if (NOT COMMAND reinstall_${dep})
+    if (NOT TARGET reinstall_${dep})
         add_custom_target(reinstall_${dep}
             COMMENT "Reinstall the package ${dep}"
             COMMAND "${CMAKE_COMMAND}" -E ${rm_cmd} "${build_dir}/build" "${ext_dir}/build"

@@ -65,7 +65,7 @@ endfunction()
 function(gateau_configure_uninstall_target dep)
     gateau_configure_uninstall_script(${dep} uninstall_script)
     gateau_external_install_prefix(install_prefix)
-    if (NOT COMMAND uninstall_${dep})
+    if (NOT TARGET uninstall_${dep})
         add_custom_target(uninstall_${dep}
             COMMENT "Uninstall the package ${dep}"
             COMMAND "${CMAKE_COMMAND}" -DGATEAU_DEP_INSTALL_PREFIX=${install_prefix} -P "${uninstall_script}"
