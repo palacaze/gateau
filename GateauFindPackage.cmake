@@ -280,8 +280,10 @@ macro(gateau_find_package name)
 
     set(just_installed FALSE)
 
+    gateau_get(NO_BUILD_DEPS no_build_deps)
+
     # not found, we will try to install it and search again
-    if (NOT ${name}_FOUND AND NOT _O_OPTIONAL)
+    if (NOT ${name}_FOUND AND NOT _O_OPTIONAL AND NOT no_build_deps)
         # build option list from arguments
         gateau_rebuild_parsed(_O "${bool_options}" "${mono_options}" "${multi_options}" _opts)
 
@@ -304,7 +306,7 @@ macro(gateau_find_package name)
     endif()
 
     # update the dep if asked
-    if (${name}_FOUND AND NOT just_installed)
+    if (${name}_FOUND AND NOT just_installed AND NOT no_build_deps)
         gateau_get(UPDATE_DEPS _update_deps)
         if (_O_UPDATE_DEP OR _update_deps)
             _gateau_maybe_update_dep(${name})
@@ -321,6 +323,7 @@ macro(gateau_find_package name)
     # We are a macro, unset everything
     gateau_cleanup_parsed(_O "${bool_options}" "${mono_options}" "${multi_options}")
 
+    unset(no_build_deps)
     unset(just_installed)
     unset(bool_options)
     unset(mono_options)

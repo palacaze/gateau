@@ -19,6 +19,12 @@ endfunction()
 
 # Setup prefix path to include the external prefix containing self installed deps
 function(_gateau_setup_prefix_path)
+    # no external deps: we don't alter the prefix path
+    gateau_get(NO_BUILD_DEPS no_build_deps)
+    if (no_build_deps)
+        return()
+    endif()
+
     gateau_external_install_prefix(dir)
     set(path ${CMAKE_PREFIX_PATH})
     if (NOT dir IN_LIST path)
@@ -133,7 +139,8 @@ function(_gateau_declare_options)
     gateau_declare_option(KEEP_TEMPS OFF "Keep temporary compiler-generated files for debugging purpose")
     gateau_declare_option(USE_CCACHE OFF "Use Ccache to speed-up compilation")
 
-    # Update deps
+    # Allow/Update deps
+    gateau_declare_option(NO_BUILD_DEPS OFF "Disable external dependency build and installation")
     gateau_declare_option(UPDATE_DEPS OFF "Fetch dependency updates each time the project is reconfigured")
 
     # A default standard because this is often desired
@@ -170,6 +177,7 @@ endmacro()
 function(gateau_configure)
     # Offering a single API call seems a more practical solution to setting a bunch of variables.
     set(bool_options
+        NO_BUILD_DEPS
         UPDATE_DEPS
     )
     set(mono_options
@@ -190,6 +198,10 @@ function(gateau_configure)
     # All the variables are already defined, using gateau_parse_arguments allows
     # to obtain the current value if not set with gateau_configure()
     gateau_parse_arguments(_O "${PROJECT_IDENT}" "${bool_options}" "${mono_options}" "${multi_options}" ${ARGN})
+    if (_O_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "Unrecognized arguments in gateau_configure(): ${_O_UNPARSED_ARGUMENTS}")
+    endif()
+
     foreach(opt ${bool_options} ${mono_options} ${multi_options})
         gateau_set(${opt} "${_O_${opt}}")
     endforeach()
