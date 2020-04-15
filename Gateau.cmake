@@ -1,5 +1,6 @@
 # This module is the main entry point of Gateau's cmake modules distribution.
-# It should be include near the top of each project's top level CMakeLists.txt.
+# It should be included right after the call to project() in the top level
+# CMakeLists.txt of a project.
 include_guard()
 
 # Enforce minimum version
