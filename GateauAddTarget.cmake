@@ -385,7 +385,7 @@ function(gateau_add_library lib)
         NO_EXPORT_HEADER    # Do not generate an export header
         NO_VERSION_HEADER   # DO not generate a version header
     )
-    set(mono_options INSTALL_BINDIR INSTALL_LIBDIR INSTALL_INCLUDEDIR)
+    set(mono_options OUTPUT_NAME INSTALL_BINDIR INSTALL_LIBDIR INSTALL_INCLUDEDIR)
     cmake_parse_arguments(SAL "${bool_options}" "${mono_options}" "" ${ARGN})
 
     # ensure a proper install prefix is none was given
@@ -441,8 +441,16 @@ function(gateau_add_library lib)
     # configure the target with good defaults
     _gateau_configure_target(${lib} ${SAL_NO_VERSION_HEADER})
 
+    if (SAL_OUTPUT_NAME)
+        gateau_extend_target(${lib}
+            PROPERTIES
+                LIBRARY_OUTPUT_NAME "${SAL_OUTPUT_NAME}"
+                ARCHIVE_OUTPUT_NAME "${SAL_OUTPUT_NAME}"
+        )
+    endif()
+
     if (NOT SAL_INTERFACE AND NOT SAL_NO_EXPORT_HEADER)
-        # Export header and version
+        # Export header
         _gateau_generate_export_header(${lib} export_header)
         gateau_extend_target(${lib}
             HEADERS "${export_header}"
@@ -539,7 +547,7 @@ function(gateau_add_executable exe)
     # extend the target with appropriate defaults
     gateau_extend_target(${exe}
         PROPERTIES
-            OUTPUT_NAME "${SAE_OUTPUT_NAME}"
+            RUNTIME_OUTPUT_NAME "${SAE_OUTPUT_NAME}"
     )
 
     # add passed options last, as some may override some of our defaults
