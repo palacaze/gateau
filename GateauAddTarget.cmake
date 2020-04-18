@@ -61,12 +61,18 @@ function(_gateau_install_headers target includedir)
 
         # find out the base directory to derive the relative install path
         unset(base_dir)
+        unset(dirs)
+
+        # build a list of possible base_dirs
         foreach(rel_dir ${relative_dirs})
-            if (ah MATCHES "^${real_source}/${rel_dir}")
-                set(base_dir "${real_source}/${rel_dir}")
-                break()
-            elseif (ah MATCHES "^${real_binary}/${rel_dir}")
-                set(base_dir "${real_binary}/${rel_dir}")
+            list(APPEND dirs "${real_source}/${rel_dir}" "${real_binary}/${rel_dir}")
+        endforeach()
+        # also allow the project root directory as last resort
+        list(APPEND dirs "${real_source}" "${real_binary}")
+
+        foreach(dir ${dirs})
+            if (ah MATCHES "^${dir}")
+                set(base_dir "${dir}")
                 break()
             endif()
         endforeach()
@@ -286,6 +292,13 @@ function(_gateau_configure_target target no_version_header)
             )
         endif()
     endforeach()
+    if (NOT build_dirs)
+        list(APPEND build_dirs
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+        )
+    endif()
+
     gateau_extend_target(${target}
         INCLUDE_DIRECTORIES
             PUBLIC
