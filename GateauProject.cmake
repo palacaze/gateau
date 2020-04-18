@@ -103,6 +103,10 @@ function(_gateau_setup_internal_variables)
     # generated headers extension
     gateau_declare_internal(GENERATED_HEADER_EXT "h")
 
+    # A default standard because this is often desired
+    gateau_declare_internal(C_STANDARD c_std_99)
+    gateau_declare_internal(CXX_STANDARD cxx_std_17)
+
     # Nicer way of handling 32 or 64 bits
     if (CMAKE_CXX_SIZEOF_DATA_PTR EQUAL 8)
         gateau_declare_internal(X64 ON)
@@ -143,9 +147,6 @@ function(_gateau_declare_options)
     gateau_declare_option(NO_BUILD_DEPS OFF "Disable external dependency build and installation")
     gateau_declare_option(UPDATE_DEPS OFF "Fetch dependency updates each time the project is reconfigured")
 
-    # A default standard because this is often desired
-    gateau_declare_var(CPP_STANDARD cxx_std_17 "C++ standard" STRING)
-
     # Other options pertaining to output
     gateau_declare_var(OUTPUT_DIRECTORY "" "Where to put all target files when built" PATH)
     gateau_declare_var(DOCUMENTATION_ROOT "" "Documentation installation root directory" PATH)
@@ -181,7 +182,8 @@ function(gateau_configure)
         UPDATE_DEPS
     )
     set(mono_options
-        CPP_STANDARD
+        C_STANDARD
+        CXX_STANDARD
         GENERATED_HEADER_CASE
         GENERATED_HEADER_EXT
         OUTPUT_DIRECTORY

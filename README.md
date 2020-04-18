@@ -167,6 +167,8 @@ Those are meant for the project developers.
 | ${ID}_RELATIVE_HEADERS_DIRS | Dirs where headers are expected to be found       | src;include;Src;Source;Include |
 | ${ID}_GENERATED_HEADER_CASE | How to name generated headers (CAMEL/SNAKE/HYPEN) | CAMEL                          |
 | ${ID}_GENERATED_HEADER_EXT  | Extension of generated healers                    | "h"                            |
+| ${ID}_C_STANDARD            | The C standard to use                             | c_std_99                       |
+| ${ID}_CXX_STANDARD          | The C++ standard to use                           | cxx_std_17                     |
 
 `${ID}_RELATIVE_HEADERS_DIRS` can be used to teach *Gateau* about the project layout,
 and will be used to install the project's development headers correctly.
@@ -216,7 +218,6 @@ A number of options can be used to change the compiler flags.
 | ${ID}_SANITIZE_UNDEFINED       | Compile with undefined sanitizer support                      | OFF        |
 | ${ID}_KEEP_TEMPS               | Keep temporary compiler-generated files for debugging purpose | OFF        |
 | ${ID}_USE_CCACHE               | Use Ccache to speed-up compilation                            | OFF        |
-| ${ID}_CPP_STANDARD             | The C++ standard to use                                       | cxx_std_17 |
 
 ##### Options that control where build artifacts get stored
 

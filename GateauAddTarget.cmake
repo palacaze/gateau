@@ -263,8 +263,15 @@ function(_gateau_configure_target target no_version_header)
     # mark the target as known
     gateau_append(KNOWN_TARGETS ${target})
 
+    get_cmake_property(languages ENABLED_LANGUAGES)
+
     # extend the target with appropriate defaults
-    gateau_get(CPP_STANDARD cppstd)
+    if (C IN_LIST languages)
+        gateau_get(C_STANDARD cstd)
+    endif()
+    if (CXX IN_LIST languages)
+        gateau_get(CXX_STANDARD cxxstd)
+    endif()
 
     # find include directories to append
     gateau_get(RELATIVE_HEADERS_DIRS relative_dirs)
@@ -290,7 +297,8 @@ function(_gateau_configure_target target no_version_header)
             EXPORT_NAME ${target}
         COMPILE_FEATURES
             PUBLIC
-                ${cppstd}
+                ${cstd}
+                ${cxxstd}
     )
 
     # add a version header
