@@ -24,7 +24,7 @@ list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 # Include the other modules
 include(GateauHelpers)
 include(GateauCompilerOptions)
-include(GateauProject)
+include(GateauConfigure)
 include(GateauAddTarget)
 include(GateauAddTest)
 include(GateauQtHelpers)
