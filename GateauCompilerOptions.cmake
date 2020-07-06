@@ -106,6 +106,15 @@ function(_gateau_setup_compiler_options)
         $<${GATEAU_C_CXX_CLANG_GCC}:-g;-fno-omit-frame-pointer>
     )
 
+    # Debug Info
+    add_library(Gateau_SplitDebugInfo INTERFACE)
+    target_compile_options(Gateau_SplitDebugInfo INTERFACE
+        $<$<AND:$<CONFIG:Debug>,${GATEAU_C_CXX_CLANG_GCC}>:-gsplit-dwarf>
+        $<$<AND:$<CONFIG:RelWithDebInfo>,${GATEAU_C_CXX_CLANG_GCC}>:-gsplit-dwarf>
+        $<$<AND:$<CONFIG:Debug>,${GATEAU_C_CXX_MSVC}>:/DEBUG:FASTLINK>
+        $<$<AND:$<CONFIG:RelWithDebInfo>,${GATEAU_C_CXX_MSVC}>:/DEBUG:FASTLINK>
+    )
+
     # sanitizers
     add_library(Gateau_AddressSanitizer INTERFACE)
     target_compile_options(Gateau_AddressSanitizer INTERFACE

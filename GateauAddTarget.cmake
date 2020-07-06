@@ -343,6 +343,7 @@ function(_gateau_configure_target target no_version_header)
                 $<$<BOOL:${${ident}_ENABLE_WERROR}>:Gateau_Werror>
                 $<$<BOOL:${${ident}_ENABLE_PROFILING}>:Gateau_Profiling>
                 $<$<BOOL:${${ident}_KEEP_TEMPS}>:Gateau_SaveTemps>
+                $<$<BOOL:${${ident}_SPLIT_DEBUG_INFO}>:Gateau_SplitDebugInfo>
                 $<$<BOOL:${${ident}_SANITIZE_ADDRESS}>:Gateau_AddressSanitizer>
                 $<$<BOOL:${${ident}_SANITIZE_THREADS}>:Gateau_ThreadSanitizer>
                 $<$<BOOL:${${ident}_SANITIZE_UNDEFINED}>:Gateau_UndefinedSanitizer>
