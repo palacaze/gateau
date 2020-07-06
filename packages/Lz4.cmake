@@ -10,7 +10,7 @@ macro(Lz4_find name)
         unset(${name}_INCLUDE_DIR CACHE)
     endif()
     if (DEFINED ${name}_LIBRARY AND NOT EXISTS "${${name}_LIBRARY}")
-        unset(${name}_LIBRARIES CACHE)
+        unset(${name}_LIBRARY CACHE)
     endif()
 
     find_path(${name}_INCLUDE_DIR NAMES lz4.h)
