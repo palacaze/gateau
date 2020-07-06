@@ -52,6 +52,7 @@ function(gateau_configure_uninstall_script dep script)
 
     # Create an appropriate script
     set(GATEAU_DEP ${dep})
+    gateau_to_identifier(${dep} GATEAU_DEP_ID)
     configure_file(
         "${templates}/UninstallDepScript.cmake.in"
         "${uninstall_script}"
@@ -277,6 +278,7 @@ function(gateau_install_dependency dep)
     # Generate a mock project to force immediate installation of the dep.
     # This project also creates an install manifest, used for uninstallation purpose
     set(GATEAU_DEP ${dep})
+    gateau_to_identifier(${dep} GATEAU_DEP_ID)
     set(GATEAU_DEP_PROJECT_VARS "${project_vars}")
     set(GATEAU_DEP_BUILD_DIR "${build_dir}/build")
     set(GATEAU_DEP_INSTALL_DIR "${install_prefix}")

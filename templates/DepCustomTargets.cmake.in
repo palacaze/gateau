@@ -1,5 +1,5 @@
 # This function declares a few custom targets for the dependency dep
-function(gateau_configure_custom_targets_@GATEAU_DEP@ dep)
+function(gateau_configure_custom_targets_@GATEAU_DEP_ID@ dep)
     gateau_external_build_dir("${dep}" build_dir)
     gateau_external_install_prefix(install_prefix)
     set(ext_dir "${build_dir}/ext")
@@ -40,4 +40,4 @@ function(gateau_configure_custom_targets_@GATEAU_DEP@ dep)
     endif()
 endfunction()
 
-gateau_configure_custom_targets_@GATEAU_DEP@(@GATEAU_DEP@)
+gateau_configure_custom_targets_@GATEAU_DEP_ID@(@GATEAU_DEP@)

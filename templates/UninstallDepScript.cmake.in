@@ -6,7 +6,7 @@ macro(gateau_list_append_unique lst elem)
     endif()
 endmacro()
 
-function(gateau_uninstall_dep_@GATEAU_DEP@ dep)
+function(gateau_uninstall_dep_@GATEAU_DEP_ID@ dep)
     set(install_prefix "${GATEAU_DEP_INSTALL_PREFIX}")
     set(manifest "${install_prefix}/share/gateau/manifests/${dep}_install_manifest.txt")
 
@@ -73,4 +73,4 @@ function(gateau_uninstall_dep_@GATEAU_DEP@ dep)
     endwhile()
 endfunction()
 
-gateau_uninstall_dep_@GATEAU_DEP@(@GATEAU_DEP@)
+gateau_uninstall_dep_@GATEAU_DEP_ID@(@GATEAU_DEP@)
