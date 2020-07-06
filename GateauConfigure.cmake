@@ -80,7 +80,7 @@ endmacro()
 function(_gateau_setup_internal_variables)
     # The identifier that will be used to prefix many variables, internal as well as user-facing
     gateau_to_identifier("${PROJECT_NAME}" ident)
-    set(PROJECT_IDENT "${ident}" CACHE INTERNAL "")
+    set(${PROJECT_NAME}_IDENT "${ident}" CACHE INTERNAL "")
 
     # List of paths where package files can be found, extensible with gateau_add_package_module_dir()
     gateau_declare_internal(PACKAGE_MODULES_DIRS "${CMAKE_CURRENT_LIST_DIR}/packages")
@@ -97,7 +97,7 @@ function(_gateau_setup_internal_variables)
 
     # How to name generated headers: possible values are CAMEL, SNAKE and HYPHEN
     gateau_declare_internal(GENERATED_HEADER_CASE CAMEL)
-    set_property(CACHE ${PROJECT_IDENT}_GENERATED_HEADER_CASE PROPERTY STRINGS "CAMEL;SNAKE;HYPHEN")
+    set_property(CACHE ${ident}_GENERATED_HEADER_CASE PROPERTY STRINGS "CAMEL;SNAKE;HYPHEN")
 
     # generated headers extension
     gateau_declare_internal(GENERATED_HEADER_EXT "h")
@@ -136,6 +136,7 @@ function(_gateau_declare_options)
     gateau_declare_option(ENABLE_LTO OFF "Enable link time optimization (release only)")
     gateau_declare_option(ENABLE_MANY_WARNINGS OFF "Enable more compiler warnings")
     gateau_declare_option(ENABLE_PROFILING OFF "Add compile flags to help with profiling")
+    gateau_declare_option(SPLIT_DEBUG_INFO ON "Split debug info")
     gateau_declare_option(SANITIZE_ADDRESS OFF "Compile with address sanitizer support")
     gateau_declare_option(SANITIZE_THREADS OFF "Compile with thread sanitizer support")
     gateau_declare_option(SANITIZE_UNDEFINED OFF "Compile with undefined sanitizer support")
@@ -160,12 +161,16 @@ endfunction()
 # Setup CMake with reasonable defaults
 macro(gateau_init)
     _gateau_setup_internal_variables()
+    _gateau_declare_options()
+    _gateau_setup_build_dirs()
     _gateau_setup_build_type()
     _gateau_setup_defaults()
-    _gateau_declare_options()
     _gateau_setup_prefix_path()
     _gateau_setup_compiler_options()
-    _gateau_setup_build_dirs()
+
+    # Some parts of Gateau may need to know if a parent project has already
+    # performed an earlier initialization.
+    set(_GATEAU_INIT_CALLED TRUE)
 endmacro()
 
 # Gateau offers a number of optional configuration options.
@@ -198,7 +203,7 @@ function(gateau_configure)
 
     # All the variables are already defined, using gateau_parse_arguments allows
     # to obtain the current value if not set with gateau_configure()
-    gateau_parse_arguments(_O "${PROJECT_IDENT}" "${bool_options}" "${mono_options}" "${multi_options}" ${ARGN})
+    gateau_parse_arguments(_O "${${PROJECT_NAME}_IDENT}" "${bool_options}" "${mono_options}" "${multi_options}" ${ARGN})
     if (_O_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unrecognized arguments in gateau_configure(): ${_O_UNPARSED_ARGUMENTS}")
     endif()

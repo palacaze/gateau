@@ -320,31 +320,33 @@ function(_gateau_configure_target target no_version_header)
         gateau_extend_target(${target} HEADERS "${version_header}")
     endif()
 
+    set(ident ${${PROJECT_NAME}_IDENT})
     get_target_property(_type ${target} TYPE)
     if (NOT _type STREQUAL INTERFACE_LIBRARY)
         # output directory
         gateau_extend_target(${target}
             CONDITION
-                ${PROJECT_IDENT}_OUTPUT_DIRECTORY
+                ${ident}_OUTPUT_DIRECTORY
             PROPERTIES
-                ARCHIVE_OUTPUT_DIRECTORY "${${PROJECT_IDENT}_OUTPUT_DIRECTORY}"
-                LIBRARY_OUTPUT_DIRECTORY "${${PROJECT_IDENT}_OUTPUT_DIRECTORY}"
-                RUNTIME_OUTPUT_DIRECTORY "${${PROJECT_IDENT}_OUTPUT_DIRECTORY}"
+                ARCHIVE_OUTPUT_DIRECTORY "${${ident}_OUTPUT_DIRECTORY}"
+                LIBRARY_OUTPUT_DIRECTORY "${${ident}_OUTPUT_DIRECTORY}"
+                RUNTIME_OUTPUT_DIRECTORY "${${ident}_OUTPUT_DIRECTORY}"
         )
 
         # Compiler options
         gateau_extend_target(${target}
             LINK_LIBRARIES
-                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_COMMON_WARNINGS}>:Gateau_CommonWarnings>
-                $<$<BOOL:${${PROJECT_IDENT}_KEEP_TEMPS}>:Gateau_SaveTemps>
-                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_LIBCXX}>:Gateau_Libcxx>
-                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_MANY_WARNINGS}>:Gateau_HighWarnings>
-                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_WERROR}>:Gateau_Werror>
-                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_PROFILING}>:Gateau_Profiling>
-                $<$<BOOL:${${PROJECT_IDENT}_SANITIZE_ADDRESS}>:Gateau_AddressSanitizer>
-                $<$<BOOL:${${PROJECT_IDENT}_SANITIZE_THREADS}>:Gateau_ThreadSanitizer>
-                $<$<BOOL:${${PROJECT_IDENT}_SANITIZE_UNDEFINED}>:Gateau_UndefinedSanitizer>
-                $<$<BOOL:${${PROJECT_IDENT}_ENABLE_AUTOSELECT_LINKER}>:Gateau_Linker>
+                $<$<BOOL:${${ident}_ENABLE_COMMON_WARNINGS}>:Gateau_CommonWarnings>
+                $<$<BOOL:${${ident}_KEEP_TEMPS}>:Gateau_SaveTemps>
+                $<$<BOOL:${${ident}_ENABLE_LIBCXX}>:Gateau_Libcxx>
+                $<$<BOOL:${${ident}_ENABLE_MANY_WARNINGS}>:Gateau_HighWarnings>
+                $<$<BOOL:${${ident}_ENABLE_WERROR}>:Gateau_Werror>
+                $<$<BOOL:${${ident}_ENABLE_PROFILING}>:Gateau_Profiling>
+                $<$<BOOL:${${ident}_KEEP_TEMPS}>:Gateau_SaveTemps>
+                $<$<BOOL:${${ident}_SANITIZE_ADDRESS}>:Gateau_AddressSanitizer>
+                $<$<BOOL:${${ident}_SANITIZE_THREADS}>:Gateau_ThreadSanitizer>
+                $<$<BOOL:${${ident}_SANITIZE_UNDEFINED}>:Gateau_UndefinedSanitizer>
+                $<$<BOOL:${${ident}_ENABLE_AUTOSELECT_LINKER}>:Gateau_Linker>
             PROPERTIES
                 $<$<CONFIG:Release>:C_VISIBILITY_PRESET hidden>
                 $<$<CONFIG:Release>:CXX_VISIBILITY_PRESET hidden>
@@ -358,7 +360,7 @@ function(_gateau_configure_target target no_version_header)
         )
 
         # CCache
-        if (${PROJECT_IDENT}_USE_CCACHE)
+        if (${ident}_USE_CCACHE)
             find_program(CCACHE_PROGRAM ccache)
             gateau_extend_target(${target}
                 CONDITION
@@ -372,7 +374,9 @@ function(_gateau_configure_target target no_version_header)
         # LTO
         gateau_extend_target(${target}
             CONDITION
-                ${PROJECT_IDENT}_ENABLE_LTO
+                ${ident}_ENABLE_LTO
+            LINK_OPTIONS
+                -flto
             PROPERTIES
                 INTERPROCEDURAL_OPTIMIZATION ON
         )

@@ -16,20 +16,38 @@ function(gateau_dump_variables)
     endforeach()
 endfunction()
 
+# full name of a namespaced variable for the current project
+function(_gateau_var_name name out)
+    set(${out} ${${PROJECT_NAME}_IDENT}_${name} PARENT_SCOPE)
+endfunction()
+
 # Try to get the value of a variable that may or may not be defined, or fallback
 # to a default value.
 # The order is:
-# 1) ${PROJECT_IDENT}_${name}
-# 2) ENV{${PROJECT_IDENT}_${name}}
+# 1) ${project_ident}_${name}
+# 2) ENV{${project_ident}_${name}}
 # 3) GATEAU_${name}
 # 4) ENV{GATEAU_${name}}
 # 5) fallback
 function(gateau_get_or name fallback out)
+    set(ident ${${PROJECT_NAME}_IDENT})
+
+    # It makes sense to ckeck variables of the parent project at first init
+    set(is_master TRUE)
+    if (NOT CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+        set(parent_ident ${${PROJECT_NAME}_IDENT})
+        set(is_master FALSE)
+    endif()
+
     unset(var)
-    if (DEFINED ${PROJECT_IDENT}_${name})
-        set(var "${${PROJECT_IDENT}_${name}}")
-    elseif (DEFINED ENV{${PROJECT_IDENT}_${name}})
-        set(var "$ENV{${PROJECT_IDENT}_${name}}")
+    if (DEFINED ${ident}_${name})
+        set(var "${${ident}_${name}}")
+    elseif (DEFINED ENV{${ident}_${name}})
+        set(var "$ENV{${ident}_${name}}")
+    elseif (NOT is_master AND DEFINED ${parent_ident}_${name})
+        set(var "${${parent_ident}_${name}}")
+    elseif (NOT is_master AND DEFINED ENV{${parent_ident}_${name}})
+        set(var "$ENV{${parent_ident}_${name}}")
     elseif (DEFINED GATEAU_${name})
         set(var "${GATEAU_${name}}")
     elseif (DEFINED ENV{GATEAU_${name}})
@@ -48,7 +66,8 @@ endfunction()
 # instead of the default value.
 function(gateau_declare_var name default doc type)
     gateau_get_or(${name} "${default}" def)
-    set(${PROJECT_IDENT}_${name} "${def}" CACHE ${type} "${doc}")
+    _gateau_var_name(${name} ident)
+    set(${ident} "${def}" CACHE ${type} "${doc}")
 endfunction()
 
 # Declare a new option and ensure proper default value
@@ -58,24 +77,28 @@ function(gateau_declare_option name default doc)
 endfunction()
 
 # Declare an internal cache variable and ensure proper default value
-function(gateau_declare_internal name default)
-    gateau_declare_var(${name} "${default}" "" INTERNAL)
+function(gateau_declare_internal name value)
+    _gateau_var_name(${name} ident)
+    set(${ident} "${value}" CACHE INTERNAL "")
 endfunction()
 
 # Get a project cache variable value
 function(gateau_get name value_out)
-    set(${value_out} "${${PROJECT_IDENT}_${name}}" PARENT_SCOPE)
+    _gateau_var_name(${name} ident)
+    set(${value_out} "${${ident}}" PARENT_SCOPE)
 endfunction()
 
 # Set a project cache variable value
 function(gateau_set name value)
     # use set_property to keep the other properties on this cache value
-    set_property(CACHE ${PROJECT_IDENT}_${name} PROPERTY VALUE "${value}")
+    _gateau_var_name(${name} ident)
+    set_property(CACHE ${ident} PROPERTY VALUE "${value}")
 endfunction()
 
 # Append a value to a CACHE variable of list/string type
 function(gateau_append name str)
-    if (NOT DEFINED ${PROJECT_IDENT}_${name})
+    _gateau_var_name(${name} ident)
+    if (NOT DEFINED ${ident})
         gateau_declare_var(${name} "${str}" "" INTERNAL)
     else()
         gateau_get(${name} vals)
@@ -88,7 +111,8 @@ endfunction()
 
 # Prepend a value to a CACHE variable of list/string type
 function(gateau_prepend name str)
-    if (NOT DEFINED ${PROJECT_IDENT}_${name})
+    _gateau_var_name(${name} ident)
+    if (NOT DEFINED ${ident})
         gateau_declare_var(${name} "${str}" "" INTERNAL)
     else()
         gateau_get(${name} vals)
