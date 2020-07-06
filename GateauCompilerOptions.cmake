@@ -4,6 +4,10 @@
 include_guard()
 
 function(_gateau_setup_compiler_options)
+    if (TARGET Gateau_CommonWarnings)
+        return()
+    endif()
+
     set(GATEAU_C_GCC "$<COMPILE_LANG_AND_ID:C,GNU>")
     set(GATEAU_CXX_GCC "$<COMPILE_LANG_AND_ID:CXX,GNU>")
     set(GATEAU_C_CXX_GCC "$<OR:${GATEAU_C_GCC},${GATEAU_CXX_GCC}>")
