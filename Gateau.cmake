@@ -18,7 +18,9 @@ if (NOT DEFINED PROJECT_NAME)
     message(FATAL_ERROR "project() must be called prior to Gateau inclusion")
 endif()
 
-list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+if (NOT CMAKE_CURRENT_LIST_DIR IN_LIST CMAKE_MODULE_PATH)
+    list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+endif()
 
 # Include the other modules
 include(GateauHelpers)
