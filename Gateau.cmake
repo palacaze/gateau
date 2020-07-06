@@ -15,7 +15,7 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
 endif()
 
 if (NOT DEFINED PROJECT_NAME)
-    message(FATAL_ERROR "project() must be call prior to Gateau inclusion")
+    message(FATAL_ERROR "project() must be called prior to Gateau inclusion")
 endif()
 
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
