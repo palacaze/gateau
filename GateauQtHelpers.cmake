@@ -4,14 +4,14 @@ include_guard()
 # Function that queries all qmake properties and exposes them in the parent scope.
 function(gateau_read_qt_properties)
     # qmake executable is needed to query properties
-    if (TARGET Qt5::qmake)
-        get_target_property(QMAKE_LOCATION Qt5::qmake IMPORTED_LOCATION)
-    else()
-        message(WARNING "qmake not found, Qmake properties undefined.")
-    endif()
+#    if (TARGET Qt5::qmake)
+#        get_target_property(QMAKE_LOCATION Qt5::qmake IMPORTED_LOCATION)
+#    else()
+#        message(WARNING "qmake not found, Qmake properties undefined.")
+#    endif()
 
     execute_process(
-        COMMAND "${QMAKE_LOCATION}" -query
+        COMMAND Qt5::qmake -query
         OUTPUT_VARIABLE QMAKE_PROPERTIES
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
