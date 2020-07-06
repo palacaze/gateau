@@ -8,6 +8,7 @@ function(_gateau_setup_compiler_options)
         return()
     endif()
 
+    # Compilation generator expressions
     set(GATEAU_C_GCC "$<COMPILE_LANG_AND_ID:C,GNU>")
     set(GATEAU_CXX_GCC "$<COMPILE_LANG_AND_ID:CXX,GNU>")
     set(GATEAU_C_CXX_GCC "$<OR:${GATEAU_C_GCC},${GATEAU_CXX_GCC}>")
@@ -23,6 +24,38 @@ function(_gateau_setup_compiler_options)
     set(GATEAU_C_MSVC "$<COMPILE_LANG_AND_ID:C,MSVC>")
     set(GATEAU_CXX_MSVC "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
     set(GATEAU_C_CXX_MSVC "$<OR:${GATEAU_C_MSVC},${GATEAU_CXX_MSVC}>")
+
+    # Link generator expressions
+    if (CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS "3.18")
+        if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            set(_GATEAU_COMPILER_CLANG ON)
+        elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+            set(_GATEAU_COMPILER_GCC ON)
+        elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+            set(_GATEAU_COMPILER_MSVC ON)
+        endif()
+
+        set(GATEAU_LINK_C_CXX_GCC "$<BOOL:${_GATEAU_COMPILER_GCC}>")
+        set(GATEAU_LINK_C_CXX_CLANG "$<BOOL:${_GATEAU_COMPILER_CLANG}>")
+        set(GATEAU_LINK_C_CXX_CLANG_GCC "$<OR:${GATEAU_LINK_C_CXX_GCC},${GATEAU_LINK_C_CXX_CLANG}>")
+        set(GATEAU_LINK_C_CXX_MSVC "$<BOOL:${_GATEAU_COMPILER_MSVC}>")
+    else()
+        set(GATEAU_LINK_C_GCC "$<LINK_LANG_AND_ID:C,GNU>")
+        set(GATEAU_LINK_CXX_GCC "$<LINK_LANG_AND_ID:CXX,GNU>")
+        set(GATEAU_LINK_C_CXX_GCC "$<OR:${GATEAU_LINK_C_GCC},${GATEAU_LINK_CXX_GCC}>")
+
+        set(GATEAU_LINK_C_CLANG "$<LINK_LANG_AND_ID:C,Clang,AppleClang>")
+        set(GATEAU_LINK_CXX_CLANG "$<LINK_LANG_AND_ID:CXX,Clang,AppleClang>")
+        set(GATEAU_LINK_C_CXX_CLANG "$<OR:${GATEAU_LINK_C_CLANG},${GATEAU_LINK_CXX_CLANG}>")
+
+        set(GATEAU_LINK_C_CLANG_GCC "$<LINK_LANG_AND_ID:C,Clang,AppleClang,GNU>")
+        set(GATEAU_LINK_CXX_CLANG_GCC "$<LINK_LANG_AND_ID:CXX,Clang,AppleClang,GNU>")
+        set(GATEAU_LINK_C_CXX_CLANG_GCC "$<OR:${GATEAU_LINK_C_CLANG_GCC},${GATEAU_LINK_CXX_CLANG_GCC}>")
+
+        set(GATEAU_LINK_C_MSVC "$<LINK_LANG_AND_ID:C,MSVC>")
+        set(GATEAU_LINK_CXX_MSVC "$<LINK_LANG_AND_ID:CXX,MSVC>")
+        set(GATEAU_LINK_C_CXX_MSVC "$<OR:${GATEAU_LINK_C_MSVC},${GATEAU_LINK_CXX_MSVC}>")
+    endif()
 
     # Common warnings
     add_library(Gateau_CommonWarnings INTERFACE)
@@ -80,7 +113,7 @@ function(_gateau_setup_compiler_options)
             -g;-fno-omit-frame-pointer;-fsanitize=address;-fsanitize-address-use-after-scope>
     )
     target_link_libraries(Gateau_AddressSanitizer INTERFACE
-        $<${GATEAU_C_CXX_CLANG_GCC}:-fsanitize=address>
+        $<${GATEAU_LINK_C_CXX_CLANG_GCC}:-fsanitize=address>
     )
 
     add_library(Gateau_ThreadSanitizer INTERFACE)
@@ -89,7 +122,7 @@ function(_gateau_setup_compiler_options)
             -g;-fno-omit-frame-pointer;-fsanitize=thread>
     )
     target_link_libraries(Gateau_ThreadSanitizer INTERFACE
-        $<${GATEAU_C_CXX_CLANG_GCC}:-fsanitize=thread>
+        $<${GATEAU_LINK_C_CXX_CLANG_GCC}:-fsanitize=thread>
     )
 
     add_library(Gateau_UndefinedSanitizer INTERFACE)
@@ -98,7 +131,7 @@ function(_gateau_setup_compiler_options)
             -g;-fno-omit-frame-pointer;-fsanitize=undefined>
     )
     target_link_libraries(Gateau_UndefinedSanitizer INTERFACE
-        $<${GATEAU_C_CXX_CLANG_GCC}:-fsanitize=undefined>
+        $<${GATEAU_LINK_C_CXX_CLANG_GCC}:-fsanitize=undefined>
     )
 
     # Use the best linker available on linux/unix
@@ -126,6 +159,6 @@ function(_gateau_setup_compiler_options)
         $<${GATEAU_CXX_CLANG}:-stdlib=libc++>
     )
     target_link_libraries(Gateau_Libcxx INTERFACE
-        $<${GATEAU_CXX_CLANG}:-stdlib=libc++;-rtlib=compiler-rt>
+        $<${GATEAU_LINK_CXX_CLANG}:-stdlib=libc++;-rtlib=compiler-rt>
     )
 endfunction()
