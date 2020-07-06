@@ -1,5 +1,4 @@
 # Initial configuration of a project
-include_guard()
 include(GateauHelpers)
 include(GateauCompilerOptions)
 include(GateauParseArguments)
