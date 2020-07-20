@@ -216,12 +216,12 @@ function(gateau_configure)
     _gateau_setup_prefix_path()
 endfunction()
 
-# Declare other files of the project in an "other files" category
-function(gateau_other_files)
+# Declare other files of the project in a "category" mock target
+function(gateau_other_files category)
     # We use a custom target because some IDEs can't cope with source_group
-    if (NOT TARGET OtherFiles)
-        add_custom_target(OtherFiles)
-        set_target_properties(OtherFiles PROPERTIES PROJECT_LABEL "Other Files")
+    if (NOT TARGET ${category})
+        add_custom_target(${category})
+        set_target_properties(${category} PROPERTIES PROJECT_LABEL "${category}")
     endif()
-    set_property(TARGET OtherFiles APPEND PROPERTY SOURCES ${ARGN})
+    set_property(TARGET ${category} APPEND PROPERTY SOURCES ${ARGN})
 endfunction()
