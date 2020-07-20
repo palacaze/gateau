@@ -81,6 +81,15 @@ macro(gateau_setup_testing tests_target)
         COMMENT "Build and run all the unit tests."
     )
 
+    define_property(DIRECTORY PROPERTY gateau_tests_target INHERITED
+        BRIEF_DOCS "tests target"
+        FULL_DOCS "name of the main target to run all the tests"
+    )
+    define_property(DIRECTORY PROPERTY gateau_tests_provider INHERITED
+        BRIEF_DOCS "tests provider"
+        FULL_DOCS "name of the library used to write the tests"
+    )
+
     set_directory_properties(PROPERTIES gateau_tests_target ${tests_target})
 
     # unit tests are provided by Catch2
