@@ -82,6 +82,9 @@ function(_gateau_setup_internal_variables)
     gateau_to_identifier("${PROJECT_NAME}" ident)
     set(${PROJECT_NAME}_IDENT "${ident}" CACHE INTERNAL "")
 
+    # Project root dir
+    gateau_declare_internal(ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}")
+
     # List of paths where package files can be found, extensible with gateau_add_package_module_dir()
     gateau_declare_internal(PACKAGE_MODULES_DIRS "${CMAKE_CURRENT_LIST_DIR}/packages")
 
