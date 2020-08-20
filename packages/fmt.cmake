@@ -5,4 +5,5 @@ set(fmt_GIT "https://github.com/fmtlib/fmt")
 set(fmt_CMAKE_ARGS
     -DFMT_DOC=OFF
     -DFMT_TEST=OFF
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 )
