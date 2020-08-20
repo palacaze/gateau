@@ -87,7 +87,7 @@ function(_gateau_setup_compiler_options)
             -Wno-newline-eof;-Wno-exit-time-destructors;-Wno-global-constructors;
             -Wno-gnu-zero-variadic-macro-arguments;-Wno-documentation;-Wno-shadow;
             -Wno-missing-prototypes;-Wno-padded;-Wno-return-std-move-in-c++11;
-            -Wno-documentation-unknown-command>
+            -Wno-documentation-unknown-command;-Wno-ctad-maybe-unsupported>
         $<${GATEAU_CXX_CLANG}:
             -Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-weak-vtables>
         $<${GATEAU_C_CXX_MSVC}:/Wall>
