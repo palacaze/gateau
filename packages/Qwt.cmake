@@ -1,6 +1,6 @@
-set(Qwt_version "6.1.4")
-set(Qwt_URL "https://sourceforge.net/projects/qwt/files/qwt/${Qwt_version}/qwt-${Qwt_version}.tar.bz2")
-set(Qwt_MD5 "4fb1852f694420e3ab9c583526edecc5")
+set(Qwt_version "6.1.5")
+set(Qwt_URL "https://downloads.sourceforge.net/qwt/qwt-${Qwt_version}.tar.bz2")
+set(Qwt_MD5 "d65582f99312796ed42c3be3208ed3db")
 
 macro(Qwt_find name)
     include(FindPackageHandleStandardArgs)
@@ -51,8 +51,9 @@ macro(Qwt_install name)
         message(FATAL_ERROR "QMake not found, can't install Qwt.")
     endif()
 
+    gateau_get(TEMPLATES_DIR templates)
     gateau_install_dependency(Qwt
-        PATCH_COMMAND "${CMAKE_COMMAND}" -DQWT_CONFIG_FILE=<SOURCE_DIR>/qwtconfig.pri -DQWT_INSTALL_DIR=<INSTALL_DIR> -P "${PROJECT_SOURCE_DIR}/cmake/qwt-patch.cmake"
+        PATCH_COMMAND "${CMAKE_COMMAND}" -DQWT_CONFIG_FILE=<SOURCE_DIR>/qwtconfig.pri -DQWT_INSTALL_DIR=<INSTALL_DIR> -P "${templates}/qwt-patch.cmake"
         CONFIGURE_COMMAND "${Qwt_QMAKE_EXECUTABLE}" <SOURCE_DIR>/qwt.pro
         BUILD_COMMAND "${Qwt_MAKE_COMMAND}" -j10
         INSTALL_COMMAND "${Qwt_MAKE_COMMAND}" install
