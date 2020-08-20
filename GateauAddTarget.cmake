@@ -348,6 +348,8 @@ function(_gateau_configure_target target no_version_header)
                 $<$<BOOL:${${ident}_SANITIZE_THREADS}>:Gateau_ThreadSanitizer>
                 $<$<BOOL:${${ident}_SANITIZE_UNDEFINED}>:Gateau_UndefinedSanitizer>
                 $<$<BOOL:${${ident}_ENABLE_AUTOSELECT_LINKER}>:Gateau_Linker>
+            COMPILE_OPTIONS
+                $<$<CONFIG:Release>:-march=native>
             PROPERTIES
                 $<$<CONFIG:Release>:C_VISIBILITY_PRESET hidden>
                 $<$<CONFIG:Release>:CXX_VISIBILITY_PRESET hidden>
