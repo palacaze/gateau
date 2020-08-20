@@ -26,7 +26,7 @@ function(_gateau_setup_compiler_options)
     set(GATEAU_C_CXX_MSVC "$<OR:${GATEAU_C_MSVC},${GATEAU_CXX_MSVC}>")
 
     # Link generator expressions
-    if (CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS "3.18")
+    if (CMAKE_VERSION VERSION_LESS "3.18")
         if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             set(_GATEAU_COMPILER_CLANG ON)
         elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
