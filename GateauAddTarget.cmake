@@ -566,7 +566,7 @@ function(gateau_add_executable exe)
 
     set(_no_version_header TRUE)
     if (SAE_VERSION_HEADER)
-        set(_version_header FALSE)
+        set(_no_version_header FALSE)
     endif()
 
     # configure the target with good defaults
