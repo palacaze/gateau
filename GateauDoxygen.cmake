@@ -17,7 +17,7 @@ function(gateau_generate_doxygen_file)
     cmake_parse_arguments(GD "" "" "${opts}" ${ARGN})
 
     # build lists of custom configuration entries
-    list(APPEND GD_EXCLUDED_SYMBOLS Detail)
+    list(APPEND GD_EXCLUDED_SYMBOLS detail)
     list(APPEND GD_PREDEFINED_MACROS
         DOXYGEN_IGNORE=1
         Q_NAMESPACE Q_DECLARE_LOGGING_CATEGORY Q_OBJECT Q_GADGET Q_BEGIN_NAMESPACE Q_END_NAMESPACE
