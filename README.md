@@ -145,6 +145,24 @@ gateau_add_test(test-lib
 )
 ```
 
+## Status
+
+Works for me. I use *Gateau* for several projects and it works surprisingly well for
+what I want. It has not been tested at all on Windows yet, but it will someday.
+
+My TODO list includes a lot of potentially useful stuff, but I do not require these
+features right now so I make no promise.
+
+- Install headers only libs from an archive file or path,
+- Allow a gateau_fetch_package() that uses FetchContent instead of ExternalProject,
+- Support Qt translations,
+- Support Gitlab, Gihub automation,
+- Automated project deployment and packaging, for instance with CPack,
+- Conan integration,
+- Add an option for configurable compiler flags.
+- Allow Package modules versioning,
+- ...
+
 ## Requirements
 
 ### CMake
@@ -650,6 +668,8 @@ use of all the options defined at project scope.
 Most of the time, a single call to gateau_add_library() will be sufficient to
 define the whole target. See the documentation for `gateau_extend_target()` below
 to learn how to configure the other function parameters.
+
+Also of note, it should work out of the box with interface libraries.
 
 #### Defining a new executable target
 
