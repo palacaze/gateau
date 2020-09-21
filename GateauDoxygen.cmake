@@ -31,8 +31,8 @@ function(gateau_generate_doxygen_file)
             list(APPEND GD_INPUT_PATHS "${_sdir}")
         endif()
     endforeach()
-    if (EXISTS README.md)
-        list(APPEND GD_INPUT_PATHS README.md)
+    if (EXISTS "${PROJECT_SOURCE_DIR}/README.md")
+        list(APPEND GD_INPUT_PATHS "${PROJECT_SOURCE_DIR}/README.md")
     endif()
 
     # we automatically add EXPORT macros generated for every non interface library
