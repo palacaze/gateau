@@ -1,0 +1,9 @@
+gateau_add_library(lib
+    SOURCES
+        eclair.cpp
+    HEADERS
+        eclair.hpp
+    LINK_LIBRARIES
+        PUBLIC
+            fmt
+)
