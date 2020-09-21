@@ -1,3 +1,8 @@
+#       Copyright Pierre-Antoine LACAZE 2018 - 2020.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          https://www.boost.org/LICENSE_1_0.txt)
+
 # This module can be used to generate documentation for a Gateau project.
 # It generates an appropriate Doxygen project file from a generic template and
 # adds a "docs" target to the project that will build the documentation on demand.

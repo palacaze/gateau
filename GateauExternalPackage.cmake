@@ -1,3 +1,8 @@
+#       Copyright Pierre-Antoine LACAZE 2018 - 2020.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          https://www.boost.org/LICENSE_1_0.txt)
+
 # A wrapper over ExternalProject_Add that simplifies its use
 include_guard()
 include(ExternalProject)

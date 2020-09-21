@@ -1,3 +1,8 @@
+#       Copyright Pierre-Antoine LACAZE 2018 - 2020.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          https://www.boost.org/LICENSE_1_0.txt)
+
 # We define in this module interface libraries whose role are to add compiler flags
 # to a target. This is a convenient way of adding compiler options via the
 # target_link_libraries() directive.
@@ -109,6 +114,7 @@ function(_gateau_setup_compiler_options)
     add_library(Gateau_Profiling INTERFACE)
     target_compile_options(Gateau_Profiling INTERFACE
         $<${GATEAU_C_CXX_CLANG_GCC}:-g;-fno-omit-frame-pointer>
+        $<${GATEAU_C_CXX_CLANG}:-ftime-trace>
     )
 
     # Debug Info
@@ -173,6 +179,12 @@ function(_gateau_setup_compiler_options)
         $<${GATEAU_CXX_CLANG}:-stdlib=libc++>
     )
     target_link_libraries(Gateau_Libcxx INTERFACE
-        $<${GATEAU_LINK_CXX_CLANG}:-stdlib=libc++;-rtlib=compiler-rt>
+        $<${GATEAU_LINK_CXX_CLANG}:-stdlib=libc++;-rtlib=compiler-rt;c++abi>
     )
+
+    if (_GATEAU_COMPILER_CLANG OR _GATEAU_COMPILER_GCC)
+        set(CMAKE_C_FLAGS_DEBUG_INIT -Og -g -gdwarf)
+        set(CMAKE_CXX_FLAGS_DEBUG_INIT -Og -g -gdwarf)
+    endif()
+
 endfunction()
