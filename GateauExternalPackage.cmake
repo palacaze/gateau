@@ -113,7 +113,7 @@ endfunction()
 #
 # The arguments used to configure the external project are retrieved from two
 # sources: the arguments supplied to the function, as well as any variable in
-# scope that as the form ${dep}_OPTION_NAME, where OPTION_NAME is a variable
+# scope that has the form ${dep}_OPTION_NAME, where OPTION_NAME is a variable
 # name from the 3 lists below.
 #
 # Unrecognized arguments will be passed as-is to ExternalProject_Add.
