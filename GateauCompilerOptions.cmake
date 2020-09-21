@@ -114,7 +114,6 @@ function(_gateau_setup_compiler_options)
     add_library(Gateau_Profiling INTERFACE)
     target_compile_options(Gateau_Profiling INTERFACE
         $<${GATEAU_C_CXX_CLANG_GCC}:-g;-fno-omit-frame-pointer>
-        $<${GATEAU_C_CXX_CLANG}:-ftime-trace>
     )
 
     # Debug Info
@@ -179,12 +178,7 @@ function(_gateau_setup_compiler_options)
         $<${GATEAU_CXX_CLANG}:-stdlib=libc++>
     )
     target_link_libraries(Gateau_Libcxx INTERFACE
-        $<${GATEAU_LINK_CXX_CLANG}:-stdlib=libc++;-rtlib=compiler-rt;c++abi>
+        $<${GATEAU_LINK_CXX_CLANG}:-stdlib=libc++;-rtlib=compiler-rt>
     )
-
-    if (_GATEAU_COMPILER_CLANG OR _GATEAU_COMPILER_GCC)
-        set(CMAKE_C_FLAGS_DEBUG_INIT -Og -g -gdwarf)
-        set(CMAKE_CXX_FLAGS_DEBUG_INIT -Og -g -gdwarf)
-    endif()
 
 endfunction()
