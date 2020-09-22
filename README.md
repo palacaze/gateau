@@ -241,6 +241,21 @@ necessary.
 
 CMake version 3.15 or later is required.
 
+### Using Gateau in your project
+
+One can include *Gateau* as a git submodule, integrate it in its own project or simply
+use FetchContent to incorporate it at configuration time.
+
+The following snippet near the top of the root CMakeLists.txt of a project should suffice:
+
+```cmake
+# Fetch Gateau
+include(FetchContent)
+FetchContent_Declare(gateau GIT_REPOSITORY https://github.com/palacaze/gateau.git)
+FetchContent_MakeAvailable(gateau)
+include(${gateau_SOURCE_DIR}/Gateau.cmake)
+```
+
 ### Configuration and user visible options
 
 After inclusion of Gateau's main module, a number of cache variables get defined.
