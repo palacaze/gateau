@@ -130,7 +130,7 @@ endfunction()
 
 # Build the camelcase name for a string
 function(gateau_to_camelcase var out)
-    string(REGEX REPLACE "([^A-Za-z0-9])" "_\\1" txt "${txt}")
+    string(REGEX REPLACE "([^A-Za-z0-9])" "_\\1" txt "${var}")
     string(TOLOWER "${txt}" txt)
     if (${txt} MATCHES "^_")
         string(SUBSTRING "${txt}" 1 -1 txt)
