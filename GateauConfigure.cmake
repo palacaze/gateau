@@ -104,11 +104,11 @@ function(_gateau_setup_internal_variables)
     gateau_declare_internal(RELATIVE_HEADERS_DIRS "src;include;Src;Source;Include")
 
     # How to name generated headers: possible values are CAMEL, SNAKE and HYPHEN
-    gateau_declare_internal(GENERATED_HEADER_CASE CAMEL)
+    gateau_declare_internal(GENERATED_HEADER_CASE SNAKE)
     set_property(CACHE ${ident}_GENERATED_HEADER_CASE PROPERTY STRINGS "CAMEL;SNAKE;HYPHEN")
 
     # generated headers extension
-    gateau_declare_internal(GENERATED_HEADER_EXT "h")
+    gateau_declare_internal(GENERATED_HEADER_EXT "hpp")
 
     # A default standard because this is often desired
     gateau_declare_internal(C_STANDARD c_std_99)

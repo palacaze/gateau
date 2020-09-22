@@ -301,8 +301,8 @@ Those are meant for the project developers.
 | Variable                    | Description                                       | Default                        |
 |-----------------------------|---------------------------------------------------|--------------------------------|
 | ${ID}_RELATIVE_HEADERS_DIRS | Dirs where headers are expected to be found       | src;include;Src;Source;Include |
-| ${ID}_GENERATED_HEADER_CASE | How to name generated headers (CAMEL/SNAKE/HYPEN) | CAMEL                          |
-| ${ID}_GENERATED_HEADER_EXT  | Extension of generated healers                    | "h"                            |
+| ${ID}_GENERATED_HEADER_CASE | How to name generated headers (CAMEL/SNAKE/HYPEN) | SNAKE                          |
+| ${ID}_GENERATED_HEADER_EXT  | Extension of generated healers                    | "hpp"                          |
 | ${ID}_C_STANDARD            | The C standard to use                             | c_std_99                       |
 | ${ID}_CXX_STANDARD          | The C++ standard to use                           | cxx_std_17                     |
 
