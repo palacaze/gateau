@@ -9,11 +9,11 @@ handle the situations I commonly encounter. However, it may not be able to cope
 with random project layouts and unusual or complex needs.
 My primary use case for Gateau is avoiding repeating myself again and again by
 copy pasting the same code from project to project, and keeping clear of all the
-tedious boilerplate that distracts me from the reel task at hand.
+tedious boilerplate that distracts me from the real task at hand.
 
 This tool is currently being used to build C++ software, mostly on GNU/Linux,
 sometimes on MS Windows, using the GCC, Clang and MinGW compilers. Help will be
-needed to improve compatibility with other systems and compilers.
+needed to improve compatibility with other systems and compiler combinations.
 
 ## Features
 
@@ -23,7 +23,7 @@ stuff, and choosing sane defaults so you don't need to.
 
 It contains a few functions, macros and configuration variables that make it
 very simple to create an installable project with external dependencies, a few
-targets, unit test and some documentation.
+targets, unit tests and generated documentation.
 
 In particular it is capable of:
 
@@ -44,7 +44,7 @@ In particular it is capable of:
 
 Again, it is a simple tool, not a full-fledged package manager. It does not
 particularly excel at dependency handling and will not be able to cope with
-complex
+complex dependency chains.
 
 ## Motivational example
 
@@ -66,10 +66,13 @@ project(eclair
     LANGUAGES CXX
 )
 
-# We include Gateau
-include("${CMAKE_CURRENT_SOURCE_DIR}/../../Gateau.cmake")
+# Include Gateau by fetching it. One may also use it as a submodule
+include(FetchContent)
+FetchContent_Declare(gateau GIT_REPOSITORY https://github.com/palacaze/gateau.git)
+FetchContent_MakeAvailable(gateau)
+include(${gateau_SOURCE_DIR}/Gateau.cmake)
 
-# Configure gateau
+# Configure gateau for this project
 gateau_configure(
     EXTERNAL_ROOT "${PROJECT_BINARY_DIR}/3rdparty"
     OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin"
@@ -111,6 +114,7 @@ gateau_install_project()
 ### src/eclair/CMakeLists.txt
 
 ```cmake
+# Create the "lib" library
 gateau_add_library(lib
     SOURCES
         eclair.cpp
@@ -125,6 +129,7 @@ gateau_add_library(lib
 ### src/bakery/CMakeLists.txt
 
 ```cmake
+# Create an executable that uses the "lib" library
 gateau_add_executable(bakery
     SOURCES bakery.cpp
     LINK_LIBRARIES eclair::lib
@@ -134,6 +139,7 @@ gateau_add_executable(bakery
 ### test/CMakeLists.txt
 
 ```cmake
+# I use Doctest for my unit tests
 gateau_setup_testing(tests DOCTEST)
 
 gateau_add_test(test-lib
@@ -168,7 +174,7 @@ features right now so I make no promise.
 ### CMake
 
 Only CMake is needed. Version 3.15 or later is mandatory, as Gateau modules
-rely on recent CMake constructs to achieve its goals.
+rely on recent CMake constructs to achieve their goals.
 
 ### Project organization
 
@@ -205,7 +211,7 @@ Project
 
 This makes it possible to `#include <Project/Target/PublicHeader1.h>` from any
 other public header. Having `test` and `example` directories (notice the singular)
-are allow defining idiomatic `tests` and `examples` CMake targets.
+allow defining idiomatic `tests` and `examples` CMake targets.
 
 
 Another popular layout is to put the public headers in the `include` directory:
@@ -412,7 +418,7 @@ to tweak Gateau for the needs of the project.
 ### Finding dependencies
 
 *Gateau* offers a wrapper over the find_packages facilities to improve and
-extend the feature to include automated compilation of external dependencies
+extend the function to include automated compilation of external dependencies
 as well as integrate those dependencies in the CMake find modules that will
 be generated for the project.
 
@@ -422,7 +428,7 @@ This macro supplements the `find_package` function with additional features that
 allow overriding package finding instructions, as well as instruct CMake how to
 download, and install the dependency itself if it was not found.
 
-To do so, Gateau relies on the creation of special cmake modules, named after the
+To do so, Gateau relies on the creation of special CMake modules, named after the
 package to be found, which define variables and a couple of macros to instruct
 Gateau on how the package should be found and installed. Installation itself is
 deferred to the CMake ExternalProject module.
@@ -439,7 +445,7 @@ gateau_add_package_module_dir(<dir>)
 
 Creating such modules is not mandatory to benefit from the capabilities offered
 by `gateau_find_package`. One can also supply custom directives directly to the
-macro. For this reason, `gateau_find_package` offers exposes a number of parameters,
+macro. For this reason, `gateau_find_package` offers a number of parameters,
 most of them mirror those from ExternalProject_add, which will mostly be passed
 as-is to the function.
 
@@ -508,7 +514,7 @@ gateau_add_executable(foo
 
 #### Creating package modules for external dependencies
 
-A package module file named after the dependency to be installed and placed in a
+A package module file named after the dependency to be installed and placed in an appropriate
 directory can be created to instruct Gateau how to find and install a particular package.
 The complete file will be sourced by Gateau.
 
@@ -521,14 +527,14 @@ Moreover, two macros may optionally be defined, also prefixed with the package n
 - ${dep}_find(name optional_find_options...)
 - ${dep}_install(name)
 
-The first macro gets called when the dependency is searched. a default implementation would
+The first macro gets called when the dependency is searched. A default implementation would
 dispatch all the arguments to find_package(). This is where one would handle custom search
 procedure and define import targets if the default package distribution does not provide any,
 for instance for old style cmake packages and non-cmake built packages.
 
 The second is responsible for installing the dependency, and gets called if the depenency
 was not found. Most of the time, one wants to use `gateau_install_dependency()` for that.
-This is a wrapper over ExternalProject_add that know how to use some variables prefixed with
+This is a wrapper over ExternalProject_add that knows how to use some variables prefixed with
 the package name to setup the installation procedure.
 
 For illustration purpose, here is a complete annoted module example of package module for
@@ -594,7 +600,7 @@ The packages directory contains a few modules ready for use that can serve as ex
 `gateau_install_dependency()` has the following signature:
 
 ```
-# Function that simplifies working with ExternalProject_Add
+# Function that simplifies working with ExternalProject_Add.
 # It sets an ExternalProject up using the supplied available information and
 # creates an install and uninstall target for later use.
 #
@@ -643,7 +649,7 @@ The first two calls declare new library and executable targets respectively, whe
 the last one extends an already existing target.
 
 All the parameters accepted by `gateau_extend_target()` can also be passed to the other
-two function, and will be forwarded to it.
+two functions, and will be forwarded to it.
 
 #### Defining a new library target
 
@@ -680,11 +686,11 @@ the benefits of creating library targets through a call to `gateau_add_library()
 The target also gets an alias of the form ${Project}::${Target} and also makes
 use of all the options defined at project scope.
 
-Most of the time, a single call to gateau_add_library() will be sufficient to
+Most of the time, a single call to gateau_add_library() will suffice to
 define the whole target. See the documentation for `gateau_extend_target()` below
 to learn how to configure the other function parameters.
 
-Also of note, it should work out of the box with interface libraries.
+Also of note, `gateau_add_library()` should work out of the box with interface libraries.
 
 #### Defining a new executable target
 
@@ -759,11 +765,11 @@ expanse of automated headers accounting and installation.
 
 ### Installing a project
 
-Most of the work is performed at target creation. The actual installation procedure
-consists in a simple call to `gateau_install_project()`, which will use the information
+Most of the work is performed at target creation. The actual `install` target is created
+through a simple call to `gateau_install_project()`, which will use the information
 gathered from previous calls to `gateau_configure()`, `gateau_add_library()` and
-`gateau_add_executable`.
-Consequently, it should be call near the end of your root CMakelists.txt, after all
+`gateau_add_executable()`.
+Consequently, it should be placed near the end of your root CMakelists.txt, after all
 the targets to be installed have been defined.
 
 ### Generating documentation
@@ -800,7 +806,6 @@ gateau_build_documentation(
         src/myproj/detail
         src/myproj/3rdparty
 )
-
 ```
 
 ### Adding tests
@@ -817,11 +822,10 @@ calls to `gateau_add_test()`.
 gateau_setup_testing(<target> [GTEST|CATCH2|DOCTEST])
 
 gateau_add_test(<test_name> [OPTIONS ACCEPTED BY gateau_add_executable()])
-
 ```
 
 By declaring a provider, said provider gets installed for you if required, test cases get
-linked to the to the provider and the test cases are integrated to cmake test framework.
+linked to the provider and the test cases are integrated to the CTest framework.
 
 ### Other minor features
 
