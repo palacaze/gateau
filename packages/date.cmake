@@ -1,1 +1,6 @@
-set(date_SINGLE_HEADER "https://github.com/HowardHinnant/date/raw/master/include/date/date.h")
+set(date_GIT "https://github.com/HowardHinnant/date")
+set(date_TAG "master")
+set(date_CMAKE_ARGS
+    -DUSE_SYSTEM_TZ_DB=ON
+    -DBUILD_TZ_LIB=ON
+)
