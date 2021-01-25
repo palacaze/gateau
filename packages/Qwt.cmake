@@ -1,6 +1,6 @@
-set(Qwt_version "6.1.5")
+set(Qwt_version "6.1.6")
 set(Qwt_URL "https://downloads.sourceforge.net/qwt/qwt-${Qwt_version}.tar.bz2")
-set(Qwt_MD5 "d65582f99312796ed42c3be3208ed3db")
+set(Qwt_MD5 "cc71be5d6c33c2fc19ae8082ccdd3e83")
 
 macro(Qwt_find name)
     include(FindPackageHandleStandardArgs)
