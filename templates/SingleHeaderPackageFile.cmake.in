@@ -18,8 +18,14 @@ macro(@GATEAU_PACKAGE_MODULE_NAME@_find name)
 
     find_path(${name}_INCLUDE_DIR NAMES ${_header_name} PATH_SUFFIXES ${_header_dir})
 
-    find_package_handle_standard_args(
-        ${name} DEFAULT_MSG ${name}_INCLUDE_DIR)
+    if (CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS "3.17")
+        find_package_handle_standard_args(
+            ${name} DEFAULT_MSG ${name}_INCLUDE_DIR)
+    else()
+        find_package_handle_standard_args(
+            ${name} DEFAULT_MSG ${name}_INCLUDE_DIR
+            NAME_MISMATCHED)
+    endif()
 
     # rewind once to move out of the expected subdir
     if(${name}_FOUND)
