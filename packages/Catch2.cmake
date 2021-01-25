@@ -1,5 +1,5 @@
 set(Catch2_GIT "https://github.com/catchorg/Catch2.git")
-set(Catch2_TAG "master")
+set(Catch2_TAG "v2.x")
 set(Catch2_CMAKE_ARGS
     -DCATCH_BUILD_TESTING=OFF
     -DCATCH_BUILD_EXAMPLES=OFF
