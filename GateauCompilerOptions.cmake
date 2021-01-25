@@ -85,12 +85,12 @@ function(_gateau_setup_compiler_options)
             -Wwrite-strings;-Wconversion;-Wsign-conversion;-Wodr;-Wpedantic;;-pedantic;
             -Wcast-align;-Wctor-dtor-privacy;-Wdisabled-optimization;-Wformat=2;-Winit-self;
             -Wlogical-op;-Wmissing-include-dirs;-Wold-style-cast;-Woverloaded-virtual;
-            -Wredundant-decls;-Wshadow;-Wsign-promo;-Wstrict-null-sentinel;-Wundef;
+            -Wredundant-decls;-Wno-shadow;-Wsign-promo;-Wstrict-null-sentinel;-Wundef;
             -fdiagnostics-show-option>
         $<${GATEAU_C_CXX_CLANG}:
             -Weverything; -Wno-unused-macros;
             -Wno-newline-eof;-Wno-exit-time-destructors;-Wno-global-constructors;
-            -Wno-gnu-zero-variadic-macro-arguments;-Wno-documentation;-Wno-shadow;
+            -Wno-gnu-zero-variadic-macro-arguments;-Wno-documentation;-Wno-shadow-field-in-constructor;
             -Wno-missing-prototypes;-Wno-padded;-Wno-return-std-move-in-c++11;
             -Wno-documentation-unknown-command;-Wno-ctad-maybe-unsupported>
         $<${GATEAU_CXX_CLANG}:
