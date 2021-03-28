@@ -66,7 +66,7 @@ project(eclair
     LANGUAGES CXX
 )
 
-# Include Gateau by fetching it. One may also use it as a submodule
+# Include Gateau by fetching it. One may also use it as a submodule
 include(FetchContent)
 FetchContent_Declare(gateau GIT_REPOSITORY https://github.com/palacaze/gateau.git)
 FetchContent_MakeAvailable(gateau)
@@ -95,7 +95,7 @@ endif()
 if (ECLAIR_BUILD_DOC)
     gateau_build_documentation(
         EXCLUDED_SYMBOLS
-            detail  # exclude "detail" namespace
+            detail  # exclude "detail" namespace
             _*      # and symbols starting with a "_"
     )
 endif()
@@ -308,8 +308,8 @@ Those are meant for the project developers.
 |-----------------------------|---------------------------------------------------|--------------------------------|
 | ${ID}_RELATIVE_HEADERS_DIRS | Dirs where headers are expected to be found       | src;include;Src;Source;Include |
 | ${ID}_GENERATED_HEADER_CASE | How to name generated headers (CAMEL/SNAKE/HYPEN) | SNAKE                          |
-| ${ID}_GENERATED_HEADER_EXT  | Extension of generated healers                    | "hpp"                          |
-| ${ID}_NAMESPACE             | The namespace used for alias targets and exports  | "hpp"                          |
+| ${ID}_GENERATED_HEADER_EXT  | Extension of generated headers                    | "hpp"                          |
+| ${ID}_NAMESPACE             | The namespace used for alias targets and exports  | "${PROJECT_NAME}"              |
 | ${ID}_C_STANDARD            | The C standard to use                             | c_std_99                       |
 | ${ID}_CXX_STANDARD          | The C++ standard to use                           | cxx_std_17                     |
 
@@ -514,7 +514,7 @@ gateau_add_executable(foo
     LINK_LIBRARIES date::date)
 ```
 
-#### Creating package modules for external dependencies
+#### Creating package modules for external dependencies
 
 A package module file named after the dependency to be installed and placed in an appropriate
 directory can be created to instruct Gateau how to find and install a particular package.
@@ -566,7 +566,7 @@ macro(asio_find name)
 
     mark_as_advanced(asio_INCLUDE_DIR)
 
-    # We also create an import target for nicer use
+    # We also create an import target for nicer use
     if(asio_FOUND AND NOT TARGET asio::asio)
         add_library(asio::asio INTERFACE IMPORTED)
         set_target_properties(asio::asio PROPERTIES
@@ -675,8 +675,8 @@ The following options are accepted:
 - NO_INSTALL: do not install this target
 - NO_INSTALL_HEADER: do not install the dev headers
 - NO_EXPORT: the target is not exported to the cmake package module installed
-- NO_EXPORT_HEADER: do not generate an export header
-- NO_VERSION_HEADER: do not generate a version header
+- NO_EXPORT_HEADER: do not generate an export header
+- NO_VERSION_HEADER: do not generate a version header
 - INSTALL_BINDIR: override the binaries installation directory path
 - INSTALL_LIBDIR: override the libraries installation directory path
 - INSTALL_INCLUDEDIR: override the headers installation directory path
@@ -711,7 +711,7 @@ The following options are accepted:
 - One of STATIC SHARED OBJECT MODULE INTERFACE (defaults to SHARED): library type
 - NO_INSTALL: do not install this target
 - NO_EXPORT: the target is not exported to the cmake package module installed
-- VERSION_HEADER: do generate a version header
+- VERSION_HEADER: do generate a version header
 - INSTALL_BINDIR: override the binaries installation directory path
 - Other options.... parameters forwarded to `gateau_extend_target()`
 
