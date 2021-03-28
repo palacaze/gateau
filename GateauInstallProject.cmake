@@ -83,10 +83,11 @@ function(gateau_install_project)
     endif()
 
     # Install the Targets file
+    gateau_get(NAMESPACE nspace)
     install(
         EXPORT ${targets_name}
         FILE "${targets_file}"
-        NAMESPACE ${PROJECT_NAME}::
+        NAMESPACE ${nspace}::
         DESTINATION "${cmake_dir}"
         COMPONENT ${PROJECT_NAME}_devel
     )
@@ -121,7 +122,7 @@ function(gateau_install_project)
     # Create the export-set file for our targets
     export(
         TARGETS ${exported_targets}
-        NAMESPACE ${PROJECT_NAME}::
+        NAMESPACE ${nspace}::
         FILE "${targets_file}"
     )
 endfunction()

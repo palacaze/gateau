@@ -110,6 +110,9 @@ function(_gateau_setup_internal_variables)
     # generated headers extension
     gateau_declare_internal(GENERATED_HEADER_EXT "hpp")
 
+    # target alias namespace: Namespace::Target
+    gateau_declare_internal(NAMESPACE "${PROJECT_NAME}")
+
     # A default standard because this is often desired
     gateau_declare_internal(C_STANDARD c_std_99)
     gateau_declare_internal(CXX_STANDARD cxx_std_17)
@@ -204,6 +207,7 @@ function(gateau_configure)
         EXTERNAL_BUILD_TYPE
         EXTERNAL_ROOT
         EXTERNAL_INSTALL_PREFIX
+        NAMESPACE
     )
     set(multi_options
         RELATIVE_HEADERS_DIRS

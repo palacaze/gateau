@@ -309,6 +309,7 @@ Those are meant for the project developers.
 | ${ID}_RELATIVE_HEADERS_DIRS | Dirs where headers are expected to be found       | src;include;Src;Source;Include |
 | ${ID}_GENERATED_HEADER_CASE | How to name generated headers (CAMEL/SNAKE/HYPEN) | SNAKE                          |
 | ${ID}_GENERATED_HEADER_EXT  | Extension of generated healers                    | "hpp"                          |
+| ${ID}_NAMESPACE             | The namespace used for alias targets and exports  | "hpp"                          |
 | ${ID}_C_STANDARD            | The C standard to use                             | c_std_99                       |
 | ${ID}_CXX_STANDARD          | The C++ standard to use                           | cxx_std_17                     |
 
@@ -405,6 +406,7 @@ gateau_configure(
     [GENERATED_HEADER_EXT <ext>]
     [OUTPUT_DIRECTORY <out_dir>]
     [DOWNLOAD_CACHE <down_dir>]
+    [NAMESPACE <namespace>]
     [EXTERNAL_BUILD_TYPE <build_type>]
     [EXTERNAL_ROOT <ext_root_dir>]
     [EXTERNAL_INSTALL_PREFIX <ext_prefix>]
