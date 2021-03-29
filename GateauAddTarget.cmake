@@ -338,6 +338,17 @@ function(_gateau_configure_target target no_version_header)
                 RUNTIME_OUTPUT_DIRECTORY "${${ident}_OUTPUT_DIRECTORY}"
         )
 
+        gateau_get(NAME_PREFIX name_prefix)
+        gateau_get(LIBRARY_NAME_PREFIX lib_name_prefix)
+        gateau_get(RUNTIME_NAME_PREFIX exe_name_prefix)
+
+        if (NOT lib_name_prefix)
+            set(lib_name_prefix "${name_prefix}")
+        endif()
+        if (NOT exe_name_prefix)
+            set(exe_name_prefix "${name_prefix}")
+        endif()
+
         # Compiler options
         gateau_extend_target(${target}
             LINK_LIBRARIES
@@ -359,9 +370,9 @@ function(_gateau_configure_target target no_version_header)
                 $<$<CONFIG:Release>:C_VISIBILITY_PRESET hidden>
                 $<$<CONFIG:Release>:CXX_VISIBILITY_PRESET hidden>
                 $<$<CONFIG:Release>:VISIBILITY_INLINES_HIDDEN 1>
-                LIBRARY_OUTPUT_NAME ${PROJECT_NAME}${target}
-                ARCHIVE_OUTPUT_NAME ${PROJECT_NAME}${target}
-                RUNTIME_OUTPUT_NAME ${target}
+                LIBRARY_OUTPUT_NAME ${lib_name_prefix}${target}
+                ARCHIVE_OUTPUT_NAME ${lib_name_prefix}${target}
+                RUNTIME_OUTPUT_NAME ${exe_name_prefix}${target}
                 BUILD_RPATH_USE_ORIGIN ON
                 INSTALL_RPATH_USE_LINK_PATH TRUE
                 INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}:$ORIGIN"

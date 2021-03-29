@@ -312,6 +312,10 @@ Those are meant for the project developers.
 | ${ID}_NAMESPACE             | The namespace used for alias targets and exports  | "${PROJECT_NAME}"              |
 | ${ID}_C_STANDARD            | The C standard to use                             | c_std_99                       |
 | ${ID}_CXX_STANDARD          | The C++ standard to use                           | cxx_std_17                     |
+| ${ID}_NAME_PREFIX           | The default prefix to use for output file names   | ""                             |
+| ${ID}_LIBRARY_NAME_PREFIX   | The prefix to use for library output file names   | ""                             |
+| ${ID}_RUNSIME_NAME_PREFIX   | The prefix to use for runtime output file names   | ""                             |
+
 
 `${ID}_RELATIVE_HEADERS_DIRS` can be used to teach *Gateau* about the project layout,
 and will be used to install the project's development headers correctly.
@@ -326,6 +330,12 @@ header.
 | CAMEL  | TargetVersion.h  |
 | SNAKE  | target_version.h |
 | HYPHEN | target-version.h |
+
+`${ID}_NAME_PREFIX`, `${ID}_LIBRARY_NAME_PREFIX` and `${ID}_RUNSIME_NAME_PREFIX`
+can be used to add a custom prefix to the names of targets output names. For instance
+a library target named `foo` with `${ID}_LIBRARY_NAME_PREFIX` set to 'bar' may be
+named libbarfoo.so on some platforms.
+
 
 #### Options and cache variables
 
@@ -407,6 +417,9 @@ gateau_configure(
     [OUTPUT_DIRECTORY <out_dir>]
     [DOWNLOAD_CACHE <down_dir>]
     [NAMESPACE <namespace>]
+    [NAME_PREFIX <prefix>]
+    [LIBRARY_NAME_PREFIX <library_prefix>]
+    [RUNTIME_NAME_PREFIX <runtime_prefix>]
     [EXTERNAL_BUILD_TYPE <build_type>]
     [EXTERNAL_ROOT <ext_root_dir>]
     [EXTERNAL_INSTALL_PREFIX <ext_prefix>]

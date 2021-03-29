@@ -113,6 +113,11 @@ function(_gateau_setup_internal_variables)
     # target alias namespace: Namespace::Target
     gateau_declare_internal(NAMESPACE "${PROJECT_NAME}")
 
+    # How we want our target files prefixed
+    gateau_declare_internal(NAME_PREFIX "")
+    gateau_declare_internal(LIBRARY_NAME_PREFIX "")
+    gateau_declare_internal(RUNTIME_NAME_PREFIX "")
+
     # A default standard because this is often desired
     gateau_declare_internal(C_STANDARD c_std_99)
     gateau_declare_internal(CXX_STANDARD cxx_std_17)
@@ -208,6 +213,9 @@ function(gateau_configure)
         EXTERNAL_ROOT
         EXTERNAL_INSTALL_PREFIX
         NAMESPACE
+        NAME_PREFIX
+        LIBRARY_NAME_PREFIX
+        RUNTIME_NAME_PREFIX
     )
     set(multi_options
         RELATIVE_HEADERS_DIRS
