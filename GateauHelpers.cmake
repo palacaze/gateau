@@ -207,7 +207,7 @@ endfunction()
 # Build the alias name of a short module name
 function(gateau_target_alias_name target out)
     gateau_get(NAMESPACE nspace)
-    set(${out} "${npsace}::${target}" PARENT_SCOPE)
+    set(${out} "${nspace}::${target}" PARENT_SCOPE)
 endfunction()
 
 # Build the filename corresponding to a target
