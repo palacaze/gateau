@@ -30,16 +30,16 @@ function(_gateau_setup_compiler_options)
     set(GATEAU_CXX_MSVC "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
     set(GATEAU_C_CXX_MSVC "$<OR:${GATEAU_C_MSVC},${GATEAU_CXX_MSVC}>")
 
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(_GATEAU_COMPILER_CLANG ON)
+    elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        set(_GATEAU_COMPILER_GCC ON)
+    elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+        set(_GATEAU_COMPILER_MSVC ON)
+    endif()
+
     # Link generator expressions
     if (CMAKE_VERSION VERSION_LESS "3.18")
-        if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            set(_GATEAU_COMPILER_CLANG ON)
-        elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-            set(_GATEAU_COMPILER_GCC ON)
-        elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-            set(_GATEAU_COMPILER_MSVC ON)
-        endif()
-
         set(GATEAU_LINK_C_CXX_GCC "$<BOOL:${_GATEAU_COMPILER_GCC}>")
         set(GATEAU_LINK_C_CXX_CLANG "$<BOOL:${_GATEAU_COMPILER_CLANG}>")
         set(GATEAU_LINK_C_CXX_CLANG_GCC "$<OR:${GATEAU_LINK_C_CXX_GCC},${GATEAU_LINK_C_CXX_CLANG}>")
@@ -60,6 +60,11 @@ function(_gateau_setup_compiler_options)
         set(GATEAU_LINK_C_MSVC "$<LINK_LANG_AND_ID:C,MSVC>")
         set(GATEAU_LINK_CXX_MSVC "$<LINK_LANG_AND_ID:CXX,MSVC>")
         set(GATEAU_LINK_C_CXX_MSVC "$<OR:${GATEAU_LINK_C_MSVC},${GATEAU_LINK_CXX_MSVC}>")
+    endif()
+
+    if (_GATEAU_COMPILER_GCC OR _GATEAU_COMPILER_CLANG)
+        set(CMAKE_C_FLAGS_DEBUG "-Og -g -gdwarf-3" CACHE STRING "" FORCE)
+        set(CMAKE_CXX_FLAGS_DEBUG "-Og -g -gdwarf-3" CACHE STRING "" FORCE)
     endif()
 
     # Common warnings
