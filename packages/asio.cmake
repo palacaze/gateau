@@ -1,5 +1,5 @@
 set(asio_GIT "https://github.com/chriskohlhoff/asio.git")
-set(asio_TAG "asio-1-18-0")
+set(asio_TAG "asio-1-18-1")
 
 macro(asio_find name)
     include(FindPackageHandleStandardArgs)
