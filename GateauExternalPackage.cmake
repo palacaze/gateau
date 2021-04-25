@@ -124,7 +124,7 @@ endfunction()
 # Unrecognized arguments will be passed as-is to ExternalProject_Add.
 function(gateau_install_dependency dep)
     set(bool_options IN_SOURCE NO_EXTRACT NO_CONFIGURE NO_PATCH NO_UPDATE NO_BUILD NO_INSTALL)
-    set(mono_options GIT TAG MD5 SOURCE_SUBDIR)
+    set(mono_options GIT TAG MD5 SOURCE_SUBDIR SHARED_LIBS)
     set(multi_options URL GIT_CONFIG CMAKE_CACHE_ARGS CMAKE_ARGS PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND)
 
     # parse arguments supplied to the function and account for default arguments
@@ -178,9 +178,16 @@ function(gateau_install_dependency dep)
     message(STATUS "Dependency ${dep} will be built in ${build_dir}")
     message(STATUS "Dependency ${dep} will be installed in ${install_prefix}")
 
+    if (SID_SHARED_LIBS)
+        message(STATUS "SHARED_LIBS explicitly set to ${SID_SHARED_LIBS} for ${dep}")
+    else()
+        message(STATUS "SHARED_LIBS not explicitly set for ${dep}, using ${BUILD_SHARED_LIBS}")
+        set(SID_SHARED_LIBS ${BUILD_SHARED_LIBS})
+    endif()
+
     # some cmake "cached" arguments that we wish to pass to ExternalProject_Add
     set(cache_args
-        "-DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}"
+        "-DBUILD_SHARED_LIBS:BOOL=${SID_SHARED_LIBS}"
         "-DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}"
         "-DCMAKE_INSTALL_RPATH:STRING=${CMAKE_INSTALL_RPATH}"
         "-DCMAKE_INSTALL_PREFIX:PATH=${install_prefix}"

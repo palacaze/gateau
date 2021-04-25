@@ -4,3 +4,4 @@ set(glog_CMAKE_ARGS
     -DWITH_UNWIND=OFF
     -DWITH_SYMBOLIZE=OFF
 )
+set(glog_SHARED_LIBS ON)

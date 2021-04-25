@@ -260,7 +260,7 @@ endfunction()
 # ${package}_FOUND cached and would be unavailable if created inside a function.
 macro(gateau_find_package name)
     set(bool_options IN_SOURCE NO_EXTRACT NO_PATCH NO_UPDATE NO_CONFIGURE NO_BUILD NO_INSTALL)
-    set(mono_options GIT TAG URL MD5 SOURCE_SUBDIR)
+    set(mono_options GIT TAG URL MD5 SOURCE_SUBDIR SHARED_LIBS)
     set(multi_options CMAKE_CACHE_ARGS CMAKE_ARGS PATCH_COMMAND UPDATE_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND)
     cmake_parse_arguments(_O
         "${bool_options};OPTIONAL;BUILD_ONLY_DEP;UPDATE_DEP"
