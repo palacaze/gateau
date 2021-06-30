@@ -32,10 +32,13 @@ function(_gateau_setup_compiler_options)
 
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         set(_GATEAU_COMPILER_CLANG ON)
+        set(GATEAU_COMPILER_CLANG ${_GATEAU_COMPILER_CLANG} PARENT_SCOPE)
     elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
         set(_GATEAU_COMPILER_GCC ON)
+        set(GATEAU_COMPILER_GCC ${_GATEAU_COMPILER_GCC} PARENT_SCOPE)
     elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
         set(_GATEAU_COMPILER_MSVC ON)
+        set(GATEAU_COMPILER_MSVC ${_GATEAU_COMPILER_MSVC} PARENT_SCOPE)
     endif()
 
     # Link generator expressions
