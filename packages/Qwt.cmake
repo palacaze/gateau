@@ -5,12 +5,12 @@ set(Qwt_MD5 "cc71be5d6c33c2fc19ae8082ccdd3e83")
 macro(Qwt_find name)
     include(FindPackageHandleStandardArgs)
 
-    if (DEFINED ${name}_INCLUDE_DIR AND NOT EXISTS "${${name}_INCLUDE_DIR}/qwt_plot.h")
-        unset(${name}_INCLUDE_DIR CACHE)
-    endif()
-    if (DEFINED ${name}_LIBRARY AND NOT EXISTS "${${name}_LIBRARY}")
-        unset(${name}_LIBRARY CACHE)
-    endif()
+#    if (DEFINED ${name}_INCLUDE_DIR AND NOT EXISTS "${${name}_INCLUDE_DIR}/qwt_plot.h")
+#        unset(${name}_INCLUDE_DIR CACHE)
+#    endif()
+#    if (DEFINED ${name}_LIBRARY AND NOT EXISTS "${${name}_LIBRARY}")
+#        unset(${name}_LIBRARY CACHE)
+#    endif()
 
     find_path(Qwt_INCLUDE_DIR
         NAMES qwt_plot.h
