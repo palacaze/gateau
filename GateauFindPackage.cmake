@@ -195,7 +195,7 @@ function(_gateau_register_dep name package_file)
     if (COMMAND ${name}_find)
         string(CONFIGURE "@name@_find(@name@ @args@)" cmd @ONLY)
     else()
-        string(CONFIGURE "find_package(@name@ @args@)" cmd @ONLY)
+        string(CONFIGURE "find_dependency(@name@ @args@)" cmd @ONLY)
     endif()
 
     file(APPEND "${_dep_module}" "${cmd}\n")
@@ -281,7 +281,7 @@ macro(gateau_find_package name)
     _gateau_reset_find_package(${name})
 
     # try to find the dependency
-    _gateau_find_dep_wrapper(${name} ${_O_UNPARSED_ARGUMENTS} QUIET)
+    _gateau_find_dep_wrapper(${name} ${_O_UNPARSED_ARGUMENTS}) # QUIET)
 
     set(just_installed FALSE)
 
