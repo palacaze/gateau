@@ -181,6 +181,7 @@ function(_gateau_register_dep name package_file)
 
     gateau_get(DEP_DIR _dep_dir)
     set(_dep_module "${_dep_dir}/${PROJECT_NAME}FindDeps.cmake")
+    file(APPEND "${_dep_module}" "include(CMakeFindDependencyMacro)\n")
 
     # we add the package DIR to the module path if we installed it ourselves
     gateau_get(INSTALLED_PACKAGES self_installed)
