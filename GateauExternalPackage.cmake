@@ -185,16 +185,36 @@ function(gateau_install_dependency dep)
         set(SID_SHARED_LIBS ${BUILD_SHARED_LIBS})
     endif()
 
+    # lists of lists are not supported, we use 
+    string(REPLACE ";" "|" CMAKE_PREFIX_PATH_LST "${CMAKE_PREFIX_PATH}")
+    string(REPLACE ";" "|" CMAKE_FIND_ROOT_PATH_LST "${CMAKE_FIND_ROOT_PATH}")
+
     # some cmake "cached" arguments that we wish to pass to ExternalProject_Add
     set(cache_args
-        "-DBUILD_SHARED_LIBS:BOOL=${SID_SHARED_LIBS}"
-        "-DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}"
-        "-DCMAKE_INSTALL_RPATH:STRING=${CMAKE_INSTALL_RPATH}"
-        "-DCMAKE_INSTALL_PREFIX:PATH=${install_prefix}"
-        "-DCMAKE_EXPORT_NO_PACKAGE_REGISTRY:BOOL=ON"
-        "-DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY:BOOL=ON"
-        "-DCMAKE_FIND_USE_PACKAGE_REGISTRY:BOOL=OFF"
+        -DCMAKE_EXPORT_NO_PACKAGE_REGISTRY:BOOL=ON
+        -DCMAKE_FIND_PACKAGE_NO_PACKAGE_REGISTRY:BOOL=ON
+        -DCMAKE_FIND_USE_PACKAGE_REGISTRY:BOOL=OFF
         "-DGATEAU_EXTERNAL_ROOT:PATH=${external_root}"
+    )
+
+    # pass compiler or toolchain file
+    if (CMAKE_TOOLCHAIN_FILE)
+        set(cmake_args
+            "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
+            "-DGATEAU_TOOLCHAIN_COMPILER_VERSION=${GATEAU_TOOLCHAIN_COMPILER_VERSION}")
+    else()
+        set(cmake_args
+            "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}"
+            "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
+    endif()
+
+    list(APPEND cmake_args
+        "-DBUILD_SHARED_LIBS=${SID_SHARED_LIBS}"
+        "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH_LST}"
+        "-DCMAKE_FIND_ROOT_PATH=${CMAKE_FIND_ROOT_PATH_LST}"
+        "-DCMAKE_INSTALL_RPATH=${CMAKE_INSTALL_RPATH}"
+        "-DCMAKE_INSTALL_PREFIX=${install_prefix}"
+        -DCMAKE_FIND_DEBUG_MODE=ON
     )
 
     if (SID_CMAKE_CACHE_ARGS)
@@ -204,18 +224,9 @@ function(gateau_install_dependency dep)
     # build type
     gateau_external_build_type(build_type)
     if (GENERATOR_IS_MULTI_CONFIG)
-        list(APPEND cache_args "-DCMAKE_CONFIGURATION_TYPES:STRING=${build_type}")
+        list(APPEND cmake_args "-DCMAKE_CONFIGURATION_TYPES=${build_type}")
     else()
-        list(APPEND cache_args "-DCMAKE_BUILD_TYPE:STRING=${build_type}")
-    endif()
-
-    # pass compiler or toolchain file
-    if (CMAKE_TOOLCHAIN_FILE)
-        list(APPEND cache_args "-DCMAKE_TOOLCHAIN_FILE:FILEPATH=${CMAKE_TOOLCHAIN_FILE}")
-        list(APPEND cache_args "-DGATEAU_TOOLCHAIN_COMPILER_VERSION:STRING=${GATEAU_TOOLCHAIN_COMPILER_VERSION}")
-    else()
-        list(APPEND cache_args "-DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}")
-        list(APPEND cache_args "-DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}")
+        list(APPEND cmake_args "-DCMAKE_BUILD_TYPE=${build_type}")
     endif()
 
     set(project_vars
@@ -225,6 +236,7 @@ function(gateau_install_dependency dep)
         DOWNLOAD_DIR "${download_dir}"
         SOURCE_DIR "${source_dir}"
         INSTALL_DIR "${install_prefix}"
+        LIST_SEPARATOR |
         CMAKE_CACHE_ARGS ${cache_args}
     )
 
@@ -274,8 +286,9 @@ function(gateau_install_dependency dep)
     endforeach()
 
     if (SID_CMAKE_ARGS)
-        list(APPEND project_vars CMAKE_ARGS "${SID_CMAKE_ARGS}")
+        list(APPEND cmake_args "${SID_CMAKE_ARGS}")
     endif()
+    list(APPEND project_vars CMAKE_ARGS ${cmake_args})
 
     if (SID_UNPARSED_ARGUMENTS)
         list(APPEND project_vars ${SID_UNPARSED_ARGUMENTS})
@@ -309,7 +322,7 @@ function(gateau_install_dependency dep)
 
     # We must set a toochain file if the project needs one
     if (CMAKE_TOOLCHAIN_FILE)
-        set(toolchain_cmd -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_FILE}")
+        set(toolchain_cmd -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
     endif()
 
     # Install right now

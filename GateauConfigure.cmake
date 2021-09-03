@@ -35,6 +35,14 @@ function(_gateau_setup_prefix_path)
         list(PREPEND path "${dir}")  # prepend to favor last change
         set(CMAKE_PREFIX_PATH "${path}" CACHE STRING "" FORCE)
     endif()
+
+    # Search paths are restricted in the cross toolchain files,
+    # however our install prefix is safe to use so we will add it.
+    set(path ${CMAKE_FIND_ROOT_PATH})
+    if (NOT dir IN_LIST path)
+        list(PREPEND path "${dir}")  # prepend to favor last change
+        set(CMAKE_FIND_ROOT_PATH "${path}" PARENT_SCOPE)
+    endif()
 endfunction()
 
 # Setup reasonable defaults for commonly set cmake variables

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.14)
 project(dep)
 
+list(APPEND CMAKE_FIND_ROOT_PATH "${CMAKE_INSTALL_PREFIX}")
+
 # create external project
 include(ExternalProject)
 ExternalProject_add(@GATEAU_DEP@ "@GATEAU_DEP_PROJECT_VARS@")
