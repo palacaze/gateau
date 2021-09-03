@@ -24,6 +24,13 @@ macro(asio_find name)
             BOOST_ASIO_STANDALONE
             BOOST_ASIO_HEADER_ONLY
         )
+
+        if (WIN32)
+            set_target_properties(asio::asio PROPERTIES
+                INTERFACE_COMPILE_DEFINITIONS "_WIN32_WINNT=0x0601"
+                INTERFACE_LINK_LIBRARIES "ws2_32;wsock32;mswsock"
+            )
+        endif()
     endif()
 endmacro()
 
