@@ -349,6 +349,11 @@ function(_gateau_configure_target target no_version_header)
             set(exe_name_prefix "${name_prefix}")
         endif()
 
+        # On Windows, DLLs are runtime components
+        if (NOT _type STREQUAL EXECUTABLE)
+            set(exe_name_prefix "${lib_name_prefix}")
+        endif()
+
         # Compiler options
         gateau_extend_target(${target}
             LINK_LIBRARIES
@@ -490,6 +495,7 @@ function(gateau_add_library lib)
             PROPERTIES
                 LIBRARY_OUTPUT_NAME "${SAL_OUTPUT_NAME}"
                 ARCHIVE_OUTPUT_NAME "${SAL_OUTPUT_NAME}"
+                RUNTIME_OUTPUT_NAME "${SAL_OUTPUT_NAME}"
         )
     endif()
 
