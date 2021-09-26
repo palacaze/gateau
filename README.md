@@ -827,14 +827,14 @@ gateau_build_documentation(
 
 *Gateau* tries to make it easy to add testcases to a project. It has build in support
 for three commonly used test libraries: [Google Test](https://github.com/google/googletest),
-[Catch2](https://github.com/catchorg/Catch2) and [Doctest](https://github.com/onqtam/doctest).
+QtTest, [Catch2](https://github.com/catchorg/Catch2) and [Doctest](https://github.com/onqtam/doctest).
 
 To declare tests, one must first declare a head target and an optional associated provider
 through call to `gateau_setup_testing()`, then one can simply declare new test cases with
 calls to `gateau_add_test()`.
 
 ```
-gateau_setup_testing(<target> [GTEST|CATCH2|DOCTEST])
+gateau_setup_testing(<target> [GTEST|CATCH2|DOCTEST|QTTEST])
 
 gateau_add_test(<test_name> [OPTIONS ACCEPTED BY gateau_add_executable()])
 ```
