@@ -214,7 +214,6 @@ function(gateau_install_dependency dep)
         "-DCMAKE_FIND_ROOT_PATH=${CMAKE_FIND_ROOT_PATH_LST}"
         "-DCMAKE_INSTALL_RPATH=${CMAKE_INSTALL_RPATH}"
         "-DCMAKE_INSTALL_PREFIX=${install_prefix}"
-        -DCMAKE_FIND_DEBUG_MODE=ON
     )
 
     if (SID_CMAKE_CACHE_ARGS)
