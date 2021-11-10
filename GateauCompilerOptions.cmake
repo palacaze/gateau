@@ -65,10 +65,10 @@ function(_gateau_setup_compiler_options)
         set(GATEAU_LINK_C_CXX_MSVC "$<OR:${GATEAU_LINK_C_MSVC},${GATEAU_LINK_CXX_MSVC}>")
     endif()
 
-    if (_GATEAU_COMPILER_GCC OR _GATEAU_COMPILER_CLANG)
-        set(CMAKE_C_FLAGS_DEBUG "-Og -g -gdwarf-3" CACHE STRING "" FORCE)
-        set(CMAKE_CXX_FLAGS_DEBUG "-Og -g -gdwarf-3" CACHE STRING "" FORCE)
-    endif()
+#    if (_GATEAU_COMPILER_GCC OR _GATEAU_COMPILER_CLANG)
+#        set(CMAKE_C_FLAGS_DEBUG "-Og -g -gdwarf-3" CACHE STRING "" FORCE)
+#        set(CMAKE_CXX_FLAGS_DEBUG "-Og -g -gdwarf-3" CACHE STRING "" FORCE)
+#    endif()
 
     # Common warnings
     add_library(Gateau_CommonWarnings INTERFACE)
