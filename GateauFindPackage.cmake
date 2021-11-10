@@ -48,7 +48,7 @@ endfunction()
 # Look for a package file module for the given dependency name.
 # It may either have the name "${name}.cmake" or be a template file with a name
 # "${nameprefix}.cmake.in" that is a prefix of the name passed in argument
-function(_gateau_find_dep_package_file name package_file)
+function(_gateau_find_dep_package_file name package_file repo_dir)
     get_filename_component(_pm_dir "${package_file}" DIRECTORY)
 
     # first look for exact name
@@ -56,6 +56,7 @@ function(_gateau_find_dep_package_file name package_file)
     foreach (dir ${mod_dirs})
         set(module_path "${dir}/${name}.cmake")
         if (EXISTS "${module_path}")
+            set(${repo_dir} "${dir}" PARENT_SCOPE)
             file(COPY "${module_path}" DESTINATION "${_pm_dir}")
             break()
         endif()
@@ -74,6 +75,7 @@ function(_gateau_find_dep_package_file name package_file)
 
             # we got a matching template name
             if (name MATCHES "^${templ_prefix}")
+                set(${repo_dir} "${dir}" PARENT_SCOPE)
                 # generate a module file from the template
                 set(GATEAU_PACKAGE_MODULE_NAME ${name})
                 configure_file("${dir}/${templ}" "${package_file}" @ONLY)
@@ -89,7 +91,7 @@ endfunction()
 # It may either have the name "${name}.cmake" or be a template file with a name
 # "${nameprefix}.cmake.in" that is a prefix of the name passed in argument.
 # If single_header is not empty, a package file will be generated for it.
-function(_gateau_prepare_dep_package_file name single_header out)
+function(_gateau_prepare_dep_package_file name single_header out repo_dir)
     gateau_get(TEMPLATES_DIR _templates)
     gateau_get(DEP_DIR _dep_dir)
     set(_pm_dir "${_dep_dir}/package-modules")
@@ -99,7 +101,7 @@ function(_gateau_prepare_dep_package_file name single_header out)
     set(_package_file "${_pm_dir}/${name}.cmake")
 
     # Try to find one in the package directories
-    _gateau_find_dep_package_file(${name} "${_package_file}")
+    _gateau_find_dep_package_file(${name} "${_package_file}" _repo_dir)
 
     # if we handle a single header dependency, we have to generate an appropriate
     # package file. In order to know if we are dealing with a single header, we
@@ -122,6 +124,7 @@ function(_gateau_prepare_dep_package_file name single_header out)
     endif()
 
     set(${out} "${_package_file}" PARENT_SCOPE)
+    set(${repo_dir} "${_repo_dir}" PARENT_SCOPE)
 endfunction()
 
 # Cmake does not support dynamic macro names, ie we can't have a macro whose name
@@ -207,10 +210,12 @@ endfunction()
 # may be supplied in a previously sourced package file, or from a standard call
 # to find_package.
 macro(_gateau_find_dep_wrapper name)
+    set(_args "${ARGN}")
+
     if (COMMAND ${name}_find)
-        _gateau_call_dynamic_macro(${name}_find ${name} ${ARGN})
+        _gateau_call_dynamic_macro(${name}_find ${name} ${_args})
     else()
-        find_package(${name} ${ARGN})
+        find_package(${name} ${_args})
     endif()
 endmacro()
 
@@ -273,8 +278,11 @@ macro(gateau_find_package name)
     # Try to find the dependency package file that contains instructions on how
     # to find and install a package. Then we source it.
     # Also handle the single header special-case
-    _gateau_prepare_dep_package_file(${name} "${_O_SINGLE_HEADER}" package_file)
+    _gateau_prepare_dep_package_file(${name} "${_O_SINGLE_HEADER}" package_file repo_dir)
     if (EXISTS "${package_file}")
+        # patches are in the repo directory
+        set(${name}_PATCH_DIR "${repo_dir}/patches/${name}")
+
         include("${package_file}")
     endif()
 
@@ -282,7 +290,7 @@ macro(gateau_find_package name)
     _gateau_reset_find_package(${name})
 
     # try to find the dependency
-    _gateau_find_dep_wrapper(${name} ${_O_UNPARSED_ARGUMENTS}) # QUIET)
+    _gateau_find_dep_wrapper(${name} ${_O_UNPARSED_ARGUMENTS})
 
     set(just_installed FALSE)
 
@@ -331,9 +339,11 @@ macro(gateau_find_package name)
 
     unset(no_build_deps)
     unset(just_installed)
+    unset(${name}_PATCH_DIR)
     unset(bool_options)
     unset(mono_options)
     unset(multi_options)
     unset(_opts)
+    unset(repo_dir)
     unset(package_file)
 endmacro()
