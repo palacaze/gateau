@@ -166,7 +166,7 @@ function(_gateau_setup_compiler_options)
     # Use the best linker available on linux/unix
     add_library(Gateau_Linker INTERFACE)
     if (UNIX AND NOT APPLE AND NOT CYGWIN)
-        foreach (_ld lld;gold)
+        foreach (_ld mold;lld;gold)
             execute_process(COMMAND "${CMAKE_CXX_COMPILER}" -fuse-ld=${_ld} -Wl,--version
                 ERROR_QUIET OUTPUT_VARIABLE ld_version)
             if (ld_version)
