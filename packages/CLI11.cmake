@@ -1,3 +1,8 @@
-set(CLI11_VERSION "1.9.1")
-set(CLI11_MD5 "05de518a9321e3b6393fe574ac72c6e8")
-set(CLI11_SINGLE_HEADER "https://github.com/CLIUtils/CLI11/releases/download/v${CLI11_VERSION}/CLI11.hpp")
+set(CLI11_VERSION "2.2.0")
+set(CLI11_MD5 "f0b70187eadf05a23257ac1d17c9a0e3")
+set(CLI11_URL "https://github.com/CLIUtils/CLI11/archive/refs/tags/v${CLI11_VERSION}.tar.gz")
+set(CLI11_CMAKE_ARGS
+    -DCLI11_BUILD_DOCS=OFF
+    -DCLI11_BUILD_TESTS=OFF
+    -DCLI11_BUILD_EXAMPLES=OFF
+)
