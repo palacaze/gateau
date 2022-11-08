@@ -314,7 +314,7 @@ Those are meant for the project developers.
 | ${ID}_CXX_STANDARD          | The C++ standard to use                           | cxx_std_17                     |
 | ${ID}_NAME_PREFIX           | The default prefix to use for output file names   | ""                             |
 | ${ID}_LIBRARY_NAME_PREFIX   | The prefix to use for library output file names   | ""                             |
-| ${ID}_RUNSIME_NAME_PREFIX   | The prefix to use for runtime output file names   | ""                             |
+| ${ID}_RUNTIME_NAME_PREFIX   | The prefix to use for runtime output file names   | ""                             |
 
 
 `${ID}_RELATIVE_HEADERS_DIRS` can be used to teach *Gateau* about the project layout,
@@ -331,7 +331,7 @@ header.
 | SNAKE  | target_version.h |
 | HYPHEN | target-version.h |
 
-`${ID}_NAME_PREFIX`, `${ID}_LIBRARY_NAME_PREFIX` and `${ID}_RUNSIME_NAME_PREFIX`
+`${ID}_NAME_PREFIX`, `${ID}_LIBRARY_NAME_PREFIX` and `${ID}_RUNTIME_NAME_PREFIX`
 can be used to add a custom prefix to the names of targets output names. For instance
 a library target named `foo` with `${ID}_LIBRARY_NAME_PREFIX` set to 'bar' may be
 named libbarfoo.so on some platforms.
