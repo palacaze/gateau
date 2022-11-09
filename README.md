@@ -671,6 +671,7 @@ two functions, and will be forwarded to it.
 ```
 gateau_add_library(<name>
     [STATIC | SHARED | OBJECT | MODULE | INTERFACE]
+    [SYSTEM]
     [NO_INSTALL] [NO_INSTALL_HEADERS]
     [NO_EXPORT]
     [NO_EXPORT_HEADER]
@@ -685,6 +686,7 @@ gateau_add_library(<name>
 The following options are accepted:
 
 - One of STATIC SHARED OBJECT MODULE INTERFACE (defaults to SHARED): library type
+- SYSTEM: set the SYSTEM keywords to include directories
 - NO_INSTALL: do not install this target
 - NO_INSTALL_HEADER: do not install the dev headers
 - NO_EXPORT: the target is not exported to the cmake package module installed

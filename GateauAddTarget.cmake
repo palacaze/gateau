@@ -101,6 +101,7 @@ function(gateau_extend_target target)
         AUTOMOC
         AUTOUIC
         AUTORCC
+        SYSTEM
         EXCLUDE_FROM_ALL
         NO_INSTALL_HEADERS
     )
@@ -126,6 +127,10 @@ function(gateau_extend_target target)
 
     if (${_A_UNPARSED_ARGUMENTS})
         message(FATAL_ERROR "gateau_extend_target had unparsed arguments: ${_A_UNPARSED_ARGUMENTS}")
+    endif()
+
+    if (_A_SYSTEM)
+        set(system_incls SYSTEM)
     endif()
 
     # test conditions
@@ -189,7 +194,7 @@ function(gateau_extend_target target)
     )
 
     cmake_parse_arguments(_O "" "" "PUBLIC;PRIVATE;INTERFACE" ${_A_INCLUDE_DIRECTORIES})
-    target_include_directories(${target}
+    target_include_directories(${target} ${system_incls}
         ${PRI} ${_O_PRIVATE}
         ${PUB} ${_O_PUBLIC}
         INTERFACE ${_O_INTERFACE}
@@ -270,7 +275,7 @@ function(gateau_extend_target target)
 endfunction()
 
 # Set common configuration parameters on the target
-function(_gateau_configure_target target no_version_header)
+function(_gateau_configure_target target no_version_header system_incls)
     # mark the target as known
     gateau_append(KNOWN_TARGETS ${target})
 
@@ -304,7 +309,7 @@ function(_gateau_configure_target target no_version_header)
         )
     endif()
 
-    gateau_extend_target(${target}
+    gateau_extend_target(${target} ${system_incls}
         INCLUDE_DIRECTORIES
             PUBLIC
                 ${build_dirs}
@@ -370,7 +375,7 @@ function(_gateau_configure_target target no_version_header)
                 $<$<BOOL:${${ident}_SANITIZE_UNDEFINED}>:Gateau_UndefinedSanitizer>
                 $<$<BOOL:${${ident}_ENABLE_AUTOSELECT_LINKER}>:Gateau_Linker>
             COMPILE_OPTIONS
-                $<$<CONFIG:Release>:-march=native>
+                $<$<CONFIG:Release>:-march=native;-mavx2;-mfma;-finline-limit=1000000;-ffp-contract=fast>
             PROPERTIES
                 $<$<CONFIG:Release>:C_VISIBILITY_PRESET hidden>
                 $<$<CONFIG:Release>:CXX_VISIBILITY_PRESET hidden>
@@ -411,6 +416,7 @@ endfunction()
 # gateau_add_library(
 #     <name>
 #     [STATIC | SHARED | OBJECT | MODULE | INTERFACE]
+#     [SYSTEM]
 #     [NO_INSTALL] [NO_INSTALL_HEADERS]
 #     [NO_EXPORT]
 #     [INSTALL_LIBDIR <dir>]
@@ -420,6 +426,7 @@ endfunction()
 #
 # The following options are accepted
 # - one of STATIC SHARED OBJECT MODULE INTERFACE (defaults to SHARED): library type
+# - SYSTEM: set the SYSTEM keyword to include directories
 # - NO_INSTALL: do not install this target
 # - NO_INSTALL_HEADER: do not install the dev headers
 # - NO_EXPORT: the target is not exported to the cmake package module installed
@@ -428,6 +435,7 @@ endfunction()
 function(gateau_add_library lib)
     set(bool_options
         STATIC SHARED OBJECT MODULE INTERFACE  # add_library
+        SYSTEM              # set the SYSTEM keyword to include directories
         NO_EXPORT           # Do not export this target in the cmake package module
         NO_INSTALL          # Do not install this target
         NO_INSTALL_HEADERS  # Do not install development headers
@@ -467,6 +475,10 @@ function(gateau_add_library lib)
         set(SAL_INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}")
     endif()
 
+    if (SAL_SYSTEM)
+        set(system_incls SYSTEM)
+    endif()
+
     gateau_target_alias_name(${lib} alias)
 
     # create the library
@@ -488,7 +500,7 @@ function(gateau_add_library lib)
     )
 
     # configure the target with good defaults
-    _gateau_configure_target(${lib} ${SAL_NO_VERSION_HEADER})
+    _gateau_configure_target(${lib} "${SAL_NO_VERSION_HEADER}" "${system_incls}")
 
     if (SAL_OUTPUT_NAME)
         gateau_extend_target(${lib}
@@ -509,7 +521,7 @@ function(gateau_add_library lib)
     endif()
 
     # add passed options last, as some may override some of our defaults
-    gateau_extend_target(${lib} ${SAL_UNPARSED_ARGUMENTS})
+    gateau_extend_target(${lib} ${SAL_UNPARSED_ARGUMENTS} ${system_incls})
 
     # Installation
     if (NOT SAL_NO_INSTALL)
@@ -592,7 +604,7 @@ function(gateau_add_executable exe)
     endif()
 
     # configure the target with good defaults
-    _gateau_configure_target(${exe} ${_no_version_header})
+    _gateau_configure_target(${exe} "${_no_version_header}" "")
 
     # extend the target with appropriate defaults
     gateau_extend_target(${exe}
