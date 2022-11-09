@@ -113,10 +113,10 @@ function(_gateau_setup_compiler_options)
     target_compile_options(Gateau_Werror INTERFACE
         $<${GATEAU_C_CXX_CLANG_GCC}:
             -Werror=format-security;
-            -Werror=reorder;
             -Werror=return-type;
             -Werror=switch;
             -Werror=uninitialized>
+        $<${GATEAU_CXX_CLANG_GCC}:-Werror=reorder>
         $<${GATEAU_C_CXX_MSVC}:/WX>
     )
 
