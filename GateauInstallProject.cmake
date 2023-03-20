@@ -89,13 +89,8 @@ function(gateau_install_project)
         FILE "${targets_file}"
         NAMESPACE ${nspace}::
         DESTINATION "${cmake_dir}"
-        COMPONENT ${PROJECT_NAME}_devel
+        COMPONENT devel
     )
-
-    # Install the module with the instruction to find dependencies
-    gateau_get(DEP_DIR _dep_dir)
-    set(_dep_module "${_dep_dir}/${PROJECT_NAME}FindDeps.cmake")
-    install(FILES "${_dep_module}" DESTINATION "${cmake_dir}")
 
     gateau_get(TEMPLATES_DIR templates)
     configure_package_config_file(
@@ -111,12 +106,16 @@ function(gateau_install_project)
         COMPATIBILITY AnyNewerVersion
     )
 
-    # Install the Config and ConfigVersion files
+    # Install the Config and ConfigVersion FILES as well as the module
+    # with the instructions to find dependencies
+    gateau_get(DEP_DIR _dep_dir)
+    set(_dep_module "${_dep_dir}/${PROJECT_NAME}FindDeps.cmake")
     install(
         FILES "${version_file}"
               "${config_file}"
+              "${_dep_module}"
         DESTINATION "${cmake_dir}"
-        COMPONENT ${PROJECT_NAME}_devel
+        COMPONENT devel
     )
 
     # Create the export-set file for our targets

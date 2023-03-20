@@ -88,7 +88,7 @@ function(_gateau_install_headers target includedir)
             install(
                 FILES "${header}"
                 DESTINATION "${includedir}/${relpath}"
-                COMPONENT ${target}
+                COMPONENT devel
             )
         endif()
     endforeach()
@@ -539,15 +539,15 @@ function(gateau_add_library lib)
             ${export_option}
             RUNTIME
                 DESTINATION "${SAL_INSTALL_BINDIR}"
-                COMPONENT ${PROJECT_NAME}_runtime
+                COMPONENT runtime
             LIBRARY
                 DESTINATION "${SAL_INSTALL_LIBDIR}"
-                COMPONENT ${PROJECT_NAME}_runtime
-                NAMELINK_COMPONENT ${PROJECT_NAME}_devel
+                COMPONENT runtime
+                NAMELINK_COMPONENT devel
                 ${namelink_option}
             ARCHIVE
                 DESTINATION "${SAL_INSTALL_LIBDIR}"
-                COMPONENT ${PROJECT_NAME}_devel
+                COMPONENT devel
             INCLUDES
                 DESTINATION "${SAL_INSTALL_INCLUDEDIR}"
             RESOURCE
@@ -626,7 +626,7 @@ function(gateau_add_executable exe)
             ${export_option}
             RUNTIME
                 DESTINATION "${SAL_INSTALL_BINDIR}"
-                COMPONENT ${PROJECT_NAME}_Runtime
+                COMPONENT runtime
         )
     endif()
 
