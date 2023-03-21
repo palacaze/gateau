@@ -13,8 +13,7 @@ include(GateauHelpers)
 function(gateau_setup_install_prefix)
     if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         # Find out where to install stuff
-        gateau_external_install_prefix(install_prefix)
-        set(CMAKE_INSTALL_PREFIX "${install_prefix}" CACHE PATH
+        set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" CACHE PATH
             "Install path prefix, prepended onto install directories." FORCE)
     endif()
 endfunction()
@@ -117,6 +116,15 @@ function(gateau_install_project)
         DESTINATION "${cmake_dir}"
         COMPONENT devel
     )
+
+    # PostFind modules
+    if (IS_DIRECTORY "${_dep_dir}/postfind")
+        install(
+            DIRECTORY "${_dep_dir}/postfind"
+            DESTINATION "${cmake_dir}"
+            COMPONENT devel
+        )
+    endif()
 
     # Create the export-set file for our targets
     export(

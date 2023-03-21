@@ -31,7 +31,6 @@ In particular it is capable of:
   - Sane compiler options,
   - Sanitizers integration,
   - LTO, CCache use...
-- Looking for dependencies, downloading and compiling them for you if missing,
 - Declaring new targets that will be configured in a sensible way for you to
   make it both installable and importable by other projects. An export header
   and version header get generated for every target.
@@ -42,9 +41,8 @@ In particular it is capable of:
 - Automatically generating Doxygen documentation,
 - ...
 
-Again, it is a simple tool, not a full-fledged package manager. It does not
-particularly excel at dependency handling and will not be able to cope with
-complex dependency chains.
+Again, it is a simple tool, it does not handle dependency management. A package
+manager such as vcpkg or conan should be used instead.
 
 ## Motivational example
 
@@ -74,14 +72,13 @@ include(${gateau_SOURCE_DIR}/Gateau.cmake)
 
 # Configure gateau for this project
 gateau_configure(
-    EXTERNAL_ROOT "${PROJECT_BINARY_DIR}/3rdparty"
     OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin"
     GENERATED_HEADER_CASE HYPHEN
     GENERATED_HEADER_EXT hpp
 )
 
 # Looking for fmtlib
-gateau_find_package(fmt GIT https://github.com/fmtlib/fmt)
+gateau_find_package(fmt)
 
 # The main sources
 add_subdirectory(src)
@@ -122,7 +119,7 @@ gateau_add_library(lib
         eclair.hpp
     LINK_LIBRARIES
         PUBLIC
-            fmt
+            fmt::fmt-header-only
 )
 ```
 
@@ -159,14 +156,11 @@ what I want. It has not been tested at all on Windows yet, but it will someday.
 My TODO list includes a lot of potentially useful stuff, but I do not require these
 features right now so I make no promise.
 
-- Install headers only libs from an archive file or path,
-- Allow a gateau_fetch_package() that uses FetchContent instead of ExternalProject,
 - Support Qt translations,
 - Support Gitlab, Gihub automation,
 - Automated project deployment and packaging, for instance with CPack,
-- Conan integration,
+- vcpkg integration,
 - Add an option for configurable compiler flags.
-- Allow Package modules versioning,
 - ...
 
 ## Requirements
@@ -383,25 +377,6 @@ A number of options can be used to change the compiler flags.
 | ${ID}_OUTPUT_DIRECTORY   | Where to place compiled targets           | ""        |
 | ${ID}_DOCUMENTATION_ROOT | Documentation installation root directory | ${BD}/doc |
 
-##### Options that control how external dependencies are build
-
-Gateau has limited ability to install missing external dependencies. This feature
-can be disabled with the `${ID}_NO_INSTALL_DEPS` option. At the other side of the
-spectrum, `${ID}_UPDATE_DEPS` can be used to instruct Gateau to update external
-dependencies. This is useful for projects that rely on multiple related third
-party components highly coupled but managed in distinct repositories.
-
-The other options are meant to tweak external dependencies handling.
-
-| Option                        | Description                                                   | Default                |
-|-------------------------------|---------------------------------------------------------------|------------------------|
-| ${ID}_NO_BUILD_DEPS           | Prevent Gateau from building missing external dependencies    | OFF                    |
-| ${ID}_UPDATE_DEPS             | Update the external packages when the project is reconfigured | OFF                    |
-| ${ID}_EXTERNAL_ROOT           | Root directory where external packages get handled            | ${BD}/external         |
-| ${ID}_EXTERNAL_BUILD_TYPE     | Build type used to build external packages                    | Release                |
-| ${ID}_EXTERNAL_INSTALL_PREFIX | Prefix where to install built external packages               | EXTERNAL_ROOT/prefix   |
-| ${ID}_DOWNLOAD_CACHE          | Directory that acts as a download cache for external packages | EXTERNAL_ROOT/download |
-
 ### Project creation
 
 Apart from including the main *Gateau* module, some of the configuration variables,
@@ -415,14 +390,10 @@ gateau_configure(
     [GENERATED_HEADER_CASE <CAMEL|SNAKE|HYPHEN>]
     [GENERATED_HEADER_EXT <ext>]
     [OUTPUT_DIRECTORY <out_dir>]
-    [DOWNLOAD_CACHE <down_dir>]
     [NAMESPACE <namespace>]
     [NAME_PREFIX <prefix>]
     [LIBRARY_NAME_PREFIX <library_prefix>]
     [RUNTIME_NAME_PREFIX <runtime_prefix>]
-    [EXTERNAL_BUILD_TYPE <build_type>]
-    [EXTERNAL_ROOT <ext_root_dir>]
-    [EXTERNAL_INSTALL_PREFIX <ext_prefix>]
     [RELATIVE_HEADERS_DIRS [items...]])
 
 ```
@@ -432,77 +403,30 @@ to tweak Gateau for the needs of the project.
 
 ### Finding dependencies
 
-*Gateau* offers a wrapper over the find_packages facilities to improve and
-extend the function to include automated compilation of external dependencies
-as well as integrate those dependencies in the CMake find modules that will
-be generated for the project.
+*Gateau* offers a wrapper over the find_packages facilities to keep track of
+found dependencies and improve automated project installation.
 
 To do so, simply replace calls to `find_package` with calls to `gateau_find_package`.
 
-This macro supplements the `find_package` function with additional features that
-allow overriding package finding instructions, as well as instruct CMake how to
-download, and install the dependency itself if it was not found.
-
-To do so, Gateau relies on the creation of special CMake modules, named after the
-package to be found, which define variables and a couple of macros to instruct
-Gateau on how the package should be found and installed. Installation itself is
-deferred to the CMake ExternalProject module.
-
-Gateau comes with a few custom package instruction modules for dependencies I use
-or have used in the past. Any project can add additional modules in its own tree
-by declaring the directory that contains them to *Gateau*.
+Gateau looks for "PostFind" modules which are sources after a package has been found
+if the user wishes to improve or tweak a particular package. For instance some compile
+definitions may be added to an imported target.
+The name of such module must be `PostFind${Packagename}.cmake`
 
 ```
-# Add a directory to the list of directories to search when looking for a
-# package module file with installation instructions for external dependencies.
+# Add a directory to the list of directories to search when looking for PostFind
+# module file.
 gateau_add_package_module_dir(<dir>)
 ```
 
-Creating such modules is not mandatory to benefit from the capabilities offered
-by `gateau_find_package`. One can also supply custom directives directly to the
-macro. For this reason, `gateau_find_package` offers a number of parameters,
-most of them mirror those from ExternalProject_add, which will mostly be passed
-as-is to the function.
-
 ```
 gateau_find_package(<name>
-    [IN_SOURCE]
-    [NO_EXTRACT] [NO_PATCH] [NO_UPDATE]
-    [NO_CONFIGURE] [NO_BUILD] [NO_INSTALL]
     [OPTIONAL]
-    [BUILD_ONLY_DEP]
-    [UPDATE_DEP]
-    [GIT <git_url>]
-    [TAG <git_tag>]
-    [URL <file_url>]
-    [MD5 <file_md5>]
-    [SOURCE_SUBDIR <subdir>]
-    [SINGLE_HEADER <header_url>]
-    [CMAKE_CACHE_ARGS args...]
-    [CMAKE_ARGS args...]
-    [PATCH_COMMAND commands...]
-    [UPDATE_COMMAND commands...]
-    [CONFIGURE_COMMAND commands...]
-    [BUILD_COMMAND commands...]
-    [INSTALL_COMMAND commands...])
+    [BUILD_ONLY_DEP])
 ```
 
 Contrary to find_package, gateau_find_package defaults to `REQUIRED`. For optional
 dependencies, the `OPTIONAL` keyword must be used.
-
-That way, by merely adding a GIT or URL directive to `gateau_find_package`, one can
-transform a normal `find_package` directive into one that can fetch compile and install
-the dependency for you (assuming a CMake installable dependency).
-
-Here is one such example:
-
-```cmake
-gateau_find_package(spdlog https://github.com/gabime/spdlog)
-gateau_add_executable(foo
-    SOURCES foo.cpp
-    LINK_LIBRARIES spdlog::spdlog)
-
-```
 
 #### Build-only dependencies
 
@@ -511,143 +435,6 @@ in private parts or code generation tools. The installed package does not depend
 it and as such does not constitute a runtime dependency. Those can be marked using
 the `BUILD_ONLY_DEP` option, and will not be added to the package config module
 installed with the package.
-
-#### Special case for single header libraries
-
-`gateau_find_package` possesses an option dedicated to single header libraries.
-It allows installing such a library by supplying an URL to the header file.
-
-The `${name}::${name}` import target gets generated automatically and can be linked to.
-
-```cmake
-gateau_find_package(date
-    SINGLE_HEADER "https://github.com/HowardHinnant/date/raw/master/include/date/date.h")
-gateau_add_executable(foo
-    SOURCES foo.cpp
-    LINK_LIBRARIES date::date)
-```
-
-#### Creating package modules for external dependencies
-
-A package module file named after the dependency to be installed and placed in an appropriate
-directory can be created to instruct Gateau how to find and install a particular package.
-The complete file will be sourced by Gateau.
-
-The variables accepted by gateau_find_package can be defined in this module, but must
-be prefixed with the package name. For instance, the module for a package "Dep" may
-contain the variable Dep_URL.
-
-Moreover, two macros may optionally be defined, also prefixed with the package name:
-
-- ${dep}_find(name optional_find_options...)
-- ${dep}_install(name)
-
-The first macro gets called when the dependency is searched. A default implementation would
-dispatch all the arguments to find_package(). This is where one would handle custom search
-procedure and define import targets if the default package distribution does not provide any,
-for instance for old style cmake packages and non-cmake built packages.
-
-The second is responsible for installing the dependency, and gets called if the depenency
-was not found. Most of the time, one wants to use `gateau_install_dependency()` for that.
-This is a wrapper over ExternalProject_add that knows how to use some variables prefixed with
-the package name to setup the installation procedure.
-
-For illustration purpose, here is a complete annoted module example of package module for
-a dependency that is not CMake compatible:
-
-```cmake
-# This is asio.cmake, a package module that provides custom search and installation
-# procedure for the standalone asio library.
-
-# First a couple of variables that instruct gateau_install_dependency() how to fetch
-# the asio source code from its git repository.
-set(asio_GIT "https://github.com/chriskohlhoff/asio.git")
-set(asio_TAG "asio-1-18-0")
-
-# The _find macro gets called when the package is searched.
-macro(asio_find name)
-    # Standard package finding procedure
-    include(FindPackageHandleStandardArgs)
-
-    find_path(asio_INCLUDE_DIR
-        NAMES io_service.hpp
-        PATH_SUFFIXES asio
-    )
-
-    find_package_handle_standard_args(
-        asio DEFAULT_MSG asio_INCLUDE_DIR)
-
-    mark_as_advanced(asio_INCLUDE_DIR)
-
-    # We also create an import target for nicer use
-    if(asio_FOUND AND NOT TARGET asio::asio)
-        add_library(asio::asio INTERFACE IMPORTED)
-        set_target_properties(asio::asio PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES "${asio_INCLUDE_DIR}"
-        )
-        target_compile_definitions(asio::asio INTERFACE
-            BOOST_ASIO_NO_DEPRECATED
-            BOOST_ASIO_STANDALONE
-            BOOST_ASIO_HEADER_ONLY
-        )
-    endif()
-endmacro()
-
-# The _install macro is called to install the package is not found.
-macro(asio_install name)
-    # Call to gateau_install_dependency, which installs the dep
-    # For this header only package, we specifically instruct cmake to skip unwanted steps
-    gateau_install_dependency(${name}
-        NO_PATCH
-        NO_CONFIGURE
-        NO_BUILD
-        INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory "<INSTALL_DIR>/include/asio"
-                COMMAND ${CMAKE_COMMAND} -E copy_directory "<SOURCE_DIR>/asio/include/asio" "<INSTALL_DIR>/include/asio"
-                COMMAND ${CMAKE_COMMAND} -E copy "<SOURCE_DIR>/asio/include/asio.hpp" "<INSTALL_DIR>/include"
-    )
-endmacro()
-```
-
-Most of the time, for packages already supporting CMake, the package module will
-only contain a few variables to setup the package URL or GIT repo and custom CMAKE_ARGS.
-The packages directory contains a few modules ready for use that can serve as example.
-
-`gateau_install_dependency()` has the following signature:
-
-```
-# Function that simplifies working with ExternalProject_Add.
-# It sets an ExternalProject up using the supplied available information and
-# creates an install and uninstall target for later use.
-#
-# The list of recognized arguments is enumerated below, and mostly matches the
-# names and meaning of the one accepted by ExternalProject_add.
-#
-# The arguments used to configure the external project are retrieved from two
-# sources: the arguments supplied to the function, as well as any variable in
-# scope that has the form ${dep}_OPTION_NAME, where OPTION_NAME is a variable
-# name from the parameters list below.
-#
-# Unrecognized arguments will be passed as-is to ExternalProject_Add.
-gateau_install_dependency(<name>
-    [IN_SOURCE]
-    [NO_EXTRACT] [NO_CONFIGURE] [NO_PATCH]
-    [NO_UPDATE] [NO_BUILD] [NO_INSTALL]
-    [GIT <git_repo>]
-    [TAG <git_tag>]
-    [URL <file_url>]
-    [MD5 <file_md5>]
-    [SOURCE_SUBDIR <subdir>]
-    [GIT_CONFIG config...]
-    [CMAKE_CACHE_ARGS args...]
-    [CMAKE_ARGS args...]
-    [PATCH_COMMAND cmds...]
-    [UPDATE_COMMAND cmds...]
-    [CONFIGURE_COMMAND cmds...]
-    [BUILD_COMMAND cmds...]
-    [INSTALL_COMMAND cmds...])
-```
-
-Look up the ExternalProject_add documentation for more information on each option.
 
 ### Creating targets
 

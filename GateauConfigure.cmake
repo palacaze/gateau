@@ -21,28 +21,11 @@ function(_gateau_setup_build_type)
     endif()
 endfunction()
 
-# Setup prefix path to include the external prefix containing self installed deps
-function(_gateau_setup_prefix_path)
-    # no external deps: we don't alter the prefix path
-    gateau_get(NO_BUILD_DEPS no_build_deps)
-    if (no_build_deps)
-        return()
-    endif()
-
-    gateau_external_install_prefix(dir)
-    set(path ${CMAKE_PREFIX_PATH})
-    if (NOT dir IN_LIST path)
-        list(PREPEND path "${dir}")  # prepend to favor last change
-        set(CMAKE_PREFIX_PATH "${path}" CACHE STRING "" FORCE)
-    endif()
-
-    # Search paths are restricted in the cross toolchain files,
-    # however our install prefix is safe to use so we will add it.
-    set(path ${CMAKE_FIND_ROOT_PATH})
-    if (NOT dir IN_LIST path)
-        list(PREPEND path "${dir}")  # prepend to favor last change
-        set(CMAKE_FIND_ROOT_PATH "${path}" PARENT_SCOPE)
-    endif()
+# setup directory to handle dependencies modules
+function(_gateau_setup_dep_dir)
+    gateau_get(DEP_DIR dep_dir)
+    file(REMOVE_RECURSE "${dep_dir}")
+    gateau_create_dir("${dep_dir}")
 endfunction()
 
 # Setup reasonable defaults for commonly set cmake variables
@@ -98,7 +81,7 @@ function(_gateau_setup_internal_variables)
     # Project root dir
     gateau_declare_internal(ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
-    # List of paths where package files can be found, extensible with gateau_add_package_module_dir()
+    # List of paths where FindPost modules can be found, extensible with gateau_add_package_module_dir()
     gateau_declare_internal(PACKAGE_MODULES_DIRS "${CMAKE_CURRENT_LIST_DIR}/packages")
 
     # Where template files can be found
@@ -167,29 +150,18 @@ function(_gateau_declare_options)
     gateau_declare_option(KEEP_TEMPS OFF "Keep temporary compiler-generated files for debugging purpose")
     gateau_declare_option(USE_CCACHE OFF "Use Ccache to speed-up compilation")
 
-    # Allow/Update deps
-    gateau_declare_option(NO_BUILD_DEPS OFF "Disable external dependency build and installation")
-    gateau_declare_option(UPDATE_DEPS OFF "Fetch dependency updates each time the project is reconfigured")
-
     # Other options pertaining to output
     gateau_declare_var(OUTPUT_DIRECTORY "" "Where to put all target files when built" PATH)
     gateau_declare_var(DOCUMENTATION_ROOT "" "Documentation installation root directory" PATH)
-
-    # External dependencies handling
-    gateau_declare_var(EXTERNAL_BUILD_TYPE Release "Build type used to build external packages" STRING)
-    gateau_declare_var(EXTERNAL_ROOT "" "Root directory where external packages get build" PATH)
-    gateau_declare_var(EXTERNAL_INSTALL_PREFIX "" "Prefix where to install external packages" PATH)
-    gateau_declare_var(DOWNLOAD_CACHE "" "Directory to store external packages code archives" PATH)
 endfunction()
 
 # Setup CMake with reasonable defaults
 macro(gateau_init)
     _gateau_setup_internal_variables()
     _gateau_declare_options()
-    _gateau_setup_build_dirs()
+    _gateau_setup_dep_dir()
     _gateau_setup_build_type()
     _gateau_setup_defaults()
-    _gateau_setup_prefix_path()
     _gateau_setup_compiler_options()
 
     # Some parts of Gateau may need to know if a parent project has already
@@ -205,10 +177,7 @@ endmacro()
 # Users should set those options from the call to cmake at configure time.
 function(gateau_configure)
     # Offering a single API call seems a more practical solution to setting a bunch of variables.
-    set(bool_options
-        NO_BUILD_DEPS
-        UPDATE_DEPS
-    )
+    set(bool_options)
     set(mono_options
         C_STANDARD
         CXX_STANDARD
@@ -216,10 +185,6 @@ function(gateau_configure)
         GENERATED_HEADER_EXT
         OUTPUT_DIRECTORY
         DOCUMENTATION_ROOT
-        DOWNLOAD_CACHE
-        EXTERNAL_BUILD_TYPE
-        EXTERNAL_ROOT
-        EXTERNAL_INSTALL_PREFIX
         NAMESPACE
         NAME_PREFIX
         LIBRARY_NAME_PREFIX
@@ -241,7 +206,7 @@ function(gateau_configure)
     endforeach()
 
     # keep prefix path up to date
-    _gateau_setup_prefix_path()
+    # _gateau_setup_prefix_path()
 endfunction()
 
 # Declare other files of the project in a "category" mock target
