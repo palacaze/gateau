@@ -368,14 +368,13 @@ function(_gateau_configure_target target no_version_header system_incls)
                 $<$<BOOL:${${ident}_ENABLE_MANY_WARNINGS}>:Gateau_HighWarnings>
                 $<$<BOOL:${${ident}_ENABLE_WERROR}>:Gateau_Werror>
                 $<$<BOOL:${${ident}_ENABLE_PROFILING}>:Gateau_Profiling>
+                $<$<BOOL:${${ident}_ENABLE_MARCH_NATIVE}>:Gateau_MarchNative>
                 $<$<BOOL:${${ident}_KEEP_TEMPS}>:Gateau_SaveTemps>
                 $<$<BOOL:${${ident}_SPLIT_DEBUG_INFO}>:Gateau_SplitDebugInfo>
                 $<$<BOOL:${${ident}_SANITIZE_ADDRESS}>:Gateau_AddressSanitizer>
                 $<$<BOOL:${${ident}_SANITIZE_THREADS}>:Gateau_ThreadSanitizer>
                 $<$<BOOL:${${ident}_SANITIZE_UNDEFINED}>:Gateau_UndefinedSanitizer>
                 $<$<BOOL:${${ident}_ENABLE_AUTOSELECT_LINKER}>:Gateau_Linker>
-            COMPILE_OPTIONS
-                $<$<CONFIG:Release>:-march=native;-mavx2;-mfma;-finline-limit=1000000;-ffp-contract=fast>
             PROPERTIES
                 $<$<CONFIG:Release>:C_VISIBILITY_PRESET hidden>
                 $<$<CONFIG:Release>:CXX_VISIBILITY_PRESET hidden>
