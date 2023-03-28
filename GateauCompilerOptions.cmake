@@ -90,7 +90,7 @@ function(_gateau_setup_compiler_options)
         $<${GATEAU_C_CXX_GCC}:
             -Wcast-qual;-Wconversion-null;-Wmissing-declarations;-Woverlength-strings;
             -Wpointer-arith;-Wunused-local-typedefs;-Wunused-result;-Wvarargs;-Wvla;
-            -Wwrite-strings;-Wconversion;-Wsign-conversion;-Wodr;-Wpedantic;;-pedantic;
+            -Wwrite-strings;-Wconversion;-Wsign-conversion;-Wodr;-Wpedantic;-pedantic;
             -Wcast-align;-Wctor-dtor-privacy;-Wdisabled-optimization;-Wformat=2;-Winit-self;
             -Wlogical-op;-Wmissing-include-dirs;-Wold-style-cast;-Woverloaded-virtual;
             -Wredundant-decls;-Wno-shadow;-Wsign-promo;-Wstrict-null-sentinel;-Wundef;
@@ -103,6 +103,8 @@ function(_gateau_setup_compiler_options)
             -Wno-gnu-zero-variadic-macro-arguments;-Wno-documentation;-Wno-shadow-field-in-constructor;
             -Wno-missing-prototypes;-Wno-padded;-Wno-reserved-identifier;
             -Wno-documentation-unknown-command;-Wno-ctad-maybe-unsupported>
+        $<$<AND:${GATEAU_C_CXX_CLANG},$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,16.0.0>>:
+            -Wno-unsafe-buffer-usage;-Wno-date-time>
         $<${GATEAU_CXX_CLANG}:
             -Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-weak-vtables>
         $<${GATEAU_C_CXX_MSVC}:/Wall>
