@@ -62,8 +62,9 @@ macro(_gateau_setup_defaults)
     set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
     set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../lib64:$ORIGIN")
 
-    # config mode should be preferred
-    set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
+    # config mode should be preferred in a perfect world.
+    # disabled because it breaks a few packages, such as boost from vcpkg
+    # set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 
     # Disable the package registry, which could mislead cmake into looking for
     # packages in unexpected derectories
