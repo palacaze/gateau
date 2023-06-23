@@ -5,8 +5,8 @@ set(zstd_URL "https://github.com/facebook/zstd/releases/download/v${zstd_VERSION
 set(zstd_CMAKE_ARGS
     -DZSTD_BUILD_PROGRAMS=OFF
     -DZSTD_LEGACY_SUPPORT=OFF
-    -DZSTD_BUILD_SHARED=OFF
-    -DZSTD_BUILD_STATIC=ON
+    -DZSTD_BUILD_SHARED=ON
+    -DZSTD_BUILD_STATIC=OFF
 )
 set(zstd_SOURCE_SUBDIR "build/cmake")
 
