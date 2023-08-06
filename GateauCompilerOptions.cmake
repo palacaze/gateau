@@ -94,7 +94,7 @@ function(_gateau_setup_compiler_options)
             -Wcast-align;-Wctor-dtor-privacy;-Wdisabled-optimization;-Wformat=2;-Winit-self;
             -Wlogical-op;-Wmissing-include-dirs;-Wold-style-cast;-Woverloaded-virtual;
             -Wredundant-decls;-Wno-shadow;-Wsign-promo;-Wstrict-null-sentinel;-Wundef;
-            -fdiagnostics-show-option;-Wno-unknown-pragma>
+            -fdiagnostics-show-option;-Wno-unknown-pragma;-Wno-array-bounds>
         $<${GATEAU_CXX_GCC}:
             -Wno-return-std-move-in-c++11>
         $<${GATEAU_C_CXX_CLANG}:
