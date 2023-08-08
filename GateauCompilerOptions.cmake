@@ -169,23 +169,21 @@ function(_gateau_setup_compiler_options)
         $<${GATEAU_LINK_C_CXX_CLANG_GCC}:-fsanitize=undefined>
     )
 
-    # Use the best linker available on linux/unix
+    # Use the best linker available
     add_library(Gateau_Linker INTERFACE)
-    if (UNIX AND NOT APPLE AND NOT CYGWIN)
-        foreach (_ld mold;lld;gold)
-            execute_process(COMMAND "${CMAKE_CXX_COMPILER}" -fuse-ld=${_ld} -Wl,--version
-                ERROR_QUIET OUTPUT_VARIABLE ld_version)
-            if (ld_version)
-                set(used_ld ${_ld})
-                break()
-            endif()
-        endforeach()
-
-        if (used_ld)
-            target_link_libraries(Gateau_Linker INTERFACE
-                -fuse-ld=${used_ld}
-            )
+    foreach (_ld mold;lld;gold)
+        execute_process(COMMAND "${CMAKE_CXX_COMPILER}" -fuse-ld=${_ld} -Wl,--version
+            ERROR_QUIET OUTPUT_VARIABLE ld_version)
+        if (ld_version)
+            set(used_ld ${_ld})
+            break()
         endif()
+    endforeach()
+
+    if (used_ld)
+        target_link_libraries(Gateau_Linker INTERFACE
+            -fuse-ld=${used_ld}
+        )
     endif()
 
     # Use libcxx with clang
