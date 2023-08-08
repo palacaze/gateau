@@ -104,7 +104,7 @@ function(_gateau_setup_compiler_options)
         $<$<AND:${GATEAU_C_CXX_CLANG},$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,16.0.0>>:
             -Wno-unsafe-buffer-usage;-Wno-date-time>
         $<${GATEAU_CXX_CLANG}:
-            -Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-weak-vtables>
+            -Wno-c++98-compat;-Wno-c++98-compat-pedantic;-Wno-weak-vtables;-Wno-used-but-marked-unused>
         $<${GATEAU_C_CXX_MSVC}:/Wall>
     )
 
