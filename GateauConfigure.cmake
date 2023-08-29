@@ -51,6 +51,9 @@ macro(_gateau_setup_defaults)
     set(CMAKE_VERBOSE_MAKEFILE ON)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+    # AUTOGEN
+    set(CMAKE_AUTOGEN_USE_SYSTEM_INCLUDE ON)
+
     # Rpath handling
     set(CMAKE_SKIP_BUILD_RPATH OFF)
     set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)

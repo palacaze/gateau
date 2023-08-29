@@ -291,30 +291,33 @@ function(_gateau_configure_target target no_version_header system_incls)
 
     # find include directories to append
     gateau_get(RELATIVE_HEADERS_DIRS relative_dirs)
-    set(build_dirs)
+    set(src_dirs)
+    set(bin_dirs)
     foreach(rel_dir ${relative_dirs})
         set(_sdir "${PROJECT_SOURCE_DIR}/${rel_dir}")
         set(_bdir "${PROJECT_BINARY_DIR}/${rel_dir}")
         if (IS_DIRECTORY "${_sdir}")
-            list(APPEND build_dirs
-                $<BUILD_INTERFACE:${_sdir}>
-                $<BUILD_INTERFACE:${_bdir}>
-            )
+            list(APPEND src_dirs $<BUILD_INTERFACE:${_sdir}>)
+            list(APPEND bin_dirs $<BUILD_INTERFACE:${_bdir}>)
         endif()
     endforeach()
-    if (NOT build_dirs)
-        list(APPEND build_dirs
-            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
-            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
-        )
+    if (NOT src_dirs)
+        set(src_dirs $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>)
+        set(bin_dirs $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>)
     endif()
+
+    gateau_extend_target(${target}
+        SYSTEM INCLUDE_DIRECTORIES
+            PUBLIC
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+                ${bin_dirs}
+    )
 
     gateau_extend_target(${target} ${system_incls}
         INCLUDE_DIRECTORIES
             PUBLIC
-                ${build_dirs}
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-                $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+                ${src_dirs}
                 $<INSTALL_INTERFACE:include>
         PROPERTIES
             EXPORT_NAME ${target}
