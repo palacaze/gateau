@@ -371,6 +371,7 @@ function(_gateau_configure_target target no_version_header system_incls)
                 $<$<BOOL:${${ident}_ENABLE_MANY_WARNINGS}>:Gateau_HighWarnings>
                 $<$<BOOL:${${ident}_ENABLE_WERROR}>:Gateau_Werror>
                 $<$<BOOL:${${ident}_ENABLE_PROFILING}>:Gateau_Profiling>
+                $<$<BOOL:${${ident}_ENABLE_TIME_TRACE}>:Gateau_TimeTrace>
                 $<$<BOOL:${${ident}_ENABLE_MARCH_NATIVE}>:Gateau_MarchNative>
                 $<$<BOOL:${${ident}_KEEP_TEMPS}>:Gateau_SaveTemps>
                 $<$<BOOL:${${ident}_SPLIT_DEBUG_INFO}>:Gateau_SplitDebugInfo>

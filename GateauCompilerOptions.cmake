@@ -120,6 +120,13 @@ function(_gateau_setup_compiler_options)
         $<${GATEAU_C_CXX_MSVC}:/WX>
     )
 
+# -ftime-trace compile options in Debug / RelWithDebInfo
+    add_library(Gateau_TimeTrace INTERFACE)
+    target_compile_options(Gateau_TimeTrace INTERFACE
+        $<$<AND:$<CONFIG:Debug>,${GATEAU_C_CXX_CLANG_GCC}>:-ftime-trace>
+        $<$<AND:$<CONFIG:RelWithDebInfo>,${GATEAU_C_CXX_CLANG_GCC}>:-ftime-trace>
+    )
+
     # -march=native compile options in Release
     add_library(Gateau_MarchNative INTERFACE)
     target_compile_options(Gateau_MarchNative INTERFACE
