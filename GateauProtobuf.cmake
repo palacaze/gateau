@@ -18,9 +18,6 @@ function(gateau_protoc target)
     )
     cmake_parse_arguments(_A "" "${mono_options}" "${multi_options}" ${ARGN})
 
-    set(_out_dir "${CMAKE_CURRENT_BINARY_DIR}")
-    file(MAKE_DIRECTORY "${_out_dir}")
-
     macro(maybe_set _opt _val)
         if (NOT _A_${_opt})
             set(_A_${_opt} "${_val}")
@@ -68,16 +65,18 @@ function(gateau_protoc target)
         get_filename_component(_abs_dir "${_proto_path}" DIRECTORY)
         get_filename_component(_basename "${_proto}" NAME_WE)
         file(RELATIVE_PATH _rel_dir "${CMAKE_CURRENT_SOURCE_DIR}" "${_abs_dir}")
+        set(out_dir "${CMAKE_CURRENT_BINARY_DIR}/${_rel_dir}")
+        file(MAKE_DIRECTORY "${out_dir}")
 
-        set(src "${CMAKE_CURRENT_BINARY_DIR}/${_rel_dir}/${_basename}.${_A_SOURCE_EXT}")
-        set(hdr "${CMAKE_CURRENT_BINARY_DIR}/${_rel_dir}/${_basename}.${_A_HEADER_EXT}")
+        set(src "${out_dir}/${_basename}.${_A_SOURCE_EXT}")
+        set(hdr "${out_dir}/${_basename}.${_A_HEADER_EXT}")
         list(APPEND srcs "${src}")
         list(APPEND hdrs "${hdr}")
 
         add_custom_command(
             OUTPUT "${src}" "${hdr}"
             COMMAND protobuf::protoc
-            ARGS --${_A_OUT_OPT}=${_out_dir}
+            ARGS --${_A_OUT_OPT}=${out_dir}
                  ${_plugin}
                  ${_include_path}
                  "${_proto_path}"
