@@ -90,7 +90,7 @@ function(_gateau_setup_compiler_options)
         $<${GATEAU_C_CXX_GCC}:
             -Wcast-qual;-Wconversion-null;-Wmissing-declarations;-Woverlength-strings;
             -Wpointer-arith;-Wunused-local-typedefs;-Wunused-result;-Wvarargs;-Wvla;
-            -Wwrite-strings;-Wconversion;-Wsign-conversion;-Wodr;-Wpedantic;-pedantic;
+            -Wwrite-strings;-Wconversion;-Wsign-conversion;-Wodr;
             -Wcast-align;-Wctor-dtor-privacy;-Wdisabled-optimization;-Wformat=2;-Winit-self;
             -Wlogical-op;-Wmissing-include-dirs;-Wold-style-cast;-Woverloaded-virtual;
             -Wredundant-decls;-Wno-shadow;-Wsign-promo;-Wstrict-null-sentinel;-Wundef;
