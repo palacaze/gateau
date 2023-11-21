@@ -130,7 +130,7 @@ function(_gateau_setup_compiler_options)
     # -march=native compile options in Release
     add_library(Gateau_MarchNative INTERFACE)
     target_compile_options(Gateau_MarchNative INTERFACE
-        $<$<AND:$<CONFIG:Release>,${GATEAU_C_CXX_CLANG_GCC}>:-march=native>
+        $<${GATEAU_C_CXX_CLANG_GCC}:-march=native>
     )
 
     # Profiling
