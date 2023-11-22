@@ -306,6 +306,7 @@ Those are meant for the project developers.
 | ${ID}_NAMESPACE             | The namespace used for alias targets and exports  | "${PROJECT_NAME}"              |
 | ${ID}_C_STANDARD            | The C standard to use                             | c_std_99                       |
 | ${ID}_CXX_STANDARD          | The C++ standard to use                           | cxx_std_17                     |
+| ${ID}_COMPILE_OPTIONS       | Additional compile options to apply               | ""                             |
 | ${ID}_NAME_PREFIX           | The default prefix to use for output file names   | ""                             |
 | ${ID}_LIBRARY_NAME_PREFIX   | The prefix to use for library output file names   | ""                             |
 | ${ID}_RUNTIME_NAME_PREFIX   | The prefix to use for runtime output file names   | ""                             |
@@ -330,6 +331,8 @@ can be used to add a custom prefix to the names of targets output names. For ins
 a library target named `foo` with `${ID}_LIBRARY_NAME_PREFIX` set to 'bar' may be
 named libbarfoo.so on some platforms.
 
+`${ID}_C_STANDARD`, `${ID}_CXX_STANDARD` and `${ID}_COMPILE_OPTIONS` customize
+compiler options to apply to all the targets of the project.
 
 #### Options and cache variables
 

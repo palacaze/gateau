@@ -289,6 +289,8 @@ function(_gateau_configure_target target no_version_header system_incls)
         gateau_get(CXX_STANDARD cxxstd)
     endif()
 
+    gateau_get(COMPILE_OPTIONS custom_compile_options)
+
     # find include directories to append
     gateau_get(RELATIVE_HEADERS_DIRS relative_dirs)
     set(src_dirs)
@@ -325,6 +327,9 @@ function(_gateau_configure_target target no_version_header system_incls)
             PUBLIC
                 ${cstd}
                 ${cxxstd}
+        COMPILE_OPTIONS
+            PRIVATE
+                ${custom_compile_options}
     )
 
     # add a version header
