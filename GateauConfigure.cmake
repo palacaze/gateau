@@ -117,6 +117,9 @@ function(_gateau_setup_internal_variables)
     gateau_declare_internal(C_STANDARD c_std_99)
     gateau_declare_internal(CXX_STANDARD cxx_std_17)
 
+    # List of additional compile options to apply project wide
+    gateau_declare_internal(COMPILE_OPTIONS "")
+
     # Nicer way of handling 32 or 64 bits
     if (CMAKE_CXX_SIZEOF_DATA_PTR EQUAL 8)
         gateau_declare_internal(X64 ON)
@@ -197,6 +200,7 @@ function(gateau_configure)
         RUNTIME_NAME_PREFIX
     )
     set(multi_options
+        COMPILE_OPTIONS
         RELATIVE_HEADERS_DIRS
     )
 
