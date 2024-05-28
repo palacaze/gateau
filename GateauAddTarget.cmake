@@ -312,14 +312,14 @@ function(_gateau_configure_target target no_version_header system_incls)
         SYSTEM INCLUDE_DIRECTORIES
             PUBLIC
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-                ${bin_dirs}
+                $<BUILD_INTERFACE:${bin_dirs}>
     )
 
     gateau_extend_target(${target} ${system_incls}
         INCLUDE_DIRECTORIES
             PUBLIC
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-                ${src_dirs}
+                $<BUILD_INTERFACE:${src_dirs}>
                 $<INSTALL_INTERFACE:include>
         PROPERTIES
             EXPORT_NAME ${target}
