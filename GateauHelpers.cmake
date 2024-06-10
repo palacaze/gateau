@@ -100,6 +100,19 @@ function(gateau_set name value)
     set_property(CACHE ${ident} PROPERTY VALUE "${value}")
 endfunction()
 
+# Toggle a boolean variable if it exists
+function(gateau_toggle var)
+    if (DEFINED ${var})
+        set(v "${${var}}")
+        if (v)
+            set(v FALSE)
+        else()
+            set(v TRUE)
+        endif()
+        set(${var} "${v}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 # Append a value to a CACHE variable of list/string type
 function(gateau_append name str)
     _gateau_var_name(${name} ident)
