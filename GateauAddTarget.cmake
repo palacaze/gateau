@@ -456,7 +456,7 @@ function(gateau_add_library lib)
     # ensure a proper install prefix is none was given
     gateau_setup_install_prefix()
 
-    set(_type SHARED)
+    set(_type)
     if (SAL_STATIC)
         set(_type STATIC)
     endif()
