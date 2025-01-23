@@ -469,6 +469,8 @@ gateau_add_library(<name>
     [INSTALL_BINDIR <dir>]
     [INSTALL_LIBDIR <dir>]
     [INSTALL_INCLUDEDIR <dir>]
+    [OUTPUT_DIRECTORY <dir>]
+    [OUTPUT_NAME <dir>]
     [other options accepted by gateau_extend_target()]...
 )
 ```
@@ -507,6 +509,8 @@ gateau_add_executable(<name>
     [NO_EXPORT]
     [VERSION_HEADER]
     [INSTALL_BINDIR <dir>]
+    [OUTPUT_DIRECTORY <dir>]
+    [OUTPUT_NAME <dir>]
     [other options accepted by gateau_extend_target()]...
 )
 ```

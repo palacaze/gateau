@@ -412,8 +412,11 @@ function(_gateau_configure_target target no_version_header system_incls)
         gateau_extend_target(${target}
             CONDITION
                 ${ident}_ENABLE_LTO
+            COMPILE_OPTIONS
+                -flto
             LINK_OPTIONS
                 -flto
+                -fwhole-program
             PROPERTIES
                 INTERPROCEDURAL_OPTIMIZATION ON
         )
@@ -427,8 +430,11 @@ endfunction()
 #     [SYSTEM]
 #     [NO_INSTALL] [NO_INSTALL_HEADERS]
 #     [NO_EXPORT]
+#     [INSTALL_BINDIR <dir>]
 #     [INSTALL_LIBDIR <dir>]
 #     [INSTALL_INCLUDEDIR <dir>]
+#     [OUTPUT_DIRECTORY <dir>]
+#     [OUTPUT_NAME <dir>]
 #     [other options accepted by gateau_extend_target()]...
 # )
 #
@@ -438,6 +444,9 @@ endfunction()
 # - NO_INSTALL: do not install this target
 # - NO_INSTALL_HEADER: do not install the dev headers
 # - NO_EXPORT: the target is not exported to the cmake package module installed
+# - OUTPUT_DIRECTORY: override the target output directory
+# - OUTPUT_NAME: override the target file name
+# - INSTALL_BINDIR: override the binaries installation directory path
 # - INSTALL_LIBDIR: override the libraries installation directory path
 # - INSTALL_INCLUDEDIR: override the headers installation directory path
 function(gateau_add_library lib)
@@ -450,7 +459,7 @@ function(gateau_add_library lib)
         NO_EXPORT_HEADER    # Do not generate an export header
         NO_VERSION_HEADER   # DO not generate a version header
     )
-    set(mono_options OUTPUT_NAME INSTALL_BINDIR INSTALL_LIBDIR INSTALL_INCLUDEDIR)
+    set(mono_options OUTPUT_NAME OUTPUT_DIRECTORY INSTALL_BINDIR INSTALL_LIBDIR INSTALL_INCLUDEDIR)
     cmake_parse_arguments(SAL "${bool_options}" "${mono_options}" "" ${ARGN})
 
     # ensure a proper install prefix is none was given
@@ -512,6 +521,15 @@ function(gateau_add_library lib)
 
     # configure the target with good defaults
     _gateau_configure_target(${lib} "${SAL_NO_VERSION_HEADER}" "${system_incls}")
+
+    if (SAL_OUTPUT_DIRECTORY)
+        gateau_extend_target(${lib}
+            PROPERTIES
+                LIBRARY_OUTPUT_DIRECTORY "${SAL_OUTPUT_DIRECTORY}"
+                ARCHIVE_OUTPUT_DIRECTORY "${SAL_OUTPUT_DIRECTORY}"
+                RUNTIME_OUTPUT_DIRECTORY "${SAL_OUTPUT_DIRECTORY}"
+        )
+    endif()
 
     if (SAL_OUTPUT_NAME)
         gateau_extend_target(${lib}
@@ -583,7 +601,7 @@ function(gateau_add_executable exe)
         NO_EXPORT           # Do not export this target
         VERSION_HEADER      # Do generate a version header
     )
-    set(mono_options OUTPUT_NAME INSTALL_BINDIR)
+    set(mono_options OUTPUT_DIRECTORY OUTPUT_NAME INSTALL_BINDIR)
     cmake_parse_arguments(SAE "${bool_options}" "${mono_options}" "" ${ARGN})
 
     # ensure a proper install prefix is none was given
@@ -616,6 +634,13 @@ function(gateau_add_executable exe)
 
     # configure the target with good defaults
     _gateau_configure_target(${exe} "${_no_version_header}" "")
+
+    if (SAE_OUTPUT_DIRECTORY)
+        gateau_extend_target(${lib}
+            PROPERTIES
+                RUNTIME_OUTPUT_DIRECTORY "${SAE_OUTPUT_DIRECTORY}"
+        )
+    endif()
 
     # extend the target with appropriate defaults
     gateau_extend_target(${exe}
