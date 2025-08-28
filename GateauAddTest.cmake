@@ -70,8 +70,14 @@ function(_gateau_register_catch_test target wd)
 
     target_link_libraries(${target} PRIVATE Catch2::Catch2)
 
+    include(CTest)
     include(Catch)
-    catch_discover_tests(${target} WORKING_DIRECTORY "${wd}" ${args} ${props})
+    catch_discover_tests(${target}
+        WORKING_DIRECTORY "${wd}"
+        ${args} ${props}
+        REPORT junit
+        ADD_TAGS_AS_LABELS
+    )
 endfunction()
 
 # register a QtTest test
@@ -106,18 +112,18 @@ macro(gateau_setup_testing tests_target)
     # unit tests are provided by Catch2
     if (_O_CATCH)
         gateau_find_package(Catch2 BUILD_ONLY_DEP)
-        set_directory_properties(PROPERTIES gateau_test_provider CATCH)
+        set_directory_properties(PROPERTIES gateau_tests_provider CATCH)
     elseif (_O_DOCTEST)
         gateau_find_package(doctest BUILD_ONLY_DEP)
-        set_directory_properties(PROPERTIES gateau_test_provider DOCTEST)
+        set_directory_properties(PROPERTIES gateau_tests_provider DOCTEST)
     elseif (_O_GTEST)
         gateau_find_package(GTest BUILD_ONLY_DEP)
-        set_directory_properties(PROPERTIES gateau_test_provider GTEST)
+        set_directory_properties(PROPERTIES gateau_tests_provider GTEST)
     elseif (_O_QTTEST)
         gateau_find_package(Qt5 COMPONENTS Test)
-        set_directory_properties(PROPERTIES gateau_test_provider QTTEST)
+        set_directory_properties(PROPERTIES gateau_tests_provider QTTEST)
     else()
-        set_directory_properties(PROPERTIES gateau_test_provider UNKNOWN)
+        set_directory_properties(PROPERTIES gateau_tests_provider UNKNOWN)
     endif()
 
     gateau_cleanup_parsed(_O "${bool_options}" "" "")
@@ -148,7 +154,7 @@ function(gateau_add_test name)
         list(APPEND args PROPERTIES ${_O_TEST_PROPERTIES})
     endif()
 
-    get_directory_property(provider gateau_test_provider)
+    get_directory_property(provider gateau_tests_provider)
     if (provider STREQUAL CATCH)
         _gateau_register_catch_test(${name} "${_O_WORKING_DIRECTORY}" ${args})
     elseif(provider STREQUAL DOCTEST)
